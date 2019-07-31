@@ -49,7 +49,7 @@ setuptools.setup(
         'ecdsa>=0.13',
         'pysha3>=1',
         'eth-account>=0.3',
-        'pyyaml>=3.13',
+        'pyyaml>=4.2b1',
         'cryptography==2.5',
         'shamir_mnemonic==0.1',
     ],
