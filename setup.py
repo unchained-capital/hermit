@@ -24,11 +24,12 @@ setuptools.setup(
     author_email="engineering@unchained-capital.com",
     description="Unchained Capital Hermit",
     long_description=long_description,
-    url="https://github.com/unchained-captial/hermit",
+    long_description_content_type="text/markdown",
+    url="https://github.com/unchained-captial/hermit-opensource",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: None",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
     scripts=[
