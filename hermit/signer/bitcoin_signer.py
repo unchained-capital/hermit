@@ -42,7 +42,13 @@ def generate_multisig_address(redeemscript: str, testnet: bool = False) -> str:
 
 
 class BitcoinSigner(Signer):
-    """Signs BTC transactions"""
+    """Signs BTC transactions
+
+    An assumption made by this class is that the transaction's inputs
+    are all UTXOs at the same address (only a single redeem script is
+    provided).
+
+    """
     
 
     #
