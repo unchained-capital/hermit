@@ -12,7 +12,7 @@ def __path(filename):
 if os.path.exists(__path('build.info')):
     build = open(__path('build.info')).read().strip()
 
-version = '0.1.2'
+version = '0.1.3'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -49,8 +49,7 @@ setuptools.setup(
         'ecdsa>=0.13',
         'pysha3>=1',
         'eth-account>=0.3',
-        'pyyaml>=4.2b1',
-        'cryptography==2.5',
+        'pyyaml>=3.13',
         'shamir_mnemonic==0.1',
     ],
     data_files=[
