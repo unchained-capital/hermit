@@ -2,7 +2,7 @@ import asyncio
 import traceback
 
 
-from prompt_toolkit import PromptSession
+from prompt_toolkit import PromptSession, HTML
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
@@ -15,7 +15,10 @@ import hermit.ui.state as state
 Bindings = KeyBindings()
 
 def repl(commands:Dict, mode="", help_command=None):
-    commandCompleter = WordCompleter([c for c in commands])
+    commandCompleter = WordCompleter(
+        [c for c in commands],
+        sentence=True # allows hyphens
+    )
 
     oldSession = state.Session
     state.Session = PromptSession(key_bindings=Bindings,
@@ -29,7 +32,7 @@ def repl(commands:Dict, mode="", help_command=None):
                 unlocked = ' '
                 if state.Wallet.unlocked():
                     unlocked = '*'
-                command_line = state.Session.prompt('{}{}> '.format(unlocked, mode),
+                command_line = state.Session.prompt(HTML('<b>{}{}></b> '.format(unlocked, mode)),
                                               completer=commandCompleter,
                                               ).split()
 

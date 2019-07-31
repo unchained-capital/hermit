@@ -162,41 +162,41 @@ def wallet_help(*args,):
     if len(args) > 0 and args[0] in WalletCommands:
         print(WalletCommands[args[0]].__doc__)
     else:
-        print("""
+        print_formatted_text(HTML("""
   You are in WALLET mode.  In this mode, Hermit can sign
   transactions and export public keys.
 
   The following commands are supported (try running `help COMMAND` to
   learn more about each command):
 
-  SIGNING
-      sign-bitcoin
+  <b>SIGNING</b>
+        <i>sign-bitcoin</i>
           Produce a signature for a Bitcoin transaction
-      sign-echo
+      <i>sign-echo</i>
           Echo a signature request back as a signature
-  KEYS
-      export-xpub BIP32_PATH
+  <b>KEYS</b>
+      <i>export-xpub BIP32_PATH</i>
           Display the extended public key at the given BIP32 path
-      export-pub BIP32_PATH
+      <i>export-pub BIP32_PATH</i>
           Display the public key at the given BIP32 path
-  WALLET
-      unlock
+  <b>WALLET</b>
+      <i>unlock</i>
           Explicitly unlock the wallet
-      lock
+      <i>lock</i>
           Explictly lock the wallet
-  MISC
-      shards
+  <b>MISC</b>
+      <i>shards</i>
           Enter shards mode
-      testnet
+      <i>testnet</i>
           Toggle testnet mode
-      debug
+      <i>debug</i>
           Toggle debug mode
-      clear
+      <i>clear</i>
           Clear screen
-      quit
+      <i>quit</i>
           Exit Hermit
 
-        """)
+        """))
 
 def wallet_repl():
     return repl(WalletCommands, mode='wallet', help_command=wallet_help)

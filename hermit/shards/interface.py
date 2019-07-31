@@ -1,5 +1,5 @@
 import re
-from prompt_toolkit import prompt, print_formatted_text, shortcuts
+from prompt_toolkit import prompt, print_formatted_text, shortcuts, HTML
 from prompt_toolkit.completion import WordCompleter
 from hermit.wordlists import WalletWords, ShardWords
 from hermit.errors import HermitError
@@ -140,33 +140,33 @@ class ShardWordUserInterface(object):
         return ' '.join(lines)
 
     def enter_group_information(self) -> Tuple[int, List[Tuple[int,int]]]:
-        print("""SLIP39 sharding has two levels.
+        print_formatted_text(HTML("""SLIP39 sharding has two levels.
 
-At the top level you specify Q groups, P of which are required to
-unlock the wallet (P of Q groups).
-
-For each of the Q groups you specify m shards, n of which are required
-to unlock the group (n of m shards).  You can specify a different
-combination of n and m for each group.
-
-Unlock the wallet requires unlocking P groups and unlocking each group
-requires unlocking n shards for that group.
-"""
-        )
+At the upper level you specify <i>Q</i> groups, <i>P</i> of which are required to
+unlock the wallet (<i>P of Q</i> groups).
+"""))
         group_threshold = int(
-            prompt("How many groups should be required to unlock the wallet (P)? ", completer=self.SmallNumberCompleter))
+            prompt(HTML("<b>How many groups should be required to unlock the wallet (<i>P</i>)?</b> "), completer=self.SmallNumberCompleter))
         groups : List[Tuple[int,int]] = []
 
-        print_formatted_text("""
-You will now specify the shard configuration for each group.
+        print_formatted_text(HTML("""
+Each of the <i>Q</i> groups is itself broken into <i>m</i> shards, <i>n</i> of which are
+required to unlock the group (<i>n of m</i> shards).
 
-Hit Ctrl-D or enter an empty line once you have entered all Q groups.
-""")
-        input_error_message = "Please enter a shard configuration in the form 'n of m' where n and m are small integers."
+Unlocking the wallet requires unlocking <i>P</i> groups and unlocking each 
+group requires unlocking <i>n</i> shards for that group.
+
+You must now specify a shard configuration (such as '<i>2 of 3</i>')
+for each of the Q groups.
+
+Hit <b>Ctrl-D</b> or enter an empty line once you have entered
+shard configurations for all <i>Q</i> groups.
+"""))
+        input_error_message = HTML("Please enter a shard configuration in the form '<i>n of m</i>' where <i>n</i> and <i>m</i> are small integers.")
         while True:
             try:
                 group_str = prompt(
-                    "What shard configuration should be used for group {} (eg 'n of m')? ".format(len(groups) + 1), completer=self.SmallNumberCompleter)
+                    HTML("<b>What shard configuration should be used for <i>Group {}</i>?</b> ".format(len(groups) + 1)), completer=self.SmallNumberCompleter)
             except EOFError:
                 if group_threshold > len(groups):
                     print_formatted_text(input_error_message)
@@ -185,8 +185,8 @@ Hit Ctrl-D or enter an empty line once you have entered all Q groups.
                 n = int(n)
                 m = int(m)
                 if(n > m):
-                    print(
-                        "The number of required shards (n) must not be larger than the total number of shards (m)")
+                    print_formatted_text(HTML(
+                        "The number of required shards (<i>n</i>) must not be larger than the total number of shards (<i>m</i>)"))
                 else:
                     groups.append((n, m))
 

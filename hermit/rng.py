@@ -1,7 +1,7 @@
 import hashlib
 import math
 import zlib
-from prompt_toolkit import prompt, print_formatted_text
+from prompt_toolkit import prompt, print_formatted_text, HTML
 from typing import List
 
 def self_entropy(input: str) -> float:
@@ -45,9 +45,11 @@ def enter_randomness(chunks: int) -> bytes:
     The total number of bits of randomness is equal to `chunks * 256`.
 
     """
-    print_formatted_text(
-        "\nEnter at least {} bits worth of random data.\n".
-        format(chunks * 256))
+    print_formatted_text(HTML("""
+<b>Enter at least {} bits worth of random data.</b>
+
+Hit <b>CTRL-D</b> when done.
+""".format(chunks * 256)))
     lines: List = []
     input_entropy = 0.0
 
@@ -58,7 +60,7 @@ def enter_randomness(chunks: int) -> bytes:
     while True:
         try:
             prompt_msg = (
-                "Collected {0:5.1f} bits (Ctrl-D to Stop)"
+                "Collected {0:5.1f} bits>:"
                 .format(input_entropy))
             line = prompt(prompt_msg).strip()
         except EOFError:

@@ -1,6 +1,8 @@
 from typing import Dict
 from functools import wraps
 
+from prompt_toolkit import HTML, print_formatted_text
+
 from hermit.errors import HermitError
 from hermit.qrcode import displayer, reader
 

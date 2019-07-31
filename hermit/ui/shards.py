@@ -338,58 +338,57 @@ def shard_help(*args,):
     if len(args) > 0 and args[0] in ShardCommands:
         print(ShardCommands[args[0]].__doc__)
     else:
-        print("""
-  You are in SHARDS mode.  In this mode, Hermit can create &
+        print_formatted_text(HTML("""
+  You are in SHARDS mode.  In this mode, Hermit can create and
   manipulate shards and interact with storage.
 
   The following commands are supported (try running `help COMMAND` to
   learn more about each command):
 
-  SHARD FAMILIES
-      build-family-from-phrase
+  <b>SHARD FAMILIES</b>
+      <i>build-family-from-phrase</i>
            Create a shard family from a BIP39 mnemonic phrase
-      build-family-from-random
+      <i>build-family-from-random</i>
            Create a shard family from random data
-      build-family-from-wallet
+      <i>build-family-from-wallet</i>
            Create a shard family from the current wallet
-
-  SHARDS
-      list-shards
+  <b>SHARDS</b>
+      <i>list-shards</i>
           List all existing shards
-      import-shard-from-phrase NAME
+      <i>import-shard-from-phrase NAME</i>
           Input a new shard from an encrypted SLIP39 mnemonic phrase
-      import-shard-from-qr NAME
+      <i>import-shard-from-qr NAME</i>
           Input a new shard from a QR code
-      export-shard-as-phrase NAME
+      <i>export-shard-as-phrase NAME</i>
           Display the given shard as an encrypted SLIP39 mnemonic phrase
-      export-shard-as-qr NAME
+      <i>export-shard-as-qr NAME</i>
           Display the given shard as a QR code
-      copy-shard OLD NEW
+      <i>copy-shard OLD NEW</i>
           Copy an existing shard with a new password
-      delete-shard NAME
+      <i>delete-shard NAME</i>
           Delete a shard
-  STORAGE
-      write
+  <b>STORAGE</b>
+      <i>write</i>
           Copy shards from memory to the filesystem
-      persist
+      <i>persist</i>
           Copy shards from the filesystem to the data store
-      backup
+      <i>backup</i>
           Copy shards from filesystem to backup storage
-      restore
+      <i>restore</i>
           Copy shards from backup storage to filesystem
-      reload
+      <i>reload</i>
           Copy shards from the filesystem into memory
-  WALLET
-      unlock
+  <b>WALLET</b>
+      <i>unlock</i>
           Explicitly unlock the wallet
-      lock
+      <i>lock</i>
           Explictly lock the wallet
-  MISC
-      debug
+  <b>MISC</b>
+      <i>debug</i>
           Toggle debug mode
-      clear
+      <i>clear</i>
           Clear screen
-      quit
+      <i>quit</i>
           Return to wallet mode
 
-        """)
+        """))
