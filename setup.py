@@ -12,7 +12,7 @@ def __path(filename):
 if os.path.exists(__path('build.info')):
     build = open(__path('build.info')).read().strip()
 
-version = '0.1.1'
+version = '0.1.2'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -25,7 +25,7 @@ setuptools.setup(
     description="Unchained Capital Hermit",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/unchained-captial/hermit-opensource",
+    url="https://github.com/unchained-captial/hermit",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
