@@ -1,0 +1,12 @@
+wallet_words_file: 'test.json'
+shards_file: 'test.bson'
+plugin_dir: 'testdir'
+commands:
+  persistShards:
+    "test_persistShards_{0}"
+  backupShards:
+    "test_backupShards_{0}"
+  restoreBackup:
+    "test_restoreBackup_{0}"
+  getPersistedShards:
+    "test_getPersistedShards_{0}"

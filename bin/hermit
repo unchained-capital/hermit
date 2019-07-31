@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+if __name__ == '__main__':
+    from hermit.ui import main
+    try:
+        main()
+    except TypeError as e:
+        # FIXME why does this error even occur?
+        if 'a coroutine or an awaitable is required' in str(e): pass
+        else: raise e

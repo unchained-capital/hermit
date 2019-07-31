@@ -1,0 +1,3 @@
+[submodule "vendor/pybitcointools"]
+	path = vendor/pybitcointools
+	url = git@github.com:unchained-capital/pybitcointools

@@ -1,0 +1,35 @@
+{
+
+    "redeem_script": "522102a567420d0ecb8ae1ac3794a6f901c9fdfa63a24476b8889d4c483dc7975f4ab321034a7496c358ee925043f5859bf7a191566fa070e3b75aac3f3bde6a670a8b6a8e2103666946ad4ff2b8c5c1ed6c8f5dd7f28769820cf35061ad5e02a45c5f05d54a1853ae",
+
+    "bip32_path": "m/45'/1'/120'/20/26",
+
+    "inputs": [
+        {
+            "address": "2N6tVMNXwt5xD9xYU3TNWP5pvMLF2jyTR6V",            
+            "txid": "23a379298f1ba0bacc42dc55af3c72745ec9a5fe23c51abfb4d28895ecd3c0ad",
+            "n": 1,
+            "amount": 9468656
+        },
+        {
+            "address": "2N6tVMNXwt5xD9xYU3TNWP5pvMLF2jyTR6V",            
+            "txid": "bda974b84204894eed7c7c9c3c5ce79659745c4acbbc38373f4176a8811c0943",
+            "n": 1,
+            "amount": 10287810
+        }
+    ]
+    ,
+
+    "outputs": [
+        {
+            "address": "2NG4oZZZbBcBtUw6bv2KEJmbZgrdLTTf5CC",
+            "amount": 10000000
+        },
+        {
+            "address": "2MuK9EGZeXMLJTqVtv8eKrcbrvYg2pwD1te",
+            "amount": 9689266
+        }
+    ]
+
+
+}

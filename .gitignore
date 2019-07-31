@@ -1,0 +1,16 @@
+*~
+*.pyc
+*.idea
+.virtualenv/*
+tmp/*
+TAGS
+*.swp
+wallet_words/*
+hermit.egg-info
+build
+dist
+.vscode
+build.info
+.coverage
+.mypy_cache/
+docs/_build
