@@ -21,11 +21,11 @@ class ShardWordUserInterface(object):
         self.options: Dict = {}
 
     def get_line_then_clear(self) -> None:
-        prompt("hit enter to continue\n")
+        prompt(HTML("Hit <b>ENTER</b> to continue...\n"))
         shortcuts.clear()
 
     def get_password(self, name: str) -> bytes:
-        print("\nEnter password for shard {}".format(name))
+        print_formatted_text(HTML("\nEnter password for shard {}".format(name)))
         pass_msg = "password> ".format(name)
         return prompt(pass_msg, is_password=True).strip().encode('ascii')
 
@@ -68,7 +68,7 @@ class ShardWordUserInterface(object):
         shardnames = [shard.name for shard in shards]
         shardnames.sort()
 
-        shardCompleter = WordCompleter(shardnames)
+        shardCompleter = WordCompleter(shardnames, sentence=True)
 
         while True:
             prompt_string = "Choose shard\n(options: {} or <enter> to quit)\n> "

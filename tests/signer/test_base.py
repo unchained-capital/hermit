@@ -168,8 +168,8 @@ class TestSigner(object):
         mock_session.prompt.return_value = 'y'
         mock_request.return_value = json.dumps(self.request)
         Signer(self.wallet, mock_session).sign(testnet=True)
-        input_prompt = "Sign the above transaction? [y/N] "
-        mock_session.prompt.assert_called_with(input_prompt)
+        input_prompt = 'Sign the above transaction? [y/N] '
+        assert input_prompt in mock_session.prompt.call_args[0][0].value
 
     @patch('hermit.signer.Signer._parse_request')
     def test_no_request_returned(self,

@@ -2,7 +2,7 @@ import json
 import re
 from typing import Optional, Dict
 
-from prompt_toolkit import PromptSession
+from prompt_toolkit import PromptSession, print_formatted_text, HTML
 
 import hermit
 from hermit.errors import HermitError, InvalidSignatureRequest
@@ -75,8 +75,8 @@ class Signer(object):
         The contents of the signature request will already be parsed
         from QR code and available as ``self.request``.
 
-        Use ``print`` to display the signature in a way that readable on
-        consoles.
+        Use ``print_formatted_text`` to display the signature in a way
+        that readable on consoles.
 
         """
         pass
@@ -134,7 +134,7 @@ class Signer(object):
         prompt_msg = "Sign the above transaction? [y/N] "
 
         if self.session is not None:
-            response = self.session.prompt(prompt_msg)
+            response = self.session.prompt(HTML("<b>{}</b>".format(prompt_msg)))
         else:
             response = input(prompt_msg)
 
@@ -143,7 +143,7 @@ class Signer(object):
 
     def _show_signature(self) -> None:
         name = self._signature_label()
-        print("Signature Data: ")
+        print_formatted_text(HTML("<i>Signature Data:</i> "))
         print(json.dumps(self.signature, indent=2))
         displayer.display_qr_code(self._serialized_signature(), name=name)
 

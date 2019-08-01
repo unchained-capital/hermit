@@ -14,7 +14,7 @@ import bitcoin
 import ecdsa
 
 from hermit.errors import InvalidSignatureRequest
-from hermit.signer.base import Signer
+from hermit.signer.base import Signer, print_formatted_text, HTML
 
 
 def generate_multisig_address(redeemscript: str, testnet: bool = False) -> str:
@@ -178,23 +178,19 @@ class BitcoinSigner(Signer):
 
     def display_request(self) -> None:
         """Displays the transaction to be signed"""
-        print("""ADDRESS:
+        print_formatted_text(HTML("""<i>INPUTS:</i>
 {}
 
-INPUTS:
+<i>OUTPUTS:</i>
 {}
 
-OUTPUTS:
-{}
+<i>FEE:</i> {} BTC
 
-FEE: {} BTC
-
-SIGNING AS: {}
-""".format(self.address,
-           self._formatted_inputs(),
+<i>SIGNING AS:</i> {}
+""".format(self._formatted_inputs(),
            self._formatted_outputs(),
            self._format_amount(self.fee),
-           self.bip32_path))
+           self.bip32_path)))
 
     # We currently only support a single address for all inputs
     def _formatted_inputs(self) -> str:
@@ -203,7 +199,7 @@ SIGNING AS: {}
             addresses[self.address] += input['amount']
         lines = []
         for address in addresses:
-            lines.append("  ADDRESS {}\tAMOUNT {} BTC".format(
+            lines.append("  {}\t{} BTC".format(
                 address,
                 self._format_amount(addresses[address])))
         return "\n".join(lines)
@@ -215,7 +211,7 @@ SIGNING AS: {}
         return "\n".join(formatted_outputs)
 
     def _format_output(self, output: Dict) -> str:
-        return "  ADDRESS {}\tAMOUNT {} BTC".format(
+        return "  {}\t{} BTC".format(
             output['address'],
             self._format_amount(output['amount']))
 

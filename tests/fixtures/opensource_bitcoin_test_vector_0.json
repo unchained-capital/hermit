@@ -31,7 +31,7 @@
             }
         ]
     },
-    "expected_display": "ADDRESS:\n2NAy762TReQqjNbNLdh3sK7cnje4GA4UfoW\n\nINPUTS:\n  ADDRESS 2NAy762TReQqjNbNLdh3sK7cnje4GA4UfoW\tAMOUNT 0.26734591 BTC\n\nOUTPUTS:\n  ADDRESS 2NCcmVAirNBDTQYvecdDpKNJVdKJruwdUSZ\tAMOUNT 0.12345678 BTC\n  ADDRESS 2MyvsR5gizb6JHSECL6csBHwpW1wL8xqHp4\tAMOUNT 0.14374378 BTC\n\nFEE: 0.00014535 BTC\n\nSIGNING AS: m/45'/1'/500'/200/26\n\nSignature Data: \n",
+    "expected_display": "INPUTS:\n  2NAy762TReQqjNbNLdh3sK7cnje4GA4UfoW\t0.26734591 BTC\n\nOUTPUTS:\n  2NCcmVAirNBDTQYvecdDpKNJVdKJruwdUSZ\t0.12345678 BTC\n  2MyvsR5gizb6JHSECL6csBHwpW1wL8xqHp4\t0.14374378 BTC\n\nFEE: 0.00014535 BTC\n\nSIGNING AS: m/45'/1'/500'/200/26\n\nSignature Data: \n",
     "expected_signature": {
         "pubkey": "026c76fc386b6c339577eea265242eb902df43155a0eaf23af1f96c5d9f2d10f63",
         "signatures": [

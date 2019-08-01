@@ -2,7 +2,7 @@ import bson
 import os
 import textwrap
 from hermit import shamir_share
-from prompt_toolkit import print_formatted_text
+from prompt_toolkit import print_formatted_text, HTML
 from hermit.config import HermitConfig
 from hermit.errors import HermitError
 from typing import List, Dict, Optional
@@ -180,8 +180,8 @@ class ShardSet(object):
         self._ensure_shards(shards_expected=True)
         shard = self.shards[shard_name]
         words = shard.encrypted_mnemonic
-        print_formatted_text(
-            "Encrypted Shard Words for shard {}\n".format(shard_name))
+        print_formatted_text(HTML(
+            "Encrypted SLIP39 phrase for shard <i>{}</i>:\n".format(shard_name)))
         print_formatted_text("\n".join(textwrap.wrap(words, 80)), "\n")
         self.interface.get_line_then_clear()
 
