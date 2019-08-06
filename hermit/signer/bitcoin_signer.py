@@ -44,13 +44,13 @@ def generate_multisig_address(redeemscript: str, testnet: bool = False) -> str:
 class BitcoinSigner(Signer):
     """Signs BTC transactions
 
-    An assumption made by this class is that the transaction's inputs
-    are all UTXOs at the same address (only a single redeem script is
-    provided).
+    An assumption made by this class is that a single signing key (the
+    overall BIP32 path used to sign) works for all inputs.  This
+    should be generalized to allow different keys (BIP32 nodes) to
+    sign different inputs.
 
     """
     
-
     #
     # Validation
     #
@@ -68,32 +68,33 @@ class BitcoinSigner(Signer):
             SelectParams('testnet')
         else:
             SelectParams('mainnet')
-        self._validate_redeem_script()
-        self._validate_inputs()
+        self._validate_input_groups()
         self._validate_outputs()
         self._validate_fee()
 
-    def _validate_redeem_script(self) -> None:
-        if 'redeem_script' not in self.request:
-            raise InvalidSignatureRequest("no redeem script")
-        try:
-            binascii.unhexlify(self.request['redeem_script'].encode('utf8'))
-        except ValueError:
-            raise InvalidSignatureRequest("redeem script is not valid hex")
-        self.redeem_script = self.request['redeem_script']
-        self.address = generate_multisig_address(self.redeem_script,
-                                                 self.testnet)
-
-    def _validate_inputs(self) -> None:
+    def _validate_input_groups(self) -> None:
         if 'inputs' not in self.request:
-            raise InvalidSignatureRequest("no inputs")
-        self.inputs = self.request['inputs']
-        if not isinstance(self.inputs, list):
-            raise InvalidSignatureRequest("inputs is not an array")
-        if len(self.inputs) == 0:
-            raise InvalidSignatureRequest("at least one input is required")
-        for input in self.inputs:
+            raise InvalidSignatureRequest("no input groups")
+        input_groups = self.request['inputs']
+        if not isinstance(input_groups, list):
+            raise InvalidSignatureRequest("input groups is not an array")
+        if len(input_groups) == 0:
+            raise InvalidSignatureRequest("at least one input group is required")
+        self.inputs = []
+        for input_group in input_groups:
+            self._validate_input_group(input_group)
+
+    def _validate_input_group(self, input_group: list) -> None:
+        if len(input_group) < 2:
+            raise InvalidSignatureRequest("input group must include redeem script and at least one input")
+        redeem_script = input_group[0]
+        self._validate_redeem_script(redeem_script)
+        address = generate_multisig_address(redeem_script, self.testnet)
+        for input in input_group[1:]:
             self._validate_input(input)
+            input['redeem_script'] = redeem_script
+            input['address'] = address
+            self.inputs.append(input)
 
     def _validate_input(self, input: Dict) -> None:
         if 'amount' not in input:
@@ -121,6 +122,12 @@ class BitcoinSigner(Signer):
             raise InvalidSignatureRequest(err_msg)
         if input['index'] < 0:
             raise InvalidSignatureRequest("invalid input index")
+
+    def _validate_redeem_script(self, redeem_script: bytes) -> None:
+        try:
+            binascii.unhexlify(redeem_script.encode('utf8'))
+        except (ValueError, AttributeError):
+            raise InvalidSignatureRequest("redeem script is not valid hex")
 
     def _validate_outputs(self) -> None:
         if 'outputs' not in self.request:
@@ -187,16 +194,16 @@ class BitcoinSigner(Signer):
 <i>FEE:</i> {} BTC
 
 <i>SIGNING AS:</i> {}
-""".format(self._formatted_inputs(),
+""".format(self._formatted_input_groups(),
            self._formatted_outputs(),
            self._format_amount(self.fee),
            self.bip32_path)))
 
     # We currently only support a single address for all inputs
-    def _formatted_inputs(self) -> str:
+    def _formatted_input_groups(self) -> str:
         addresses: Dict = defaultdict(int)
         for input in self.inputs:
-            addresses[self.address] += input['amount']
+            addresses[input['address']] += input['amount']
         lines = []
         for address in addresses:
             lines.append("  {}\t{} BTC".format(
@@ -231,12 +238,13 @@ class BitcoinSigner(Signer):
         else:
             SelectParams('mainnet')
 
-        # Parse Redeemscript
-        redeem_script = CScript(bitcoin.core.x(self.redeem_script))
-
         # Construct Inputs
         tx_inputs = []
+        parsed_redeem_scripts = {}
         for input in self.inputs:
+            if input['redeem_script'] not in parsed_redeem_scripts:
+                parsed_redeem_scripts[input['redeem_script']] = CScript(bitcoin.core.x(input['redeem_script']))
+
             txid = bitcoin.core.lx(input['txid'])
             vout = input['index']
             tx_inputs.append(CMutableTxIn(COutPoint(txid, vout)))
@@ -253,9 +261,12 @@ class BitcoinSigner(Signer):
         tx = CTransaction(tx_inputs, tx_outputs)
 
         # Create Signature Hashes
-        signature_hashes = [SignatureHash(redeem_script, tx, ii, SIGHASH_ALL)
-                            for ii
-                            in range(len(tx_inputs))]
+        signature_hashes = [
+            SignatureHash(
+                parsed_redeem_scripts[self.inputs[input_index]['redeem_script']],
+                tx, input_index, SIGHASH_ALL)
+            for input_index
+            in range(len(tx_inputs))]
 
         # Create SigningKey
         signingkey = ecdsa.SigningKey.from_string(

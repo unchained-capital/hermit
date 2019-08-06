@@ -31,44 +31,17 @@ class TestBitcoinSignerValidation(object):
         self.wallet = HDWallet()
         self.wallet.shards = FakeShards(opensource_wallet_words)
         self.request = fixture_opensource_bitcoin_vector_0['request']
-    
-    def test_no_redeem_script_is_error(self, mock_request):
-        self.request.pop('redeem_script', None)
-        mock_request.return_value = json.dumps(self.request)
-        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
-            BitcoinSigner(self.wallet).sign(testnet=True)
-        assert str(e_info.value) == "Invalid signature request: no redeem script."
 
-    def test_non_hex_redeem_script_is_error(self, mock_request):
-        self.request['redeem_script'] = 'deadbeefgh'
-        mock_request.return_value = json.dumps(self.request)
-
-        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
-            BitcoinSigner(self.wallet).sign(testnet=True)
-
-        expected = "Invalid signature request: redeem script is not valid hex."
-        assert str(e_info.value) == expected
-            
-    def test_odd_length_hex_redeem_script_is_error(self, mock_request):
-        self.request['redeem_script'] = 'deadbeefa'
-        mock_request.return_value = json.dumps(self.request)
-
-        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
-            BitcoinSigner(self.wallet).sign(testnet=True)
-
-        expected = "Invalid signature request: redeem script is not valid hex."
-        assert str(e_info.value) == expected
-
-    def test_no_inputs_is_error(self, mock_request):
+    def test_no_input_groups_is_error(self, mock_request):
         self.request.pop('inputs', None)
         mock_request.return_value = json.dumps(self.request)
 
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        assert str(e_info.value) == "Invalid signature request: no inputs."
+        assert str(e_info.value) == "Invalid signature request: no input groups."
         
-    def test_inputs_not_array_is_error(self, mock_request):
+    def test_input_groups_not_array_is_error(self, mock_request):
         self.request['inputs'] = 'deadbeef'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
@@ -94,25 +67,62 @@ class TestBitcoinSignerValidation(object):
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info5:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        expected = "Invalid signature request: inputs is not an array."
+        expected = "Invalid signature request: input groups is not an array."
         assert str(e_info1.value) == expected
         assert str(e_info2.value) == expected
         assert str(e_info3.value) == expected
         assert str(e_info4.value) == expected
         assert str(e_info5.value) == expected        
 
-    def test_empty_inputs_array_is_error(self, mock_request):
+    def test_empty_input_groups_is_error(self, mock_request):
         self.request['inputs'] = []
         mock_request.return_value = json.dumps(self.request)
 
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        expected = "Invalid signature request: at least one input is required."
+        expected = "Invalid signature request: at least one input group is required."
         assert str(e_info.value) == expected
-        
+
+    def test_empty_input_group_is_error(self, mock_request):
+        self.request['inputs'] = [[]]
+        mock_request.return_value = json.dumps(self.request)
+
+        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
+            BitcoinSigner(self.wallet).sign(testnet=True)
+
+        expected = "Invalid signature request: input group must include redeem script and at least one input."
+        assert str(e_info.value) == expected
+
+    def test_no_redeem_script_is_error(self, mock_request):
+        self.request['inputs'][0][0] = None
+        mock_request.return_value = json.dumps(self.request)
+        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
+            BitcoinSigner(self.wallet).sign(testnet=True)
+        assert str(e_info.value) == "Invalid signature request: redeem script is not valid hex."
+
+    def test_non_hex_redeem_script_is_error(self, mock_request):
+        self.request['inputs'][0][0] = 'deadbeefgh'
+        mock_request.return_value = json.dumps(self.request)
+
+        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
+            BitcoinSigner(self.wallet).sign(testnet=True)
+
+        expected = "Invalid signature request: redeem script is not valid hex."
+        assert str(e_info.value) == expected
+            
+    def test_odd_length_hex_redeem_script_is_error(self, mock_request):
+        self.request['inputs'][0][0] = 'deadbeefa'
+        mock_request.return_value = json.dumps(self.request)
+
+        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
+            BitcoinSigner(self.wallet).sign(testnet=True)
+
+        expected = "Invalid signature request: redeem script is not valid hex."
+        assert str(e_info.value) == expected
+
     def test_input_amount_required(self, mock_request):
-        self.request['inputs'][1].pop('amount', None)
+        self.request['inputs'][0][1].pop('amount', None)
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -121,32 +131,32 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info.value) == expected
 
     def test_input_amount_must_integer(self, mock_request):
-        self.request['inputs'][1]['amount'] = 'a'
+        self.request['inputs'][0][1]['amount'] = 'a'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['amount'] = 1.2
+        self.request['inputs'][0][1]['amount'] = 1.2
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
             BitcoinSigner(self.wallet).sign(testnet=True)
             
-        self.request['inputs'][1]['amount'] = '1.2'
+        self.request['inputs'][0][1]['amount'] = '1.2'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info3:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['amount'] = '1'
+        self.request['inputs'][0][1]['amount'] = '1'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info4:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['amount'] = True
+        self.request['inputs'][0][1]['amount'] = True
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info5:
             BitcoinSigner(self.wallet).sign(testnet=True)
             
-        self.request['inputs'][1]['amount'] = None
+        self.request['inputs'][0][1]['amount'] = None
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info6:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -162,12 +172,12 @@ class TestBitcoinSignerValidation(object):
 
 
     def test_input_amount_must_positive(self, mock_request):
-        self.request['inputs'][1]['amount'] = 0
+        self.request['inputs'][0][1]['amount'] = 0
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['amount'] = -1
+        self.request['inputs'][0][1]['amount'] = -1
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -178,7 +188,7 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info2.value) == expected
             
     def test_input_txid_required(self, mock_request):
-        self.request['inputs'][1].pop('txid', None)
+        self.request['inputs'][0][1].pop('txid', None)
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -187,13 +197,13 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info.value) == expected
 
     def test_invalid_length_input_txid_is_error(self, mock_request):
-        self.request['inputs'][1]['txid'] = 'deadbeef'*8 + 'a'
+        self.request['inputs'][0][1]['txid'] = 'deadbeef'*8 + 'a'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['txid'] = 'deadbeef'*8
-        self.request['inputs'][1]['txid'] = self.request['inputs'][1]['txid'][1:]        
+        self.request['inputs'][0][1]['txid'] = 'deadbeef'*8
+        self.request['inputs'][0][1]['txid'] = self.request['inputs'][0][1]['txid'][1:]
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -204,7 +214,7 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info2.value) == expected
 
     def test_non_hex_input_txid_is_error(self, mock_request):
-        self.request['inputs'][1]['txid'] = 'deadbeeg'*8
+        self.request['inputs'][0][1]['txid'] = 'deadbeeg'*8
         mock_request.return_value = json.dumps(self.request)
 
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
@@ -215,7 +225,7 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info.value) == expected
         
     def test_input_index_required(self, mock_request):
-        self.request['inputs'][1].pop('index', None)
+        self.request['inputs'][0][1].pop('index', None)
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -224,32 +234,32 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info.value) == expected
 
     def test_input_index_must_integer(self, mock_request):
-        self.request['inputs'][1]['index'] = 'a'
+        self.request['inputs'][0][1]['index'] = 'a'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['index'] = 1.2
+        self.request['inputs'][0][1]['index'] = 1.2
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
             BitcoinSigner(self.wallet).sign(testnet=True)
             
-        self.request['inputs'][1]['index'] = '1.2'
+        self.request['inputs'][0][1]['index'] = '1.2'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['index'] = '1'
+        self.request['inputs'][0][1]['index'] = '1'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info3:
             BitcoinSigner(self.wallet).sign(testnet=True)
 
-        self.request['inputs'][1]['index'] = True
+        self.request['inputs'][0][1]['index'] = True
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info4:
             BitcoinSigner(self.wallet).sign(testnet=True)
             
-        self.request['inputs'][1]['index'] = None
+        self.request['inputs'][0][1]['index'] = None
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info5:
             BitcoinSigner(self.wallet).sign(testnet=True)
@@ -263,7 +273,7 @@ class TestBitcoinSignerValidation(object):
         assert str(e_info5.value) == expected        
         
     def test_input_index_cannot_be_negative(self, mock_request):
-        self.request['inputs'][1]['index'] = -1
+        self.request['inputs'][0][1]['index'] = -1
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
             BitcoinSigner(self.wallet).sign(testnet=True)

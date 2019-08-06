@@ -1,25 +1,27 @@
 {
     "onchain_txid": "ca5516448e80296a24ca9931ce660139606b0b6b20aec0260cdd0be70bc8f9b2",
     "request": {
-        "redeem_script": "5221026c76fc386b6c339577eea265242eb902df43155a0eaf23af1f96c5d9f2d10f63210329b59270b95c8478fa36e0cf6f474736513d4e0157626b762dca41729e7756c22102b5b79489d0e3810ef911bfde82aad7d65e6d5fb4147686139d291f66eefd964d53ae",
         "bip32_path": "m/45'/1'/500'/200/26",
         "inputs": [
-	    {
-                "txid": "18c3b12c7386c085cc4a9416c03e0de6b321f6e6f0f699a9cfeafc03622ee95b",
-                "index": 0,
-                "amount": 2345678
-	    },
-            {
-                "txid": "54be89f3c9d9af18b26a8cbe6403ec3bdf21bbe93deb0610298722c391ec65bd",
-                "index": 1,
-                "amount": 10000000
-            },
-	    {
-                "txid": "8fbbbe11f1bde5f716c9b30aa69c9801bcbb4a7ba6b4a39a07ac3b183e16c5a8",
-                "index": 0,
-                "amount": 14388913
-	    }            
-        ],
+	    [
+		"5221026c76fc386b6c339577eea265242eb902df43155a0eaf23af1f96c5d9f2d10f63210329b59270b95c8478fa36e0cf6f474736513d4e0157626b762dca41729e7756c22102b5b79489d0e3810ef911bfde82aad7d65e6d5fb4147686139d291f66eefd964d53ae",
+		{
+                    "txid": "18c3b12c7386c085cc4a9416c03e0de6b321f6e6f0f699a9cfeafc03622ee95b",
+                    "index": 0,
+                    "amount": 2345678
+		},
+		{
+                    "txid": "54be89f3c9d9af18b26a8cbe6403ec3bdf21bbe93deb0610298722c391ec65bd",
+                    "index": 1,
+                    "amount": 10000000
+		},
+		{
+                    "txid": "8fbbbe11f1bde5f716c9b30aa69c9801bcbb4a7ba6b4a39a07ac3b183e16c5a8",
+                    "index": 0,
+                    "amount": 14388913
+		}            
+            ]
+	],
         "outputs": [
             {
                 "address": "2NCcmVAirNBDTQYvecdDpKNJVdKJruwdUSZ",
