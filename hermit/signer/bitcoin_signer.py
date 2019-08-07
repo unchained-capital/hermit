@@ -46,9 +46,34 @@ class BitcoinSigner(Signer):
 
     Signature requests must match the following schema:
 
-    {
-      
+        {
 
+          "inputs": [
+            [
+              REDEEM_SCRIPT,
+              BIP32_PATH,
+              {
+                "txid": TXID,
+                "index": INDEX,
+                "amount": SATOSHIS
+              },
+              ...
+            ],
+            ...
+          ],
+
+          "outputs": [
+            {
+              "address": ADDRESS,
+              "amount": SATOSHIS
+            },
+            ...
+          ]
+
+        }
+
+    See the file ``examples/signature_requests/bitcoin_testnet.json``
+    for a more complete example.
 
     """
     
