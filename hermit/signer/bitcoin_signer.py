@@ -44,10 +44,11 @@ def generate_multisig_address(redeemscript: str, testnet: bool = False) -> str:
 class BitcoinSigner(Signer):
     """Signs BTC transactions
 
-    An assumption made by this class is that a single signing key (the
-    overall BIP32 path used to sign) works for all inputs.  This
-    should be generalized to allow different keys (BIP32 nodes) to
-    sign different inputs.
+    Signature requests must match the following schema:
+
+    {
+      
+
 
     """
     
@@ -85,14 +86,17 @@ class BitcoinSigner(Signer):
             self._validate_input_group(input_group)
 
     def _validate_input_group(self, input_group: list) -> None:
-        if len(input_group) < 2:
-            raise InvalidSignatureRequest("input group must include redeem script and at least one input")
+        if len(input_group) < 3:
+            raise InvalidSignatureRequest("input group must include redeem script, BIP32 path, and at least one input")
         redeem_script = input_group[0]
         self._validate_redeem_script(redeem_script)
+        bip32_path = input_group[1]
+        self.validate_bip32_path(bip32_path)
         address = generate_multisig_address(redeem_script, self.testnet)
-        for input in input_group[1:]:
+        for input in input_group[2:]:
             self._validate_input(input)
             input['redeem_script'] = redeem_script
+            input['bip32_path'] = bip32_path
             input['address'] = address
             self.inputs.append(input)
 
@@ -192,23 +196,25 @@ class BitcoinSigner(Signer):
 {}
 
 <i>FEE:</i> {} BTC
-
-<i>SIGNING AS:</i> {}
 """.format(self._formatted_input_groups(),
            self._formatted_outputs(),
-           self._format_amount(self.fee),
-           self.bip32_path)))
+           self._format_amount(self.fee))))
 
     # We currently only support a single address for all inputs
     def _formatted_input_groups(self) -> str:
+        bip32_paths  = {}
         addresses: Dict = defaultdict(int)
         for input in self.inputs:
-            addresses[input['address']] += input['amount']
+            address = input['address']
+            addresses[address] += input['amount']
+            bip32_paths[address] = input['bip32_path'] # they're all the same
+            
         lines = []
         for address in addresses:
-            lines.append("  {}\t{} BTC".format(
+            lines.append("  {}\t{} BTC\tSigning as {}".format(
                 address,
-                self._format_amount(addresses[address])))
+                self._format_amount(addresses[address]),
+                bip32_paths[address]))
         return "\n".join(lines)
 
     def _formatted_outputs(self) -> str:
@@ -257,37 +263,50 @@ class BitcoinSigner(Signer):
                              .to_scriptPubKey())
             tx_outputs.append(CMutableTxOut(output['amount'], output_script))
 
-        # Create Transaction
+        # Construct Transaction
         tx = CTransaction(tx_inputs, tx_outputs)
 
-        # Create Signature Hashes
-        signature_hashes = [
-            SignatureHash(
-                parsed_redeem_scripts[self.inputs[input_index]['redeem_script']],
-                tx, input_index, SIGHASH_ALL)
-            for input_index
-            in range(len(tx_inputs))]
+        # Construct data for each signature (1 per input)
+        signature_hashes = []
+        keys = {}
+        public_keys = []
+        for input_index, input in enumerate(self.inputs):
+            redeem_script = input['redeem_script']
+            bip32_path = input['bip32_path']
 
-        # Create SigningKey
-        signingkey = ecdsa.SigningKey.from_string(
-            bytes.fromhex(self.private_key),
-            curve=ecdsa.SECP256k1)
+            # Signature Hash
+            signature_hashes.append(SignatureHash(
+                parsed_redeem_scripts[redeem_script],
+                tx, input_index, SIGHASH_ALL))
 
-        # Sign
+            # Only need to generate keys once per unique BIP32 path
+            if keys.get(bip32_path) is None:
+                keys[bip32_path] = self.generate_child_keys(bip32_path)
+                keys[bip32_path]['signing_key'] = ecdsa.SigningKey.from_string(
+                    bytes.fromhex(keys[bip32_path]['private_key']),
+                    curve=ecdsa.SECP256k1)
+
+            # Public key
+            public_keys.append(keys[bip32_path]['public_key'])
+
+        # Construct signatures (1 per input)
+        # 
         # WARNING: We do not append the SIGHASH_ALL byte,
         # transaction constructioin should account for that.
+        # 
         signatures = []
-        for sighash in signature_hashes:
+        for input_index, input in enumerate(self.inputs):
+            input = self.inputs[input_index]
+            signature_hash = signature_hashes[input_index]
+            signing_key = keys[input['bip32_path']]['signing_key']
             signatures.append(
-                signingkey.sign_digest_deterministic(
-                    sighash,
+                signing_key.sign_digest_deterministic(
+                    signature_hash,
                     sha256,
                     sigencode=ecdsa.util.sigencode_der_canonize
-                ).hex()
-            )
+                ).hex())
 
         # Assign result
-        result = {"pubkey": self.public_key,
-                  "signatures": signatures}
+        result = {"pubkeys": public_keys, "signatures": signatures}
 
         self.signature = result

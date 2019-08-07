@@ -8,11 +8,10 @@ import random
 def generate_large_bitcoin_request(N):
     header = """{
 
-    "bip32_path": "m/45'/1'/120'/20/26",
-
     "inputs": [
       [
-        "522102a567420d0ecb8ae1ac3794a6f901c9fdfa63a24476b8889d4c483dc7975f4ab321034a7496c358ee925043f5859bf7a191566fa070e3b75aac3f3bde6a670a8b6a8e2103666946ad4ff2b8c5c1ed6c8f5dd7f28769820cf35061ad5e02a45c5f05d54a1853ae","""
+        "522102a567420d0ecb8ae1ac3794a6f901c9fdfa63a24476b8889d4c483dc7975f4ab321034a7496c358ee925043f5859bf7a191566fa070e3b75aac3f3bde6a670a8b6a8e2103666946ad4ff2b8c5c1ed6c8f5dd7f28769820cf35061ad5e02a45c5f05d54a1853ae",
+        "m/45'/1'/120'/20/26","""
 
     footer = """
       ]

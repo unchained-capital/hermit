@@ -23,7 +23,16 @@ class Signer(object):
     * ``display_request``
     * ``create_signature``
 
+    Subclasses will likely require the following API methods to
+    validate and extract BIP32 nodes with which to sign transactions.
+
+    * ``validate_bip32_path``
+    * ``generate_child_keys``
+
     """
+
+    BIP32_PATH_REGEX = "^m(/[0-9]+'?)+$"
+    BIP32_NODE_MAX_VALUE = 2147483647
 
     def __init__(self,
                  signing_wallet: HDWallet,
@@ -44,9 +53,8 @@ class Signer(object):
         self._wait_for_request()
         if self.request_data:
             self._parse_request()
-            self._validate_request()
+            self.validate_request()
             if self._confirm_create_signature():
-                self._generate_child_keys()
                 self.create_signature()
                 self._show_signature()
 
@@ -66,6 +74,24 @@ class Signer(object):
 
         """
         pass
+
+    def validate_bip32_path(self, bip32_path:str) -> None:
+        """Validate a BIP32 path
+
+        Used by concrete subclasses to validate a BIP32 path in a
+        signature request.
+        """
+        if not isinstance(bip32_path, (str,)):
+            raise InvalidSignatureRequest("BIP32 path must be a string")
+        if not re.match(self.BIP32_PATH_REGEX, bip32_path):
+            err_msg = "invalid BIP32 path formatting"
+            raise InvalidSignatureRequest(err_msg)
+        nodes = bip32_path.split('/')[1:]
+        node_values = [int(x.replace("'", "")) for x in nodes]
+        for node_value in node_values:
+            if node_value > self.BIP32_NODE_MAX_VALUE:
+                err_msg = "invalid BIP32 path"
+                raise InvalidSignatureRequest(err_msg)
 
     def display_request(self) -> None:
         """Display a signature request.
@@ -94,6 +120,26 @@ class Signer(object):
         """
         pass
 
+    def generate_child_keys(self, bip32_path:str) -> Dict:
+        """Return keys at a given BIP32 path in the current wallet.
+
+        The dictionary returned will contain the following items from
+        the HD node at the given BIP32 path:
+
+        * ``xprv`` -- the extended private key
+        * ``xpub`` -- the extended public key
+        * ``private_key`` -- the private key
+        * ``public_key`` -- the public key
+        """
+        xprv = self.wallet.extended_private_key(bip32_path)
+        xpub = self.wallet.extended_public_key(bip32_path)
+        return dict(
+            xprv=xprv,
+            xpub=xpub,
+            private_key=compressed_private_key_from_bip32(xprv).hex(),
+            public_key=compressed_public_key_from_bip32(xpub).hex())
+
+
     def _wait_for_request(self) -> None:
         self.request_data = reader.read_qr_code()
 
@@ -107,27 +153,6 @@ class Signer(object):
                 raise HermitError(err_msg)
         else:
             raise HermitError('No Request Data')
-
-    def _validate_request(self) -> None:
-        self._validate_bip32_path()
-        self.validate_request()
-
-    def _validate_bip32_path(self) -> None:
-        bip32_path_regex = "^m(/[0-9]+'?)+$"
-        if 'bip32_path' not in self.request:
-            raise InvalidSignatureRequest("no BIP32 path")
-        self.bip32_path = self.request['bip32_path']
-        if not isinstance(self.bip32_path, (str,)):
-            raise InvalidSignatureRequest("BIP32 path must be a string")
-        if not re.match(bip32_path_regex, self.bip32_path):
-            err_msg = "invalid BIP32 path formatting"
-            raise InvalidSignatureRequest(err_msg)
-        nodes = self.bip32_path.split('/')[1:]
-        node_values = [int(x.replace("'", "")) for x in nodes]
-        for node_value in node_values:
-            if node_value > 2147483647:
-                err_msg = "invalid BIP32 path"
-                raise InvalidSignatureRequest(err_msg)
 
     def _confirm_create_signature(self) -> bool:
         self.display_request()
@@ -147,14 +172,9 @@ class Signer(object):
         print(json.dumps(self.signature, indent=2))
         displayer.display_qr_code(self._serialized_signature(), name=name)
 
+
     def _serialized_signature(self) -> str:
         return json.dumps(self.signature)
-
-    def _generate_child_keys(self) -> None:
-        self.xprv = self.wallet.extended_private_key(self.bip32_path)
-        self.xpub = self.wallet.extended_public_key(self.bip32_path)
-        self.private_key = compressed_private_key_from_bip32(self.xprv).hex()
-        self.public_key = compressed_public_key_from_bip32(self.xpub).hex()
 
     def _signature_label(self) -> str:
         return 'Signature'
