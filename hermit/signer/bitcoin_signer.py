@@ -225,7 +225,6 @@ class BitcoinSigner(Signer):
            self._formatted_outputs(),
            self._format_amount(self.fee))))
 
-    # We currently only support a single address for all inputs
     def _formatted_input_groups(self) -> str:
         bip32_paths  = {}
         addresses: Dict = defaultdict(int)
@@ -294,7 +293,6 @@ class BitcoinSigner(Signer):
         # Construct data for each signature (1 per input)
         signature_hashes = []
         keys = {}
-        public_keys = []
         for input_index, input in enumerate(self.inputs):
             redeem_script = input['redeem_script']
             bip32_path = input['bip32_path']
@@ -310,9 +308,6 @@ class BitcoinSigner(Signer):
                 keys[bip32_path]['signing_key'] = ecdsa.SigningKey.from_string(
                     bytes.fromhex(keys[bip32_path]['private_key']),
                     curve=ecdsa.SECP256k1)
-
-            # Public key
-            public_keys.append(keys[bip32_path]['public_key'])
 
         # Construct signatures (1 per input)
         # 
@@ -332,6 +327,6 @@ class BitcoinSigner(Signer):
                 ).hex())
 
         # Assign result
-        result = {"pubkeys": public_keys, "signatures": signatures}
+        result = {"signatures": signatures}
 
         self.signature = result
