@@ -16,6 +16,14 @@ to be run on modified commercial or open-source hardware running a
 custom, barebones operating system, a so-called "air-gapped"
 deployment.
 
+Read on or watch these videos to learn more about Hermit:
+
+* [Creating a shard family](https://www.youtube.com/watch?v=usBk-X3a4Qo&feature=youtu.be)
+* [Export a public key](https://www.youtube.com/watch?v=ut9ALBqjZbg&feature=youtu.be)
+* [Sign a bitcoin transaction](https://www.youtube.com/watch?v=NYjJa0fUxQE&feature=youtu.be)
+
+
+
 Quickstart
 ----------
 
