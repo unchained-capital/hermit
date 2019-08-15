@@ -1,5 +1,5 @@
 from base64 import b32decode, b32encode
-from lzma import decompress, compress, LZMAError
+from lzma import decompress, compress, LZMAError, FORMAT_ALONE
 from binascii import Error as Base32DecodeError
 
 
@@ -26,7 +26,7 @@ def encode_qr_code_data(decoded: str) -> bytes:
     try:
         uncompressed_bytes = decoded.encode('utf-8')
         try:
-            compressed_bytes = compress(uncompressed_bytes)
+            compressed_bytes = compress(uncompressed_bytes, format=FORMAT_ALONE)
             try:
                 data = b32encode(compressed_bytes)
                 return data

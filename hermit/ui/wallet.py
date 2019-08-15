@@ -1,4 +1,5 @@
 from prompt_toolkit import print_formatted_text
+from json import dumps
 
 from hermit.signer import (BitcoinSigner,
                            EchoSigner)
@@ -79,7 +80,7 @@ def export_xpub(path):
     name = "Extended public key for BIP32 path {}:".format(path)
     print_formatted_text("\n" + name)
     print_formatted_text(xpub)
-    displayer.display_qr_code(xpub, name=name)
+    displayer.display_qr_code(dumps(dict(bip32_path=path, xpub=xpub)), name=name)
 
 
 @wallet_command('export-pub')
@@ -102,7 +103,7 @@ def export_pub(path):
     name = "Public key for BIP32 path {}:".format(path)
     print_formatted_text("\n" + name)
     print_formatted_text(pubkey)
-    displayer.display_qr_code(pubkey, name=name)
+    displayer.display_qr_code(dumps(dict(bip32_path=path, pubkey=pubkey)), name=name)
 
 
 @wallet_command('shards')

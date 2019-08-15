@@ -19,8 +19,6 @@ deployment.
 Quickstart
 ----------
 
-Video: TBD
-
 ```
 $ pip install hermit                          # may need 'sudo' for this command
 ...
@@ -79,12 +77,15 @@ Sharding is done using
 [SLIP-39](https://github.com/satoshilabs/slips/blob/master/slip-0039.md)
 which means there are two levels of structure:
 
-* Groups -- some quorum of *N* of *M* groups is required to unlock a key
+* Groups -- some quorum of *P* of *Q* groups is required to unlock a key
 
-* Shards -- some quorum of *N_G* of *M_G* shards is required to unlock
-  a group *G*, with *N_G* and *M_G* possibly different for each group
+* Shards -- some quorum of *n* of *m* shards is required to unlock
+  each group, with *n* and *m* possibly different for each group
 
 This structure creates a lot of flexibility for different scenarios.
+
+Hermit extends the current SLIP-39 proposal by encrypting each shard
+with a password.
 
 Shards in Hermit are always encrypted by a password.  Each shard has
 its own password, allowing for teams to operate a key together, each
@@ -343,7 +344,9 @@ An example signer class is below
 
 ```python
 #
-# Example signer class for a putative "MyCoin" currency.  Put in /var/lib/hermit/mycoin_signer.py
+# Example signer class for a putative "MyCoin" currency.
+#
+# Put in /var/lib/hermit/mycoin_signer.py
 #
 
 from hermit.errors import InvalidSignatureRequest
@@ -359,32 +362,39 @@ class MyCoinSigner(Signer):
 
     def validate_request(self) -> None:
         """Validates a MyCoin signature request"""
-		if 'input' not in self.request:
-			raise InvalidSignatureRequest("The param 'input' is required.")
-		if 'output' not in self.request:
-			raise InvalidSignatureRequest("The param 'input' is required.")
-		if 'amount' not in self.request:
-			raise InvalidSignatureRequest("The param 'input' is required.")
-		# this isn't great validation code, but you get the point...
+	# This is built into the Signer class
+	self.validate_bip32_path(request.get('bip32_path'))
+
+	# this isn't great validation code, but you get the point...
+	if 'input' not in self.request:
+	    raise InvalidSignatureRequest("The param 'input' is required.")
+	if 'output' not in self.request:
+	    raise InvalidSignatureRequest("The param 'input' is required.")
+	if 'amount' not in self.request:
+	    raise InvalidSignatureRequest("The param 'input' is required.")
+
+	self.bip32_path = self.request['bip32_path']
+	self.input = self.request[input]
+	self.output = self.request['output']
+	self.amount = self.request['amount']
 		
     def display_request(self) -> None:
         """Displays the transaction to be signed"""
         print("""
-    INPUT:  {}
+        INPUT:  {}
 	OUTPUT: {}
 	AMOUNT: {}
-    ...
-    SIGNING AS:
-    {}""".format(self.input,
+        SIGNING AS: {}
+	""".format(self.input,
                  self.output,
                  self.amount,
-				 ...
-                 self.bip32_path))
+	           self.bip32_path))
 				 
     def create_signature(self) -> None:
         """Signs a transaction"""
-		# Here is the magic of MyCoin...
-        self.signature = sign_mycoin_transaction(self.input, self.output, ...)
+	keys = self.generate_child_keys(self.bip32_path)
+	# Here is the magic of MyCoin...
+        self.signature = sign_mycoin_transaction(self.input, self.output, self.amount, keys)
 
 @wallet_command('sign-mycoin')
 def sign_mycoin():
@@ -406,7 +416,6 @@ def sign_mycoin():
 
     """
     MyCoinSigner(state.Wallet, state.Session).sign()
-
 ```
 
 #### Contributing to Hermit

@@ -40,38 +40,31 @@ class TestSignerValidates(object):
     # BIP32 Path
     #
         
-    def test_no_BIP32_path_is_error(self, mock_request):
-        self.request.pop('bip32_path', None)
-        mock_request.return_value = json.dumps(self.request)
-        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info:
-            Signer(self.wallet).sign(testnet=True)
-        assert str(e_info.value) == "Invalid signature request: no BIP32 path."
-
     def test_BIP32_path_not_string_is_error(self, mock_request):
-        self.request['bip32_path'] = ['']
+        bip32_path = ['']
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = 123
+        bip32_path = 123
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = True
+        bip32_path = True
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info3:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = {'a':123, 'b':456}
+        bip32_path = {'a':123, 'b':456}
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info4:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
             
-        self.request['bip32_path'] = None
+        bip32_path = None
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info5:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
         expected = ("Invalid signature request: "
                     + "BIP32 path must be a string.")
@@ -80,37 +73,37 @@ class TestSignerValidates(object):
         assert str(e_info3.value) == expected
         assert str(e_info4.value) == expected
         assert str(e_info5.value) == expected        
-    
+
     def test_invalid_BIP32_paths_raise_error(self, mock_request):
-        self.request['bip32_path'] = 'm/123/'
+        bip32_path = 'm/123/'
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = "123'/1234/12"
+        bip32_path = "123'/1234/12"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = "m"
+        bip32_path = "m"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info3:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = "m123/123'/123/43"
+        bip32_path = "m123/123'/123/43"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info4:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
             
-        self.request['bip32_path'] = "m/123'/12''/12/123"
+        bip32_path = "m/123'/12''/12/123"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info5:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = "m/123'/12'/-12/123"
+        bip32_path = "m/123'/12'/-12/123"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info6:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
         expected = ("Invalid signature request: "
                     + "invalid BIP32 path formatting.")
@@ -122,15 +115,15 @@ class TestSignerValidates(object):
         assert str(e_info6.value) == expected        
 
     def test_BIP32_node_too_high_raises_error(self, mock_request):
-        self.request['bip32_path'] = "m/0'/0'/2147483648/0"
+        bip32_path = "m/0'/0'/2147483648/0"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
-        self.request['bip32_path'] = "m/0'/0'/2147483648'/0"
+        bip32_path = "m/0'/0'/2147483648'/0"
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
-            Signer(self.wallet).sign(testnet=True)
+            Signer(self.wallet).validate_bip32_path(bip32_path)
 
         expected = ("Invalid signature request: "
                     + "invalid BIP32 path.")
