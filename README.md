@@ -21,7 +21,8 @@ Hermit can operate in a completely air-gapped environment.
 
 Read on or watch these videos to learn more about Hermit:
 
-* [Creating a shard family](https://www.youtube.com/watch?v=usBk-X3a4Qo&feature=youtu.be)
+* [Creating a shard family](https://www.youtube.com/watch?v=tOc0GBjIK8Y&feature=youtu.be)
+* [Exporting/importing shards](https://www.youtube.com/watch?v=usBk-X3a4Qo&feature=youtu.be)
 * [Export a public key](https://www.youtube.com/watch?v=ut9ALBqjZbg&feature=youtu.be)
 * [Sign a bitcoin transaction](https://www.youtube.com/watch?v=NYjJa0fUxQE&feature=youtu.be)
 
