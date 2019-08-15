@@ -3,22 +3,21 @@ Hermit
 
 Hermit is a sharded,
 [HD](https://en.bitcoin.it/wiki/Deterministic_wallet) command-line
-signing tool designed for cryptocurrency owners who demand the highest
+wallet designed for cryptocurrency owners who demand the highest
 possible form of security.
 
 Hermit implements the
 [SLIP-0039](https://github.com/satoshilabs/slips/blob/master/slip-0039.md)
 standard for hierarchical Shamir sharding.
 
-Hermit operates in tandem with an online wallet which can talk to the
-blockchain.  All communication between the user, Hermit, and the
-online wallet is done via QR codes, cameras, screen, and keyboard.
+Hermit is designed to operate in tandem with an online wallet which
+can talk to a blockchain.  All communication between the user, Hermit,
+and the online wallet is done via QR codes, cameras, screen, and
+keyboard.
 
-A Hermit installation does not require WiFi, Bluetooth, or any other
-form of wired or wireless communication.  Hermit is instead designed
-to be run on modified commercial or open-source hardware running a
-custom, barebones operating system, a so-called "air-gapped"
-deployment.
+This means that a Hermit installation does not require WiFi,
+Bluetooth, or any other form of wired or wireless communication.
+Hermit can operate in a completely air-gapped environment.
 
 Read on or watch these videos to learn more about Hermit:
 
@@ -78,7 +77,7 @@ Hermit is **not recommended** for non-technical individuals with a
 small amount of cryptocurrency.
 
 Hermit is designed for computer-savvy people and organizations to
-self-custody significant sums.
+self-custody significant amounts of cryptocurrency.
 
 ### Sharding
 
@@ -231,18 +230,6 @@ beyond the seed of the key.  So even if you choose to
 characters.  Ensure you are prepared to do so using a good source of
 randomness (such as rolling dice).
 
-####  Advanced Sharding Operations
-
-Once you have a key in a particular shard configuration, you can do
-some interesting things (ensure you are already in `shards` mode):
-
-##### Rotate out a signer
-
-TBD
-
-##### Export shards
-
-TBD
 
 ### Exporting Public Keys
 
@@ -264,7 +251,7 @@ will display its data as a QR code.
 The whole point of Hermit is to ultimately sign transactions.
 Transaction signature requests must be created by an external
 application.  You can also use a test signature request available at
-[examples/signatur_requests/bitcoin.jpg](examples/signatur_requests/bitcoin.jpg).
+[examples/signature_requests/bitcoin.jpg](examples/signature_requests/bitcoin.jpg).
 
 Once you have a signature request, and you're in `wallet` mode, you
 can run `sign-bitcoin` to start signing a Bitcoin transaction.
@@ -451,3 +438,8 @@ $ make lint
 [flake8]: http://flake8.pycqa.org/en/latest/
 [mypy]: http://mypy-lang.org/
 [bip32]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+
+## TODO
+
+* Validate wallet public keys/signatures against the provided redeem script in the bitcoin signer.
+* Re-do QR-code protocol details once a [standard emerges](https://www.blockchaincommons.com)
