@@ -65,7 +65,7 @@ package: python-dependencies build.info
 
 upload: python-dependencies package
 	#twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} --repository-url https://test.pypi.org/legacy/ dist/*
-	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	twine upload dist/*
 
 $(VENV_DIR):
 	$(PYTHON3) -m venv --prompt='hermit' $(VENV_DIR)
