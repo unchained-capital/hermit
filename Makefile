@@ -34,7 +34,7 @@ docs:
 	$(SPHINX_BUILD) -c docs hermit docs/_build
 
 clean:
-	$(RM) -rf docs/_build/*
+	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info
 
 freeze:
 	$(PIP) freeze > $(PYTHON_FROZEN_REQUIREMENTS)
