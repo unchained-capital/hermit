@@ -8,7 +8,7 @@ possible form of security.
 
 Hermit implements the
 [SLIP-0039](https://github.com/satoshilabs/slips/blob/master/slip-0039.md)
-standard for shards.
+standard for hierarchical Shamir sharding.
 
 Hermit operates in tandem with an online wallet which can talk to the
 blockchain.  All communication between the user, Hermit, and the
