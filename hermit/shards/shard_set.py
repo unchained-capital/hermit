@@ -15,6 +15,32 @@ from hermit.rng import RandomGenerator
 RNG = RandomGenerator()
 shamir_share.RANDOM_BYTES = RNG.random
 
+def check_satisfaction_criteria(shards):
+    """check_satisfaction_criteria(shards)
+
+    Given an interable collection of shards, this function determines
+    both which of the group member thresholds have been satisfied by
+    the selecton and whether the overall group threshold has been met.
+    This function returns a pair of elements, the first item is a boolean
+    representing whether or not the overall group threshold is met and the
+    second is a set of group indexes whose thresholds have been met.
+    """
+
+    groups = {}
+    filled = set()
+    satisfied = False
+
+    for s in shards:
+        (group_idx, _) = s.shard_id
+        if not group_idx in groups:
+            groups[group_idx] = 0
+        groups[group_idx] += 1
+        if groups[group_idx] >= s.member_threshold:
+            filled.add(group_idx)
+        satisfied = (len(filled) >= s.group_threshold)
+
+    return (satisfied, filled)
+
 
 class ShardSet(object):
     def __init__(self,
@@ -129,7 +155,7 @@ class ShardSet(object):
                 (share_id, _, group_index, group_threshold, groups, member_identifier,
                  member_threshold, _) = shamir_share.decode_mnemonic(mnemonic)
                 name = self.interface.get_name_for_shard(
-                    share_id, group_index, group_threshold, groups, member_identifier, member_threshold)
+                    share_id, group_index, group_threshold, groups, member_identifier, member_threshold, self.shards)
                 password = self.interface.confirm_password()
                 shard = Shard(name, shamir_share.encrypt_mnemonic(
                     mnemonic, password), self.interface)
@@ -151,20 +177,37 @@ class ShardSet(object):
         selected : Dict[str, Shard]= {}
         selected_share_id : Optional[int]= None
         selected_shard_ids : set = set()
+        selected_shards : set = set()
 
-        while True:
+        satisfied = False
+        filled_groups = set()
+
+        while not satisfied:
             shards = [shard
                       for (name, shard)
                       in self.shards.items()
                       if (name not in selected)
                       and (selected_share_id is None or shard.share_id == selected_share_id)
                       and (shard.shard_id not in selected_shard_ids)
+                      and (shard.group_id not in filled_groups)
                       ]
 
-            name = self.interface.choose_shard(shards)
+            if selected_share_id is not None:
+                (enough_shards,_) = check_satisfaction_criteria(selected_shards.union(shards))
+                if not enough_shards:
+                    print([shard.to_str() for shard in shards])
+                    raise HermitError("There are not enough shards available to unlock this secret.")
+
+            name = None
+
+            try:
+                name = self.interface.choose_shard(shards)
+            except:
+                # catch end-of-input style exceptions
+                pass
 
             if name is None:
-                break
+                raise HermitError("Not enough shards selected to unlock secret.")
 
             shard = self.shards[name]
             if selected_share_id is None:
@@ -172,6 +215,9 @@ class ShardSet(object):
 
             selected_shard_ids.add(shard.shard_id)
             selected[name] = shard.words()
+            selected_shards.add(shard)
+
+            (satisfied, filled_groups) = check_satisfaction_criteria(selected_shards)
 
         unlocked_mnemonics = list(selected.values())
         return shamir_share.combine_mnemonics(unlocked_mnemonics)

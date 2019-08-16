@@ -2,6 +2,8 @@ from .base import *
 from .wallet import wallet_command
 from .shards import shard_command
 import hermit.ui.state as state
+import traceback
+import sys
 
 @wallet_command('unlock')
 @shard_command('unlock')
@@ -13,7 +15,11 @@ def unlock():
   Many commands will do this implicitly.
 
     """
-    state.Wallet.unlock()
+    try:
+      state.Wallet.unlock()
+    except HermitError as e:
+      print_formatted_text("Unable to unlock wallet: ", e)
+      #traceback.print_exc(file=sys.stdout)
     if state.Wallet.unlocked:
         state.Timeout = DeadTime
 

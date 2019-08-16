@@ -39,6 +39,32 @@ class Shard(object):
             self._unpack_share()
         return (self._group_id, self._member_id)
 
+    @property
+    def group_id(self):
+        if self._group_id is None:
+            self._unpack_share()
+        return self._group_id
+
+    @property
+    def member_threshold(self):
+        """
+        The number of members of this group needed to reconstruct the group
+        secret.
+        """
+        if self._member_threshold is None:
+            self._unpack_share()
+        return self._member_threshold
+
+    @property
+    def group_threshold(self):
+        """
+        The number of members of this group needed to reconstruct the group
+        secret.
+        """
+        if self._group_threshold is None:
+            self._unpack_share()
+        return self._group_threshold
+
     def __init__(self,
                  name: str,
                  encrypted_mnemonic: Optional[str],
@@ -60,6 +86,8 @@ class Shard(object):
         self._share_id = None
         self._group_id = None
         self._member_id = None
+        self._group_threshold = None
+        self._member_threshold = None
 
         if interface is None:
             self.interface = ShardWordUserInterface()
@@ -100,7 +128,7 @@ class Shard(object):
         return bson.dumps({self.name: self.to_bytes()})
 
     def _unpack_share(self) -> None:
-        (self._share_id, _, self._group_id, _, _, self._member_id, _,
+        (self._share_id, _, self._group_id, self._group_threshold, _, self._member_id, self._member_threshold,
          _) = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
 
     def to_str(self) -> str:
