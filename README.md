@@ -71,8 +71,8 @@ Hermit follows the following design principles:
   * Flexibility for human security -- you can customize the sharding configuration to suit your organization
 
 ### Audience
-  
-Hermit is a difficult to use but highly-secure wallet.  
+
+Hermit is a difficult to use but highly-secure wallet.
 
 Hermit is **not recommended** for non-technical individuals with a
 small amount of cryptocurrency.
@@ -220,7 +220,7 @@ wallet> shards
 
 Two `shard` mode commands will let you import a key:
 
-* `build-family-from-phrase` -- enter a BIP39 phrase.  This is useful if you are important a key from a hardware wallet such as Trezor or Ledger or from another software wallet such as Electrum.
+* `build-family-from-phrase` -- enter a BIP39 phrase.  This is useful if you are importing a key from a hardware wallet such as Trezor or Ledger or from another software wallet such as Electrum.
 * `build-family-from-random` -- enter random characters.   This is useful if you want to generate your own entropy (from, say, rolling dice)
 
 Whichever you choose, you will be prompted to enter a shard configuration.
@@ -326,9 +326,9 @@ QR codes.  The pipelines look like this:
 
   * To create a QR code from a `string`: utf-8 encode -> LZMA-compress -> Base32 encode
   * To parse a QR code `string`: Base32 decode -> LZMA-decompress -> utf-8 decode
-  
+
 The `string` data may sometimes itself be JSON.
-	
+
 #### Plugins
 
 Hermit allows you to write plugins to extend its functionality.  This
@@ -389,7 +389,7 @@ class MyCoinSigner(Signer):
                  self.output,
                  self.amount,
 	           self.bip32_path))
-				 
+				
     def create_signature(self) -> None:
         """Signs a transaction"""
 	keys = self.generate_child_keys(self.bip32_path)
