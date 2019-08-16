@@ -53,17 +53,24 @@ class ShardWordUserInterface(object):
 
     def get_name_for_shard(
             self, share_id, group_index, group_threshold, groups,
-            member_index, member_threshold
+            member_index, member_threshold, shards
             ):
-        print("")
-        print("Family: {}, Group: {}, Shard: {}".format(share_id, group_index + 1, member_index + 1))
-        return prompt('Enter name: ', **self.options).strip()
+
+        print_formatted_text("")
+        print_formatted_text("Family: {}, Group: {}, Shard: {}".format(share_id, group_index + 1, member_index + 1))
+
+        while True:
+            name = prompt('Enter name: ', **self.options).strip()
+            if name not in shards:
+                return name
+
+            print_formatted_text("Sorry, but a shard with that name already exists. Try again.")
 
     def choose_shard(self,
                      shards) -> Optional[str]:
 
         if len(shards) == 0:
-            return None
+            raise HermitError("Not enough shards to reconstruct secret.")
 
         shardnames = [shard.name for shard in shards]
         shardnames.sort()
@@ -153,7 +160,7 @@ unlock the wallet (<i>P of Q</i> groups).
 Each of the <i>Q</i> groups is itself broken into <i>m</i> shards, <i>n</i> of which are
 required to unlock the group (<i>n of m</i> shards).
 
-Unlocking the wallet requires unlocking <i>P</i> groups and unlocking each 
+Unlocking the wallet requires unlocking <i>P</i> groups and unlocking each
 group requires unlocking <i>n</i> shards for that group.
 
 You must now specify a shard configuration (such as '<i>2 of 3</i>')
