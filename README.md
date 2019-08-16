@@ -369,9 +369,9 @@ class MyCoinSigner(Signer):
 	if 'input' not in self.request:
 	    raise InvalidSignatureRequest("The param 'input' is required.")
 	if 'output' not in self.request:
-	    raise InvalidSignatureRequest("The param 'input' is required.")
+	    raise InvalidSignatureRequest("The param 'output' is required.")
 	if 'amount' not in self.request:
-	    raise InvalidSignatureRequest("The param 'input' is required.")
+	    raise InvalidSignatureRequest("The param 'amount' is required.")
 
 	self.bip32_path = self.request['bip32_path']
 	self.input = self.request[input]
