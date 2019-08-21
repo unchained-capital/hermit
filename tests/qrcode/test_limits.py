@@ -1,5 +1,5 @@
 import base64
-import lzma
+import gzip
 import random
 import string
 
@@ -140,13 +140,13 @@ class TestQRCodeStorage(object):
 
     def test_alphanumeric_compression_maximum(self):
         M = 4
-        N = 2500
+        N = 2000
         data = ''.join([
             random.choice(string.digits + string.ascii_letters) * M
             for _ in range(N)])
         data = data.encode('utf-8')
         print(len(data)) # 10000
-        data = lzma.compress(data)
+        data = gzip.compress(data)
         data = base64.b32encode(data)    
 
         print(len(data))
