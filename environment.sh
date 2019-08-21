@@ -13,10 +13,13 @@ if [ "$SCRIPT_NAME" = "$SOURCE_NAME" ]; then
     exit 1
 fi
 
+#
+# Directories
+#
 ROOT_DIR=$(pwd)
 LIB_DIR="${ROOT_DIR}"
 BIN_DIR="${ROOT_DIR}/bin"
-
+SUBMODULES_DIR="vendor"
 
 #
 # Python virtualenv
@@ -37,7 +40,7 @@ fi
 # We need to add this application's 'lib' dir to PYTHONPATH.
 #
 
-if [ -z $(echo $PYTHONPATH | grep "$LIB_DIR") ]; then
+if [ -z $(echo "$PYTHONPATH" | grep "$LIB_DIR") ]; then
     echo "[pythonpath] Adding $LIB_DIR to PYTHONPATH (${PYTHONPATH})"
     export PYTHONPATH="${PYTHONPATH}:${LIB_DIR}"
 else
@@ -51,9 +54,19 @@ export MYPYPATH=":$(python -m site | grep virtual | sed -e "s/^ *'//g" -e "s/',/
 # We need to add this application's 'bin' dir to PATH.
 #
 
-if [ -z $(echo $PATH | grep "$BIN_DIR") ]; then
+if [ -z $(echo "$PATH" | grep "$BIN_DIR") ]; then
     echo "[path]       Adding $BIN_DIR to PATH (${PATH})"
     export PATH="${PATH}:${BIN_DIR}"
 else
     echo "[path]       $BIN_DIR already on PATH (${PATH})"
+fi
+
+#
+# Submodules
+#
+
+if [ ! -e "${SUBMODULES_DIR}/pybitcointools/pybitcointools" ]; then
+    echo 'ERROR: No git submodules.  Run `git submodule update --init`'
+else
+    echo "[git]        Submodules present"
 fi

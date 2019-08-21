@@ -277,7 +277,7 @@ Developers
 Developers will want to clone a copy of the Hermit source code:
 
 ```
-$ git clone https://github.com/unchained-capital/hermit
+$ git clone --recursive https://github.com/unchained-capital/hermit
 $ cd hermit
 $ make
 ```
