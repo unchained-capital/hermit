@@ -99,9 +99,14 @@ This structure creates a lot of flexibility for different scenarios.
 Hermit extends the current SLIP-39 proposal by encrypting each shard
 with a password.
 
-Shards in Hermit are always encrypted by a password.  Each shard has
+Shards in Hermit are generally encrypted by a password.  Each shard has
 its own password, allowing for teams to operate a key together, each
-team member operating a given shard (in some group).
+team member operating a given shard (in some group). However, if the
+user explicitly supplies an empty string as the password when either
+creating a shard, or changing the password on the shard, the resulting
+shard will be unencrypted. While this makes the transport of the shard
+less safe, it does make it possible to export the shards to technologies
+that support only unencrypted SLIP-39 implementations.
 
 #### Compatibility with other wallets
 

@@ -16,6 +16,13 @@ class TestShard(object):
         assert shard.name == shard_name
         assert shard.encrypted_mnemonic == encrypted_mnemonic_1
 
+    def test_null_decrypt_shard(self, unencrypted_mnemonic_1):
+        shard = Shard('foo', unencrypted_mnemonic_1, self.interface)
+        self.interface.get_password.return_value = None
+
+        assert shard.words() == unencrypted_mnemonic_1
+
+
     def test_decrypt_shard(self, encrypted_mnemonic_1, password_1, unencrypted_mnemonic_1):
         shard = Shard('foo', encrypted_mnemonic_1, self.interface)
         self.interface.get_password.return_value = password_1
@@ -40,6 +47,25 @@ class TestShard(object):
         # The intermidiate mnemonic should be different
         assert mnemonic != encrypted_mnemonic_1
         assert mnemonic != unencrypted_mnemonic_1
+
+
+    def test_none_reencrypt_shard(self, encrypted_mnemonic_1, password_1, unencrypted_mnemonic_1):
+        shard = Shard('foo', encrypted_mnemonic_1, self.interface)
+
+        # set up the user inteface for two calls to 'get_change_password'. Once
+        # to change from PASSWORD_1 to PASSWORD_2, and the second time to change
+        # back.
+        self.interface.get_change_password.side_effect = [(password_1, None), (None, password_1)]
+
+        shard.change_password()
+        mnemonic = shard.encrypted_mnemonic
+        shard.change_password()
+
+        # We should have the same encrypted mnemonic that we started with
+        assert shard.encrypted_mnemonic == encrypted_mnemonic_1
+
+        # The intermidiate mnemonic should be different
+        assert mnemonic == unencrypted_mnemonic_1
 
     def test_shard_to_bytes(self, encrypted_mnemonic_1):
         shard = Shard('foo', encrypted_mnemonic_1, self.interface)

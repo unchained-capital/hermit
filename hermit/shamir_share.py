@@ -51,12 +51,18 @@ def mnemonic_to_bytes(mnemonic):
 
 def encrypt_shard(passphrase, unencrypted_shard):
     (identifier, iteration_exponent, group_index, group_threshold, groups, member_index, member_threshold, value) = unencrypted_shard
-    encrypted_value = _encrypt(value, passphrase, iteration_exponent, identifier)
+    encrypted_value = value
+    # If there was not passphrase given, do not actually encrypt anything
+    if passphrase is not None:
+        encrypted_value = _encrypt(value, passphrase, iteration_exponent, identifier)
     return (identifier, iteration_exponent, group_index, group_threshold, groups, member_index, member_threshold, encrypted_value)
 
 def decrypt_shard(passphrase, encrypted_shard):
     (identifier, iteration_exponent, group_index, group_threshold, groups, member_index, member_threshold, encrypted_value) = encrypted_shard
-    decrypted_value = _decrypt(encrypted_value, passphrase, iteration_exponent, identifier)
+    decrypted_value = encrypted_value
+    # If not passphrase was given, do not actually decrypt anything
+    if passphrase is not None:
+        decrypted_value = _decrypt(encrypted_value, passphrase, iteration_exponent, identifier)
     return (identifier, iteration_exponent, group_index, group_threshold, groups, member_index, member_threshold, decrypted_value)
 
 def decrypt_mnemonic(mnemonic, passphrase):
