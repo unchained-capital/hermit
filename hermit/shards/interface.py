@@ -27,14 +27,23 @@ class ShardWordUserInterface(object):
     def get_password(self, name: str) -> bytes:
         print_formatted_text(HTML("\nEnter password for shard {}".format(name)))
         pass_msg = "password> ".format(name)
-        return prompt(pass_msg, is_password=True).strip().encode('ascii')
+        password = prompt(pass_msg, is_password=True).strip().encode('ascii')
 
+        # Empty string means do not encrypt with a password
+        if len(password) == 0:
+            return None
+            
+        return password
+        
     def confirm_password(self) -> bytes:
         password = prompt("new password> ",
                           is_password=True).strip().encode('ascii')
         confirm =  prompt("     confirm> ", is_password=True).strip().encode('ascii')
 
         if password == confirm:
+            # Empty string means do not encrypt
+            if len(password) == 0:
+                return None
             return password
 
         raise HermitError("Passwords do not match.")
@@ -48,6 +57,13 @@ class ShardWordUserInterface(object):
         old_password: bytes = prompt(
             "old password> ", is_password=True).strip().encode('ascii')
         new_password = self.confirm_password()
+
+        # Empty string means do not encrypt    
+        if len(old_password) == 0:
+            old_password = None
+
+        if len(new_password) == 0:
+            new_password = None
 
         return (old_password, new_password)
 
