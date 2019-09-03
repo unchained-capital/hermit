@@ -445,6 +445,14 @@ $ make lint
 [mypy]: http://mypy-lang.org/
 [bip32]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
+## Key rotation
+
+Each individual share should be managed by a team. Each team has multiple
+copies of the passphrase to decrypt the share. The share only exists on the
+Hermit device, and it's encrypted. Rotating out a member is achieved by using
+one of the other team members to decrypt the share and then re-encrypting the
+share with a new passphrase, thus excluding the previous user.
+
 ## TODO
 
 * Validate wallet public keys/signatures against the provided redeem script in the bitcoin signer.
