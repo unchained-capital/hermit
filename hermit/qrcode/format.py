@@ -10,7 +10,7 @@ def decode_qr_code_data(encoded: bytes) -> str:
     if not isinstance(encoded, (bytes,)):
         raise InvalidSignatureRequest("Can only decode bytes")
     if encoded == b'':
-        raise InvalidSignatureRequest("Cannot encode empty bytes")
+        raise InvalidSignatureRequest("Cannot decode empty bytes")
     try:
         compressed_bytes = b32decode(encoded)
         try:
