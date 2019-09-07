@@ -1,5 +1,8 @@
 Hermit
 ======
+[![PyPI](https://img.shields.io/pypi/v/hermit.svg)](https://pypi.python.org/pypi)
+[![Travis](https://img.shields.io/travis/unchained-capital/hermit.svg)](https://travis-ci.org/unchained-capital/hermit/)
+[![Codecov](https://img.shields.io/codecov/c/github/unchained-capital/hermit.svg)](https://codecov.io/gh/unchained-capital/hermit/)
 
 Hermit is a sharded,
 [HD](https://en.bitcoin.it/wiki/Deterministic_wallet) command-line

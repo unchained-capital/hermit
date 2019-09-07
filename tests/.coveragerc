@@ -1,4 +1,5 @@
 [run]
+source=hermit
 branch = True
 omit =
     *__init__.py
