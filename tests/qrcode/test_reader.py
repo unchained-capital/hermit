@@ -15,7 +15,7 @@ def opensource_bitcoin_vector_array():
 
 @pytest.fixture()
 def opensource_bitcoin_vector_0_image():
-    return Image.open('tests/fixtures/opensource_bitcoin_test_vector_0.jpg')
+    return Image.open('tests/fixtures/opensource_bitcoin_test_vector_0.png')
 
 
 class TestReadQRCode(object):

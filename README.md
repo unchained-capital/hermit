@@ -56,7 +56,7 @@ shards> quit                                  # back to wallet mode
 wallet> export-xpub m/45'/0'/0'               # export an extended public key
 ...
 wallet> sign-bitcoin                          # sign a bitcoin transaction
-                                              # see examples/signature_requests/bitcoin_testnet.jpg
+                                              # see examples/signature_requests/bitcoin_testnet.png
 
 ...
 ```
@@ -153,7 +153,7 @@ Hermit uses 3 storage locations:
     |         |             |             |                |            |
     | memory  | -- write -> | filesystem  | -- persist --> | data store |
     |_________|             |_____________|                |____________|
-	
+
 
 When Hermit first boots, shards from the data store or filesystem
 (in that order) are loaded into memory.  Changes made to shards
@@ -260,7 +260,7 @@ will display its data as a QR code.
 The whole point of Hermit is to ultimately sign transactions.
 Transaction signature requests must be created by an external
 application.  You can also use a test signature request available at
-[examples/signature_requests/bitcoin.jpg](examples/signature_requests/bitcoin.jpg).
+[examples/signature_requests/bitcoin.png](examples/signature_requests/bitcoin.png).
 
 Once you have a signature request, and you're in `wallet` mode, you
 can run `sign-bitcoin` to start signing a Bitcoin transaction.
@@ -385,7 +385,7 @@ class MyCoinSigner(Signer):
 	self.input = self.request[input]
 	self.output = self.request['output']
 	self.amount = self.request['amount']
-		
+
     def display_request(self) -> None:
         """Displays the transaction to be signed"""
         print("""
@@ -397,7 +397,7 @@ class MyCoinSigner(Signer):
                  self.output,
                  self.amount,
 	           self.bip32_path))
-				
+
     def create_signature(self) -> None:
         """Signs a transaction"""
 	keys = self.generate_child_keys(self.bip32_path)

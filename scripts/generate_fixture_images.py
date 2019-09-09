@@ -31,9 +31,9 @@ def generate_fixture_images(json_filename):
     qr.add_data(data)
     qr.make(fit=True)
     image = qr.make_image(fill_color="black", back_color="white")
-    image.save(filename_base + '.jpg')
+    image.save(filename_base + '.png')
 
-    #loaded_image = Image.open(filename_base + '.jpg')
+    #loaded_image = Image.open(filename_base + '.png')
     #decoded = pyzbar.decode(loaded_image)
 
     image_array = np.array(image.convert('RGB'))[:, :, ::-1].copy()
