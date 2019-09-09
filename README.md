@@ -329,8 +329,8 @@ Hermit:
 In all cases, Hermit uses the same scheme to encode/decode data into
 QR codes.  The pipelines look like this:
 
-  * To create a QR code from a `string`: utf-8 encode -> LZMA-compress -> Base32 encode
-  * To parse a QR code `string`: Base32 decode -> LZMA-decompress -> utf-8 decode
+  * To create a QR code from a `string`: utf-8 encode -> gzip-compress -> Base32 encode
+  * To parse a QR code `string`: Base32 decode -> gzip-decompress -> utf-8 decode
 
 The `string` data may sometimes itself be JSON.
 

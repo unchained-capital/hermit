@@ -1,4 +1,4 @@
-import lzma
+import gzip
 
 import numpy
 import qrcode
@@ -18,7 +18,7 @@ def generate_fixture_images(json_filename):
 
     data = json.dumps(test_vector['request'])
     data = data.encode('utf-8')
-    data = lzma.compress(data)
+    data = gzip.compress(data)
 
     data = base64.b32encode(data)
     print(filename_base, "data length: ", len(data), " (must be <= 4296)") #

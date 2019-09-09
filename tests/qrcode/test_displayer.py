@@ -10,8 +10,8 @@ import hermit
 
 
 @pytest.fixture()
-def large_bitcoin_signature_request():
-    filename = "tests/fixtures/large_bitcoin_signature_request.json"
+def too_large_bitcoin_signature_request():
+    filename = "tests/fixtures/too_large_bitcoin_signature_request.json"
     with open(filename, 'r') as f:
         request = json.load(f)
     return json.dumps(request)
@@ -73,12 +73,14 @@ class TestDisplayQRCode(object):
 
 class TestCreateQRCode(object):
 
-    # using lzma, we can store a few more than 50 inputs in one qrcode
-    # See Version 40: http://www.qrcode.com/en/about/version.html
-    def test_fifty_seven_inputs_fails(self, large_bitcoin_signature_request):
+    # using gzip, we can store between 50-55 inputs in one qrcode
+    # 
+    # See Version 40:
+    # http://www.qrcode.com/en/about/version.html
+    def test_fifty_five_inputs_fails(self, too_large_bitcoin_signature_request):
         with pytest.raises(qrcode.exceptions.DataOverflowError):
-            hermit.qrcode.create_qr_code_image(large_bitcoin_signature_request)
+            hermit.qrcode.create_qr_code_image(too_large_bitcoin_signature_request)
 
-    def test_fifty_six_inputs_passes(self, largest_bitcoin_signature_request):
+    def test_fifty_inputs_passes(self, largest_bitcoin_signature_request):
         hermit.qrcode.create_qr_code_image(largest_bitcoin_signature_request)
         assert True
