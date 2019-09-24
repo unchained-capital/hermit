@@ -112,7 +112,7 @@ testnet
 ```
 
 take a picture of the example signing request qrcode located at
-tests/fixtures/opensource_bitcoin_signature_request_0.jpg
+tests/fixtures/opensource_bitcoin_signature_request_0.png
 
 
 ```
@@ -143,7 +143,7 @@ Sign the above transaction? [y/N]
 expected output:
 
 ```
-Signature Data: 
+Signature Data:
 {
   "pukey": "026c76fc386b6c339577eea265242eb902df43155a0eaf23af1f96c5d9f2d10f63",
   "signatures": [
