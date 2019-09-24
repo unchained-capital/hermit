@@ -12,10 +12,16 @@ def __path(filename):
 if os.path.exists(__path('build.info')):
     build = open(__path('build.info')).read().strip()
 
-version = '0.1.6'
+version = '0.1.7'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+requirementPath = __path('requirements.frozen.txt')
+install_requires = [] 
+if os.path.isfile(requirementPath):
+    with open(requirementPath) as f:
+        install_requires = f.read().splitlines()
 
 setuptools.setup(
     name="hermit",
@@ -35,23 +41,7 @@ setuptools.setup(
     scripts=[
         'bin/hermit'
     ],
-    install_requires=[
-        'pyzbar>=0.1.7',
-        'bson>=0.5.8',
-        'opencv-python>=3.4.3',
-        'imutils>=0.5',
-        'qrcode[pil]>=6',
-        'prompt-toolkit>=2.0.7',
-        'pyAesCrypt>=0.4.2',
-        'mnemonic>=0.18',
-        'python-bitcoinlib>=0.10',
-        'pytest>=4',
-        'ecdsa>=0.13',
-        'pysha3>=1',
-        'eth-account>=0.3',
-        'pyyaml>=3.13',
-        'shamir_mnemonic==0.1',
-    ],
+    install_requires=install_requires,
     data_files=[
         ('pybitcointools', ['pybitcointools/english.txt']),
         ('hermit', ['hermit/wordlists/shard.txt', 'hermit/wordlists/wallet.txt']),
