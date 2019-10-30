@@ -12,7 +12,7 @@ def __path(filename):
 if os.path.exists(__path('build.info')):
     build = open(__path('build.info')).read().strip()
 
-version = '0.1.7'
+version = '0.1.8'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
