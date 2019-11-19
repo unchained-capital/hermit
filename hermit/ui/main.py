@@ -5,8 +5,7 @@ from hermit.plugin import PluginsLoaded
 from .wallet import *
 from .common import *
 from .relocker import *
-
-import hermit
+from hermit import __version__
 
 Banner = r"""
  _   _                     _ _
@@ -21,7 +20,7 @@ You are in WALLET mode.  Type 'help' for help.               (v{})
 
 def main():
     clear_screen()
-    print(Banner.format(hermit.__version__))
+    print(Banner.format(__version__))
     for plugin in PluginsLoaded:
         print("Loaded plugin {}".format(plugin))
     use_asyncio_event_loop()

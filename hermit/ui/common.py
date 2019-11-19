@@ -4,7 +4,7 @@ from .shards import shard_command
 import hermit.ui.state as state
 import traceback
 import sys
-import hermit
+from hermit import __version__;
 
 @wallet_command('unlock')
 @shard_command('unlock')
@@ -71,4 +71,4 @@ def unlock():
   
   
     """
-    print_formatted_text(hermit.__version__)
+    print_formatted_text(__version__)
