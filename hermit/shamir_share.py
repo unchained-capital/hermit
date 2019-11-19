@@ -1,31 +1,11 @@
 
-# This file is substantially copied from the reference implementation for
-# slip-0039 -- see https://github.com/satoshilabs/slips/blob/master/slip-0039.md
+# This file was originally substantially copied from the reference implementation for
+# slip-0039, now it imports that functionality from the pypi mosule shamir_mnemonic.
 #
 # The two main differences are that it provides a means to encrypt the
 # shard data for each shard, and it exposes a mechanism to export
-# shards as byte arrays for efficient storage.
+# shards as byte arrays for efficient storage. 
 #
-# What follows is the copyright message from the original file:
-#
-# Copyright (c) 2018 Andrew R. Kozlik
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-# of the Software, and to permit persons to whom the Software is furnished to do
-# so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
 import hashlib
@@ -35,6 +15,11 @@ import os
 import shamir_mnemonic
 from shamir_mnemonic import *
 from shamir_mnemonic import _encrypt, _decrypt, _int_from_indices, _int_to_indices
+
+# shamir_mnemonic expects us to update its local copy of RANDOM_BYTES in order
+# to override the random number generator. Instead of exposing this complication
+# to the rest of the hermit code, we expose setting the global random number
+# generator as set_random_bytes.
 
 old_rngs = []
 def set_random_bytes(rng):
