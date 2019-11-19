@@ -6,6 +6,7 @@ from .wallet import *
 from .common import *
 from .relocker import *
 
+import hermit
 
 Banner = r"""
  _   _                     _ _
@@ -15,12 +16,12 @@ Banner = r"""
 | | | |  __/ |  | | | | | | | |_     Copyright 2019 Unchained Capital, Inc.
 \_| |_/\___|_|  |_| |_| |_|_|\__|    Licensed under Apache 2.0
 
-You are in WALLET mode.  Type 'help' for help.
+You are in WALLET mode.  Type 'help' for help.               (v{})
 """
 
 def main():
     clear_screen()
-    print(Banner)
+    print(Banner.format(hermit.__version__))
     for plugin in PluginsLoaded:
         print("Loaded plugin {}".format(plugin))
     use_asyncio_event_loop()
