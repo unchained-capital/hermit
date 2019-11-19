@@ -13,7 +13,7 @@ from hermit.rng import RandomGenerator
 
 
 RNG = RandomGenerator()
-shamir_share.RANDOM_BYTES = RNG.random
+shamir_share.set_random_bytes(RNG.random)
 
 def check_satisfaction_criteria(shards):
     """check_satisfaction_criteria(shards)

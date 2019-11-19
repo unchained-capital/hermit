@@ -32,8 +32,18 @@ import hashlib
 import hmac
 import os
 
+import shamir_mnemonic
 from shamir_mnemonic import *
 from shamir_mnemonic import _encrypt, _decrypt, _int_from_indices, _int_to_indices
+
+old_rngs = []
+def set_random_bytes(rng):
+    old_rngs.append(shamir_mnemonic.RANDOM_BYTES)
+    shamir_mnemonic.RANDOM_BYTES = rng
+
+def restore_random_bytes():
+    if(length(old_rngs)>0):
+        shamir_mnemonic.RANDOM_BYTES = old_rngs.pop()
 
 def mnemonic_from_bytes(bytes_data):
     """
