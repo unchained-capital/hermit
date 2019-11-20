@@ -4,6 +4,7 @@ from .shards import shard_command
 import hermit.ui.state as state
 import traceback
 import sys
+from hermit import __version__;
 
 @wallet_command('unlock')
 @shard_command('unlock')
@@ -60,3 +61,14 @@ def toggle_debug():
 
     """
     state.Debug = not state.Debug
+
+@wallet_command('version')
+@shard_command('version')
+def unlock():
+    """usage:  version
+
+  Print out the version of hermit currently running.
+  
+  
+    """
+    print_formatted_text(__version__)
