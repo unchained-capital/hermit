@@ -218,7 +218,7 @@ configure Hermit.
 ### Creating a Key
 
 Before you can do much with Hermit you'll need to create or import at
-leaest one key.  To do so, first enter shards mode:
+least one key.  To do so, first enter shards mode:
 
 ```
 $ hermit
