@@ -4,7 +4,7 @@ import os
 import sys
 if sys.version_info < (3,7):
     sys.exit('Sorry, Python < 3.7 is not supported')
-    
+
 def __path(filename):
     return os.path.join(os.path.dirname(__file__),
                         filename)
@@ -12,13 +12,13 @@ def __path(filename):
 if os.path.exists(__path('build.info')):
     build = open(__path('build.info')).read().strip()
 
-version = '0.1.11'
+version = '0.1.12'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 requirementPath = __path('requirements.frozen.txt')
-install_requires = [] 
+install_requires = []
 if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
         install_requires = f.read().splitlines()
