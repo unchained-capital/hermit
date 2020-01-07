@@ -8,11 +8,11 @@ from hermit.signer import BitcoinSigner
 from hermit.wallet import HDWallet
 
 @pytest.mark.integration
-@patch('hermit.signer.displayer.display_qr_code')    
-@patch('hermit.signer.base.input')    
+@patch('hermit.signer.displayer.display_qr_code')
+@patch('hermit.signer.base.input')
 @patch('hermit.signer.reader.read_qr_code')
 class TestBitcoinSigningIntegration(object):
-    
+
     def test_opensouce_bitcoin_vector_0(self,
                                         mock_request,
                                         mock_input,
@@ -20,7 +20,7 @@ class TestBitcoinSigningIntegration(object):
                                         fixture_opensource_shard_set,
                                         fixture_opensource_bitcoin_vector_0,
                                         capsys):
-        # TODO: use an actual wallet_words_file
+        # TODO: use an actual shard_file
         # TODO: move to all opensource vectors
         test_vector = fixture_opensource_bitcoin_vector_0
         wallet = HDWallet()
@@ -29,8 +29,8 @@ class TestBitcoinSigningIntegration(object):
         mock_input.return_value = 'y'
 
         signer = BitcoinSigner(wallet)
-        signer.sign(testnet=True)        
-        captured = capsys.readouterr()        
+        signer.sign(testnet=True)
+        captured = capsys.readouterr()
 
         expected_display = test_vector['expected_display']
         expected_return = test_vector['expected_signature']
