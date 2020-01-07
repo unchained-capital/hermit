@@ -5,7 +5,6 @@
 tmp/*
 TAGS
 *.swp
-wallet_words/*
 hermit.egg-info
 build
 dist
