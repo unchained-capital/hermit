@@ -1,4 +1,3 @@
-wallet_words_file: 'test.json'
 shards_file: 'test.bson'
 plugin_dir: 'testdir'
 commands:

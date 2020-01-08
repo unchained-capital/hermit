@@ -4,9 +4,6 @@ from unittest.mock import patch, create_autospec
 import pytest
 
 from hermit.shards import ShardSet
-# from hermit.wallet_words import (WalletWordUserInterface,
-#                                  WalletWordsShardSet,
-#                                  WalletWordsShard)
 
 @pytest.fixture()
 def trezor_bip39_vectors():
@@ -56,10 +53,10 @@ def fixture_opensource_shards(opensource_wallet_words):
     mock_shard2.to_str.return_value = "{0} ({1}/{2})".format(mock_shard2.name,
                                                              mock_shard2.number,
                                                              mock_shard2.count)
-        
+
     mock_shard1.to_json.return_value = json.dumps([0,2,'encrypted1','salt1'])
-    mock_shard2.to_json.return_value = json.dumps([1,2,'encrypted2','salt2'])        
-        
+    mock_shard2.to_json.return_value = json.dumps([1,2,'encrypted2','salt2'])
+
     mock_shards = {mock_shard1.name: mock_shard1,
                    mock_shard2.name: mock_shard2}
     return mock_shards
@@ -79,8 +76,8 @@ def prep_full_vector(filename):
                                                     indent=2)
                                        + "\n")
     return test_vector
- 
+
 @pytest.fixture()
 def fixture_opensource_bitcoin_vector_0():
     return prep_full_vector("tests/fixtures/opensource_bitcoin_test_vector_0.json")
-    
+

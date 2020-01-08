@@ -12,9 +12,9 @@ To start from a clean install, remove any files that hermit looks for
 or creates:
 
 ```
-rm /tmp/wallet_words.json
-rm /tmp/wallet_words.json.persisted
-rm /tmp/wallet_words.json.backup
+rm /tmp/shard_words.bson
+rm /tmp/shard_words.bson.persisted
+rm /tmp/shard_words.bson.backup
 rm /etc/hermit.yaml
 ```
 
