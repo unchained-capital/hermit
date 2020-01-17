@@ -1,6 +1,6 @@
 
 # This file was originally substantially copied from the reference implementation for
-# slip-0039, now it imports that functionality from the pypi mosule shamir_mnemonic.
+# slip-0039, now it imports that functionality from the pypi module shamir_mnemonic.
 #
 # The two main differences are that it provides a means to encrypt the
 # shard data for each shard, and it exposes a mechanism to export
