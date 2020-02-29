@@ -12,7 +12,8 @@ def __path(filename):
 if os.path.exists(__path('build.info')):
     build = open(__path('build.info')).read().strip()
 
-version = '0.1.12'
+with open(__path("hermit/VERSION")) as version_file:
+    version = version_file.read().strip()
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
