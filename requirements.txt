@@ -7,6 +7,7 @@ mypy==0.701
 opencv-python==3.4.3.18
 prompt-toolkit==2.0.7
 pyAesCrypt==0.4.2
+pycoin==0.90.20190728
 pysha3==1.0.2
 pytest-cov==2.6.1
 pytest==4.4.0
