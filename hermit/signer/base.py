@@ -4,7 +4,6 @@ from typing import Optional, Dict
 
 from prompt_toolkit import PromptSession, print_formatted_text, HTML
 
-import hermit
 from hermit.errors import HermitError, InvalidSignatureRequest
 from hermit.qrcode import reader, displayer
 from hermit.wallet import (compressed_private_key_from_bip32,

@@ -91,7 +91,7 @@ class TestHDWalletUnlocked(object):
 
 class TestHDWalletUnlock(object):
 
-    def test_root_priv_from_trezor_vectors(self,trezor_bip39_vectors):
+    def test_root_priv_from_trezor_vectors(self, trezor_bip39_vectors):
         # With Passphrase
         for v in trezor_bip39_vectors['english']:
             wallet = HDWallet()
@@ -100,7 +100,7 @@ class TestHDWalletUnlock(object):
             xprv = wallet.root_priv
             assert xprv == v[3]
 
-    def test_root_priv_from_unchained_vectors(self,unchained_vectors):
+    def test_root_priv_from_unchained_vectors(self, unchained_vectors):
         # Without Passphrase
         for words in unchained_vectors:
             wallet = HDWallet()
@@ -109,7 +109,6 @@ class TestHDWalletUnlock(object):
             xprv = wallet.root_priv
             expected_xprv = unchained_vectors[words]['m']['xprv']
             assert xprv == expected_xprv
-
 
     def test_checksum_failed_raises_error(self):
         wallet = HDWallet()
@@ -161,7 +160,6 @@ class TestHDWalletPublicKey(object):
                     pubkey = wallet.public_key(path)
                     expected_pubkey = bip32_vectors[seed][path]['pubkey']
                     assert pubkey == expected_pubkey
-
 
 
 class TestHDWalletExtendedPrivateKey(object):

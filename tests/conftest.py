@@ -17,6 +17,14 @@ def bip32_vectors():
         vectors = json.load(f)
     return vectors
 
+
+@pytest.fixture()
+def bip32_ckd_vectors():
+    with open("tests/fixtures/bip32_ckd_vectors.json", 'r') as f:
+        vectors = json.load(f)
+    return vectors
+
+
 @pytest.fixture()
 def unchained_vectors():
     with open("tests/fixtures/unchained_vectors.json", 'r') as f:

@@ -2,13 +2,13 @@ from re import match
 from typing import Tuple
 
 from mnemonic import Mnemonic
-from pybitcointools import (bip32_ckd,
-                            bip32_privtopub,
-                            bip32_master_key,
-                            bip32_deserialize,
-                            bip32_extract_key)
 
 from hermit import shards
+from hermit.bip32 import (bip32_ckd,
+                          bip32_deserialize,
+                          bip32_extract_key,
+                          bip32_master_key,
+                          bip32_privtopub)
 from hermit.errors import HermitError
 
 
