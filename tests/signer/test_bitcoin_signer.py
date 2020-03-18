@@ -26,11 +26,11 @@ class TestBitcoinSignerValidation(object):
 
     @pytest.fixture(autouse=True)
     def setup_wallet_and_request(self,
-                                 fixture_opensource_bitcoin_vector_0,
+                                 fixture_opensource_bitcoin_vectors,
                                  opensource_wallet_words):
         self.wallet = HDWallet()
         self.wallet.shards = FakeShards(opensource_wallet_words)
-        self.request = fixture_opensource_bitcoin_vector_0['request']
+        self.request = fixture_opensource_bitcoin_vectors['request']
 
     #
     # Input Groups

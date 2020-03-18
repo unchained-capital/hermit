@@ -177,6 +177,7 @@ class BitcoinSigner(Signer):
             raise InvalidSignatureRequest(err_msg)
 
         if output['address'][:2] in ('bc', 'tb'):
+            # TODO validate bech32
             err_msg = "bech32 addresses are unsupported (output)"
             raise InvalidSignatureRequest(err_msg)
         try:

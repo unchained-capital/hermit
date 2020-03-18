@@ -77,7 +77,17 @@ def prep_full_vector(filename):
                                        + "\n")
     return test_vector
 
-@pytest.fixture()
+#@pytest.fixture()
 def fixture_opensource_bitcoin_vector_0():
     return prep_full_vector("tests/fixtures/opensource_bitcoin_test_vector_0.json")
 
+#@pytest.fixture()
+def fixture_opensource_bitcoin_vector_1():
+    return prep_full_vector("tests/fixtures/opensource_bitcoin_test_vector_1.json")
+
+
+
+@pytest.fixture(params=[fixture_opensource_bitcoin_vector_0,
+                        fixture_opensource_bitcoin_vector_1])
+def fixture_opensource_bitcoin_vectors(request):
+    return request.param()

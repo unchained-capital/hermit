@@ -37,7 +37,7 @@ clean:
 	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info
 
 freeze:
-	$(PIP) freeze > $(PYTHON_FROZEN_REQUIREMENTS)
+	$(PIP) freeze -l > $(PYTHON_FROZEN_REQUIREMENTS)
 
 dependencies: system-dependencies python-dependencies
 

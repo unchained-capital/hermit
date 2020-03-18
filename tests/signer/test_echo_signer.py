@@ -14,10 +14,10 @@ class TestEchoSigner(object):
                                         mock_request,
                                         mock_input,
                                         mock_display_qr_code,
-                                        fixture_opensource_bitcoin_vector_0,
+                                        fixture_opensource_bitcoin_vectors,
                                         fixture_opensource_shard_set,
                                         capsys):
-        request_json = fixture_opensource_bitcoin_vector_0['request_json']
+        request_json = fixture_opensource_bitcoin_vectors['request_json']
         wallet = HDWallet()
         wallet.shards = fixture_opensource_shard_set
         mock_request.return_value = request_json
