@@ -33,9 +33,9 @@ class TestReadQRCode(object):
     def test_valid_qr_code(self,
                            mock_window_is_open,
                            mock_cv2,
-                           fixture_opensource_bitcoin_vectors,
+                           fixture_opensource_bitcoin_vector,
                            opensource_bitcoin_vector_0_image):
-        request_json = fixture_opensource_bitcoin_vectors['request_json']
+        request_json = fixture_opensource_bitcoin_vector['request_json']
         mock_cv2.VideoCapture().read.return_value = (
             None, np.array(opensource_bitcoin_vector_0_image))
         mock_cv2.resize.return_value = opensource_bitcoin_vector_0_image

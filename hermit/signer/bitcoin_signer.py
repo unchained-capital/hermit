@@ -4,7 +4,7 @@ from hashlib import sha256
 from typing import Dict
 
 from bitcoin import SelectParams
-from bitcoin import base58
+from bitcoin import base58, bech32
 from bitcoin.core import COutPoint, CMutableTxOut, CMutableTxIn, CTransaction
 from bitcoin.core.script import SignatureHash, SIGHASH_ALL, CScript
 from bitcoin.wallet import (CBitcoinAddress,
@@ -177,17 +177,20 @@ class BitcoinSigner(Signer):
             raise InvalidSignatureRequest(err_msg)
 
         if output['address'][:2] in ('bc', 'tb'):
-            # TODO validate bech32
-            err_msg = "bech32 addresses are unsupported (output)"
-            raise InvalidSignatureRequest(err_msg)
-        try:
-            base58.CBase58Data(output['address'])
-        except base58.InvalidBase58Error:
-            err_msg = "output addresses must be base58-encoded strings"
-            raise InvalidSignatureRequest(err_msg)
-        except base58.Base58ChecksumError:
-            err_msg = "invalid output address checksum"
-            raise InvalidSignatureRequest(err_msg)
+            try:
+                bech32.CBech32Data(output['address'])
+            except bech32.Bech32Error:
+                err_msg = "invalid bech32 output address (check mainnet vs. testnet)"
+                raise InvalidSignatureRequest(err_msg)
+        else:
+            try:
+                base58.CBase58Data(output['address'])
+            except base58.InvalidBase58Error:
+                err_msg = "output addresses must be base58-encoded strings"
+                raise InvalidSignatureRequest(err_msg)
+            except base58.Base58ChecksumError:
+                err_msg = "invalid output address checksum"
+                raise InvalidSignatureRequest(err_msg)
         try:
             CBitcoinAddress(output['address'])
         except CBitcoinAddressError:

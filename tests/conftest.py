@@ -67,6 +67,7 @@ def fixture_opensource_shard_set(opensource_wallet_words):
     mock_shard_set.wallet_words.return_value = opensource_wallet_words
     return mock_shard_set
 
+
 def prep_full_vector(filename):
     with open(filename, 'r') as f:
         test_vector = json.load(f)
@@ -77,14 +78,21 @@ def prep_full_vector(filename):
                                        + "\n")
     return test_vector
 
-#@pytest.fixture()
+
+@pytest.fixture
+def fixture_opensource_bitcoin_vector():
+    return prep_full_vector(
+        "tests/fixtures/opensource_bitcoin_test_vector_0.json")
+
+
 def fixture_opensource_bitcoin_vector_0():
-    return prep_full_vector("tests/fixtures/opensource_bitcoin_test_vector_0.json")
+    return prep_full_vector(
+        "tests/fixtures/opensource_bitcoin_test_vector_0.json")
 
-#@pytest.fixture()
+
 def fixture_opensource_bitcoin_vector_1():
-    return prep_full_vector("tests/fixtures/opensource_bitcoin_test_vector_1.json")
-
+    return prep_full_vector(
+        "tests/fixtures/opensource_bitcoin_test_vector_1.json")
 
 
 @pytest.fixture(params=[fixture_opensource_bitcoin_vector_0,
