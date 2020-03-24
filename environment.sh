@@ -5,8 +5,8 @@
 #
 # Do NOT run this script (`./environment.sh` or `bash
 # environment.sh`); instead source it (`source environment.sh`).
-# 
-SCRIPT_NAME=$(basename "$0")
+#
+SCRIPT_NAME=$(basename "${0/-/}")
 SOURCE_NAME=$(basename "$BASH_SOURCE")
 if [ "$SCRIPT_NAME" = "$SOURCE_NAME" ]; then
     echo "ERROR: Do not execute ('bash environment.sh') this script! Source it instead ('source environment.sh')"
