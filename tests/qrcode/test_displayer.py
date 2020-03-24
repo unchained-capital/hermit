@@ -36,9 +36,9 @@ class TestDisplayQRCode(object):
     async def test_valid_qr_code(self,
                         mock_window_is_open,
                         mock_cv2,
-                        fixture_opensource_bitcoin_vector_0,
+                        fixture_opensource_bitcoin_vectors,
                         opensource_bitcoin_vector_0_array):
-        request_json = fixture_opensource_bitcoin_vector_0['request_json']
+        request_json = fixture_opensource_bitcoin_vectors['request_json']
         mock_window_is_open.return_value = True
         future = hermit.qrcode.display_qr_code(request_json)
         await future

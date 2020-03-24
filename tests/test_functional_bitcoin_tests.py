@@ -18,11 +18,11 @@ class TestBitcoinSigningIntegration(object):
                                         mock_input,
                                         mock_display_qr_code,
                                         fixture_opensource_shard_set,
-                                        fixture_opensource_bitcoin_vector_0,
+                                        fixture_opensource_bitcoin_vectors,
                                         capsys):
         # TODO: use an actual shard_file
         # TODO: move to all opensource vectors
-        test_vector = fixture_opensource_bitcoin_vector_0
+        test_vector = fixture_opensource_bitcoin_vectors
         wallet = HDWallet()
         wallet.shards = fixture_opensource_shard_set
         mock_request.return_value = test_vector['request_json']

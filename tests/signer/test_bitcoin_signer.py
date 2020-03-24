@@ -20,17 +20,17 @@ class FakeShards:
     def wallet_words(self):
         return self.words
 
-        
+
 @patch('hermit.signer.reader.read_qr_code')
 class TestBitcoinSignerValidation(object):
 
     @pytest.fixture(autouse=True)
     def setup_wallet_and_request(self,
-                                 fixture_opensource_bitcoin_vector_0,
+                                 fixture_opensource_bitcoin_vector,
                                  opensource_wallet_words):
         self.wallet = HDWallet()
         self.wallet.shards = FakeShards(opensource_wallet_words)
-        self.request = fixture_opensource_bitcoin_vector_0['request']
+        self.request = fixture_opensource_bitcoin_vector['request']
 
     #
     # Input Groups
@@ -549,24 +549,62 @@ class TestBitcoinSignerValidation(object):
         mock_request.return_value = json.dumps(self.request)
         BitcoinSigner(self.wallet).sign(testnet=False)
 
+    @patch('hermit.signer.displayer.display_qr_code')    
+    @patch('hermit.signer.base.input')    
+    def test_valid_segwit_testnet_output_address_types(self,
+                                                       mock_input,
+                                                       mock_display_qr_code,
+                                                       mock_request):
+        mock_input.return_value = 'y'
+        mock_request.return_value = json.dumps(self.request)
+        BitcoinSigner(self.wallet).sign(testnet=True)
+        
+        self.request['outputs'][1]['address'] = "tb1q0vv0vsa4ey69h4zgedd88ldd3fhz366u99tnch"
+        self.request['outputs'][0]['address'] = "tb1qacn2sc90qe4f723rqjwr2kf9z004xl6ftzp0nprq9cnland8udqqzxt0tg"
+        mock_request.return_value = json.dumps(self.request)
+        BitcoinSigner(self.wallet).sign(testnet=True)
 
-    def test_output_bech_addresses_error(self, mock_request):
+
+    @patch('hermit.signer.displayer.display_qr_code')    
+    @patch('hermit.signer.base.input')    
+    def test_valid_segwit_mainnet_output_address_types(self,
+                                                       mock_input,
+                                                       mock_display_qr_code,
+                                                       mock_request):
+        mock_input.return_value = 'y'
+        mock_request.return_value = json.dumps(self.request)
+        BitcoinSigner(self.wallet).sign(testnet=True)
+        
+        self.request['outputs'][1]['address'] = "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3"
+        self.request['outputs'][0]['address'] = "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+        mock_request.return_value = json.dumps(self.request)
+        BitcoinSigner(self.wallet).sign(testnet=False)
+
+        
+    def test_invalid_output_bech_addresses_error(self, mock_request):
         bech_addr = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
         self.request['outputs'][0]['address'] = bech_addr
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info1:
-            BitcoinSigner(self.wallet).sign(testnet=False)
+            BitcoinSigner(self.wallet).sign(testnet=True)
 
         test_bech_addr = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
         self.request['outputs'][0]['address'] = test_bech_addr
         mock_request.return_value = json.dumps(self.request)
         with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info2:
+            BitcoinSigner(self.wallet).sign(testnet=False)
+
+        test_bech_addr = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsxaaa'
+        self.request['outputs'][0]['address'] = test_bech_addr
+        mock_request.return_value = json.dumps(self.request)
+        with pytest.raises(hermit.errors.InvalidSignatureRequest) as e_info3:
             BitcoinSigner(self.wallet).sign(testnet=True)
-            
+
         expected = ("Invalid signature request: "
-                    + "bech32 addresses are unsupported (output).")
+                    + "invalid bech32 output address (check mainnet vs. testnet).")
         assert str(e_info1.value) == expected
         assert str(e_info2.value) == expected
+        assert str(e_info3.value) == expected
                 
     def test_wrong_network_address_type_errors(self, mock_request):
         mock_request.return_value = json.dumps(self.request)
