@@ -19,7 +19,6 @@ fi
 ROOT_DIR=$(pwd)
 LIB_DIR="${ROOT_DIR}"
 BIN_DIR="${ROOT_DIR}/bin"
-SUBMODULES_DIR="vendor"
 
 #
 # Python virtualenv
@@ -59,14 +58,4 @@ if [ -z $(echo "$PATH" | grep "$BIN_DIR") ]; then
     export PATH="${PATH}:${BIN_DIR}"
 else
     echo "[path]       $BIN_DIR already on PATH (${PATH})"
-fi
-
-#
-# Submodules
-#
-
-if [ ! -e "${SUBMODULES_DIR}/pybitcointools/pybitcointools" ]; then
-    echo 'ERROR: No git submodules.  Run `git submodule update --init`'
-else
-    echo "[git]        Submodules present"
 fi

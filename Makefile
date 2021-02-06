@@ -5,8 +5,8 @@
 VENV_DIR := .virtualenv
 
 PYTHON3                    := $(shell command -v python3 2> /dev/null)
-PYTHON_REQUIREMENTS        := requirements.txt
-PYTHON_FROZEN_REQUIREMENTS := requirements.frozen.txt
+PYTHON_REQUIREMENTS        := requirements.in
+PYTHON_FROZEN_REQUIREMENTS := requirements.txt
 
 #
 # == Configuration ==
@@ -34,7 +34,7 @@ docs:
 	$(SPHINX_BUILD) -c docs hermit docs/_build
 
 clean:
-	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info
+	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info $(VENV_DIR)
 
 freeze:
 	$(PIP) freeze -l > $(PYTHON_FROZEN_REQUIREMENTS)
@@ -67,7 +67,7 @@ upload: python-dependencies package
 	#twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} --repository-url https://test.pypi.org/legacy/ dist/*
 	twine upload dist/*
 
-$(VENV_DIR):
+venv:
 	$(PYTHON3) -m venv --prompt='hermit' $(VENV_DIR)
 
 test:

@@ -14,27 +14,28 @@ import hermit.ui.state as state
 
 Bindings = KeyBindings()
 
-def repl(commands:Dict, mode="", help_command=None):
+
+def repl(commands: Dict, mode="", help_command=None):
     commandCompleter = WordCompleter(
-        [c for c in commands],
-        sentence=True # allows hyphens
+        [c for c in commands], sentence=True  # allows hyphens
     )
 
     oldSession = state.Session
-    state.Session = PromptSession(key_bindings=Bindings,
-                            bottom_toolbar=bottom_toolbar,
-                            refresh_interval=0.1)
-    state.Wallet.shards.interface.options = {'bottom_toolbar': bottom_toolbar}
+    state.Session = PromptSession(
+        key_bindings=Bindings, bottom_toolbar=bottom_toolbar, refresh_interval=0.1
+    )
+    state.Wallet.shards.interface.options = {"bottom_toolbar": bottom_toolbar}
     done = None
     with patch_stdout():
         while not done:
             try:
-                unlocked = ' '
+                unlocked = " "
                 if state.Wallet.unlocked():
-                    unlocked = '*'
-                command_line = state.Session.prompt(HTML('<b>{}{}></b> '.format(unlocked, mode)),
-                                              completer=commandCompleter,
-                                              ).split()
+                    unlocked = "*"
+                command_line = state.Session.prompt(
+                    HTML("<b>{}{}></b> ".format(unlocked, mode)),
+                    completer=commandCompleter,
+                ).split()
 
                 if len(command_line) == 0:
                     continue
@@ -76,16 +77,16 @@ def check_timer():
     return False
 
 
-@Bindings.add('<any>', filter=check_timer)
+@Bindings.add("<any>", filter=check_timer)
 def escape_binding(event):
     pass
 
 
-@Bindings.add('`', eager=True)
+@Bindings.add("`", eager=True)
 def force_check_timer(event):
     check_timer()
 
 
-@Bindings.add('escape', eager=True)
+@Bindings.add("escape", eager=True)
 def force_lock(event):
     state.Wallet.lock()

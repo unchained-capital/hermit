@@ -1,8 +1,7 @@
 from prompt_toolkit import print_formatted_text
 from json import dumps
 
-from hermit.signer import (BitcoinSigner,
-                           EchoSigner)
+from hermit.signer import BitcoinSigner
 
 from .base import *
 from .repl import repl
@@ -11,69 +10,70 @@ import hermit.ui.state as state
 
 WalletCommands: Dict = {}
 
+
 def wallet_command(name):
     return command(name, WalletCommands)
 
 
-@wallet_command('sign-echo')
+@wallet_command("sign-echo")
 def echo():
     """usage:  sign-echo
 
-  Scans, "signs", and then displays a QR code.
+    Scans, "signs", and then displays a QR code.
 
-  Hermit will open a QR code reader window and wait for you to scan a
-  QR code.
+    Hermit will open a QR code reader window and wait for you to scan a
+    QR code.
 
-  Once scanned, the data in the QR code will be displayed on screen
-  and you will be prompted whether or not you want to "sign" the
-  "transaction".
+    Once scanned, the data in the QR code will be displayed on screen
+    and you will be prompted whether or not you want to "sign" the
+    "transaction".
 
-  If you agree, Hermit will open a window displaying the original QR
-  code.
+    If you agree, Hermit will open a window displaying the original QR
+    code.
 
-  Agreeing to "sign" does not require unlocking the wallet.
+    Agreeing to "sign" does not require unlocking the wallet.
 
     """
     EchoSigner(state.Wallet, state.Session).sign(testnet=state.Testnet)
 
 
-@wallet_command('sign-bitcoin')
-def sign_bitcoin():
+@wallet_command("sign-bitcoin")
+def sign_bitcoin(unsigned_psbt_b64=None):
     """usage:  sign-bitcoin
 
-  Create a signature for a Bitcoin transaction.
+    Create a signature for a Bitcoin transaction.
 
-  Hermit will open a QR code reader window and wait for you to scan a
-  Bitcoin transaction signature request.
+    Can pass in the PSBT via CLI or Hermit will open a QR code reader window and wait for you to scan a Bitcoin transaction signature request.
+    TODO: support for QR GIFs.
 
-  Once scanned, the details of the signature request will be displayed
-  on screen and you will be prompted whether or not you want to sign
-  the transaction.
+    Once scanned, the details of the signature request will be displayed
+    on screen and you will be prompted whether or not you want to sign
+    the transaction.
 
-  If you agree, Hermit will open a window displaying the signature as
-  a QR code.
+    If you agree, Hermit will open a window displaying the signature as
+    a QR code.
 
-  Creating a signature requires unlocking the wallet.
+    Creating a signature requires unlocking the wallet.
 
     """
-    BitcoinSigner(state.Wallet, state.Session).sign(testnet=state.Testnet)
+    BitcoinSigner(state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64).sign(testnet=state.Testnet)
 
 
-@wallet_command('export-xpub')
+@wallet_command("export-xpub")
 def export_xpub(path):
     """usage:  export-xpub BIP32_PATH
 
-  Displays the extended public key (xpub) at a given BIP32 path.
+    Displays the extended public key (xpub) at a given BIP32 path.
 
-  Hermit will open a window displaying the extended public key as a QR
-  code.
+    Hermit will open a window displaying the extended public key as a QR
+    code.
 
-  Exporting an extended public key requires unlocking the wallet.
+    Exporting an extended public key requires unlocking the wallet.
 
-  Examples:
+    Examples:
 
-    wallet> export-xpub m/45'/0'/0'
-    wallet> export-xpub m/44'/60'/2'
+      wallet> export-xpub m/45'/0'/0'
+      wallet> export-xpub m/44'/60'/2'
 
     """
     xpub = state.Wallet.extended_public_key(path)
@@ -83,20 +83,20 @@ def export_xpub(path):
     displayer.display_qr_code(dumps(dict(bip32_path=path, xpub=xpub)), name=name)
 
 
-@wallet_command('export-pub')
+@wallet_command("export-pub")
 def export_pub(path):
     """usage:  export-pub BIP32_PATH
 
-  Displays the public key at a given BIP32 path.
+    Displays the public key at a given BIP32 path.
 
-  Hermit will open a window displaying the public key as a QR code.
+    Hermit will open a window displaying the public key as a QR code.
 
-  Exporting a public key requires unlocking the wallet.
+    Exporting a public key requires unlocking the wallet.
 
-  Examples:
+    Examples:
 
-    wallet> export-pub m/45'/0'/0'/10/20
-    wallet> export-pub m/44'/60'/2'/1/12
+      wallet> export-pub m/45'/0'/0'/10/20
+      wallet> export-pub m/44'/60'/2'/1/12
 
     """
     pubkey = state.Wallet.public_key(path)
@@ -106,11 +106,11 @@ def export_pub(path):
     displayer.display_qr_code(dumps(dict(bip32_path=path, pubkey=pubkey)), name=name)
 
 
-@wallet_command('shards')
+@wallet_command("shards")
 def shard_mode():
     """usage:  shards
 
-  Enter shards mode.
+    Enter shards mode.
 
     """
     clear_screen()
@@ -118,52 +118,56 @@ def shard_mode():
     repl(ShardCommands, mode="shards", help_command=shard_help)
 
 
-@wallet_command('quit')
+@wallet_command("quit")
 def quit_hermit():
     """usage:  quit
 
-  Exit Hermit.
+    Exit Hermit.
 
     """
     clear_screen()
     return True
 
 
-@wallet_command('testnet')
+@wallet_command("testnet")
 def toggle_testnet():
     """usage:  testnet
 
-  Toggle testnet mode on or off.
+    Toggle testnet mode on or off.
 
-  Being in testnet mode changes the way transactions are signed.
+    Being in testnet mode changes the way transactions are signed.
 
-  When testnet mode is active, the word TESTNET will appear in
-  Hermit's bottom toolbar.
+    When testnet mode is active, the word TESTNET will appear in
+    Hermit's bottom toolbar.
 
     """
     state.Testnet = not state.Testnet
 
 
-@wallet_command('help')
-def wallet_help(*args,):
+@wallet_command("help")
+def wallet_help(
+    *args,
+):
     """usage: help [COMMAND]
 
-  Prints out helpful information about Hermit's "wallet" mode (the
-  default mode).
+    Prints out helpful information about Hermit's "wallet" mode (the
+    default mode).
 
-  When called with an argument, prints out helpful information about
-  the command with that name.
+    When called with an argument, prints out helpful information about
+    the command with that name.
 
-  Examples:
+    Examples:
 
-     wallet> help sign-bitcoin
-     wallet> help export-xpub
+       wallet> help sign-bitcoin
+       wallet> help export-xpub
 
     """
     if len(args) > 0 and args[0] in WalletCommands:
         print(WalletCommands[args[0]].__doc__)
     else:
-        print_formatted_text(HTML("""
+        print_formatted_text(
+            HTML(
+                """
   You are in WALLET mode.  In this mode, Hermit can sign
   transactions and export public keys.
 
@@ -171,7 +175,7 @@ def wallet_help(*args,):
   learn more about each command):
 
   <b>SIGNING</b>
-        <i>sign-bitcoin</i>
+      <i>sign-bitcoin</i>
           Produce a signature for a Bitcoin transaction
       <i>sign-echo</i>
           Echo a signature request back as a signature
@@ -197,7 +201,10 @@ def wallet_help(*args,):
       <i>quit</i>
           Exit Hermit
 
-        """))
+        """
+            )
+        )
+
 
 def wallet_repl():
-    return repl(WalletCommands, mode='wallet', help_command=wallet_help)
+    return repl(WalletCommands, mode="wallet", help_command=wallet_help)

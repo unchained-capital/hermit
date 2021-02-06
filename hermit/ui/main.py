@@ -2,9 +2,9 @@ from prompt_toolkit.eventloop.defaults import use_asyncio_event_loop
 
 from hermit.plugin import PluginsLoaded
 
-from .wallet import *
-from .common import *
-from .relocker import *
+from .wallet import clear_screen, wallet_repl
+from .common import lock, unlock
+from .relocker import asyncio, relock_wallet_if_timed_out
 from hermit import __version__
 
 Banner = r"""
@@ -17,6 +17,7 @@ Banner = r"""
 
 You are in WALLET mode.  Type 'help' for help.               (v{})
 """
+
 
 def main():
     clear_screen()

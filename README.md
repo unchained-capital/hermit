@@ -299,7 +299,10 @@ this section.
 Hermit ships with a full [pytest] suite.  Run it as follows:
 
 ```
+$ make clean
+$ make venv
 $ source environment.sh
+$ make dependencies
 $ make test
 $ make lint
 ```

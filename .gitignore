@@ -13,3 +13,4 @@ build.info
 .coverage
 .mypy_cache/
 docs/_build
+.DS_Store

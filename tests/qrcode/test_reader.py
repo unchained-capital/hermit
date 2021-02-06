@@ -10,34 +10,37 @@ import hermit
 
 @pytest.fixture()
 def opensource_bitcoin_vector_array():
-    return np.load('tests/fixtures/opensource_bitcoin_test_vector_0.npy')
+    return np.load("tests/fixtures/opensource_bitcoin_test_vector_0.npy")
 
 
 @pytest.fixture()
 def opensource_bitcoin_vector_0_image():
-    return Image.open('tests/fixtures/opensource_bitcoin_test_vector_0.png')
+    return Image.open("tests/fixtures/opensource_bitcoin_test_vector_0.png")
 
 
 class TestReadQRCode(object):
-
-    @patch('hermit.qrcode.reader.cv2')
+    @patch("hermit.qrcode.reader.cv2")
     def test_cannot_open_camera_is_error(self, mock_cv2):
         mock_cv2.VideoCapture().isOpened.return_value = False
         with pytest.raises(IOError) as e_info:
             hermit.qrcode.reader._start_camera()
         assert str(e_info.value) == "Cannot open webcam"
 
-    @patch('hermit.qrcode.reader.cv2')
-    @patch('hermit.qrcode.reader.window_is_open')
+    @patch("hermit.qrcode.reader.cv2")
+    @patch("hermit.qrcode.reader.window_is_open")
     # @unittest.skip("TODO: fix this broken test!")
-    def test_valid_qr_code(self,
-                           mock_window_is_open,
-                           mock_cv2,
-                           fixture_opensource_bitcoin_vector,
-                           opensource_bitcoin_vector_0_image):
-        request_json = fixture_opensource_bitcoin_vector['request_json']
+    def test_valid_qr_code(
+        self,
+        mock_window_is_open,
+        mock_cv2,
+        fixture_opensource_bitcoin_vector,
+        opensource_bitcoin_vector_0_image,
+    ):
+        request_json = fixture_opensource_bitcoin_vector["request_json"]
         mock_cv2.VideoCapture().read.return_value = (
-            None, np.array(opensource_bitcoin_vector_0_image))
+            None,
+            np.array(opensource_bitcoin_vector_0_image),
+        )
         mock_cv2.resize.return_value = opensource_bitcoin_vector_0_image
         mock_window_is_open.return_value = True
         data = hermit.qrcode.read_qr_code()

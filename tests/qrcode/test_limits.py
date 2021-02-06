@@ -17,15 +17,12 @@ import qrcode
 # Binary: 2,953
 #
 
+
 @pytest.mark.qrcode
 class TestQRCodeStorage(object):
-
-    
     def test_numeric_maximum(self):
         N = 7089
-        data = ''.join([
-            random.choice(string.digits)
-            for _ in range(N)])
+        data = "".join([random.choice(string.digits) for _ in range(N)])
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -38,9 +35,7 @@ class TestQRCodeStorage(object):
 
     def test_numeric_overflow(self):
         N = 7090
-        data = ''.join([
-            random.choice(string.digits)
-            for _ in range(N)])
+        data = "".join([random.choice(string.digits) for _ in range(N)])
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -48,15 +43,15 @@ class TestQRCodeStorage(object):
             border=4,
         )
         qr.add_data(data)
-        with pytest.raises(qrcode.exceptions.DataOverflowError):        
+        with pytest.raises(qrcode.exceptions.DataOverflowError):
             qr.make()
         assert True
-        
+
     def test_alphanumeric_maximum(self):
         N = 4296
-        data = ''.join([
-            random.choice(string.digits + string.ascii_uppercase)
-            for _ in range(N)])
+        data = "".join(
+            [random.choice(string.digits + string.ascii_uppercase) for _ in range(N)]
+        )
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -69,9 +64,9 @@ class TestQRCodeStorage(object):
 
     def test_alphanumeric_overflow(self):
         N = 4297
-        data = ''.join([
-            random.choice(string.digits + string.ascii_uppercase)
-            for _ in range(N)])
+        data = "".join(
+            [random.choice(string.digits + string.ascii_uppercase) for _ in range(N)]
+        )
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -79,10 +74,9 @@ class TestQRCodeStorage(object):
             border=4,
         )
         qr.add_data(data, optimize=0)
-        with pytest.raises(qrcode.exceptions.DataOverflowError):        
+        with pytest.raises(qrcode.exceptions.DataOverflowError):
             qr.make()
         assert True
-
 
     def test_binary_maximum(self):
         N = 2953
@@ -107,7 +101,7 @@ class TestQRCodeStorage(object):
             border=4,
         )
         qr.add_data(data, optimize=0)
-        with pytest.raises(qrcode.exceptions.DataOverflowError):        
+        with pytest.raises(qrcode.exceptions.DataOverflowError):
             qr.make()
         assert True
 
@@ -123,7 +117,7 @@ class TestQRCodeStorage(object):
         qr.add_data(data)
         qr.make()
         assert True
-        
+
     def test_bits_overflow(self):
         N = 23550
         data = 1 << N
@@ -134,20 +128,20 @@ class TestQRCodeStorage(object):
             border=4,
         )
         qr.add_data(data)
-        with pytest.raises(qrcode.exceptions.DataOverflowError):        
+        with pytest.raises(qrcode.exceptions.DataOverflowError):
             qr.make()
         assert True
 
     def test_alphanumeric_compression_maximum(self):
         M = 4
         N = 2000
-        data = ''.join([
-            random.choice(string.digits + string.ascii_letters) * M
-            for _ in range(N)])
-        data = data.encode('utf-8')
-        print(len(data)) # 10000
+        data = "".join(
+            [random.choice(string.digits + string.ascii_letters) * M for _ in range(N)]
+        )
+        data = data.encode("utf-8")
+        print(len(data))  # 10000
         data = gzip.compress(data)
-        data = base64.b32encode(data)    
+        data = base64.b32encode(data)
 
         print(len(data))
         qr = qrcode.QRCode(
@@ -158,6 +152,5 @@ class TestQRCodeStorage(object):
         )
         qr.add_data(data)
         qr.make()
-        assert len(data) < 4296        
+        assert len(data) < 4296
         assert True
-        
