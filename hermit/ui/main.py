@@ -3,7 +3,6 @@ from prompt_toolkit.eventloop.defaults import use_asyncio_event_loop
 from hermit.plugin import PluginsLoaded
 
 from .wallet import clear_screen, wallet_repl
-from .common import lock, unlock
 from .relocker import asyncio, relock_wallet_if_timed_out
 from hermit import __version__
 
@@ -26,5 +25,5 @@ def main():
         print("Loaded plugin {}".format(plugin))
     use_asyncio_event_loop()
     loop = asyncio.get_event_loop()
-    deadman_task = loop.create_task(relock_wallet_if_timed_out())
+    loop.create_task(relock_wallet_if_timed_out())  # deadman_task
     loop.run_until_complete(wallet_repl())

@@ -3,10 +3,13 @@ from json import dumps
 
 from hermit.signer import BitcoinSigner, EchoSigner
 
-from .base import *
+from .base import command, displayer, clear_screen, HTML
 from .repl import repl
 from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
+
+from typing import Dict
+
 
 WalletCommands: Dict = {}
 
@@ -56,7 +59,9 @@ def sign_bitcoin(unsigned_psbt_b64=None):
     Creating a signature requires unlocking the wallet.
 
     """
-    BitcoinSigner(state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64).sign(testnet=state.Testnet)
+    BitcoinSigner(
+        state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64
+    ).sign(testnet=state.Testnet)
 
 
 @wallet_command("export-xpub")

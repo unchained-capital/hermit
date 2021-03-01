@@ -27,7 +27,7 @@ class ShardWordUserInterface(object):
 
     def get_password(self, name: str) -> bytes:
         print_formatted_text(HTML("\nEnter password for shard {}".format(name)))
-        pass_msg = "password> ".format(name)
+        pass_msg = "password> "
         password = prompt(pass_msg, is_password=True).strip().encode("ascii")
 
         # Empty string means do not encrypt with a password

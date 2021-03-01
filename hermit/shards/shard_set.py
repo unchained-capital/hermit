@@ -33,7 +33,7 @@ def check_satisfaction_criteria(shards):
 
     for s in shards:
         (group_idx, _) = s.shard_id
-        if not group_idx in groups:
+        if group_idx not in groups:
             groups[group_idx] = 0
         groups[group_idx] += 1
         if groups[group_idx] >= s.member_threshold:
@@ -225,7 +225,7 @@ class ShardSet(object):
 
             try:
                 name = self.interface.choose_shard(shards)
-            except:
+            except Exception:
                 # catch end-of-input style exceptions
                 pass
 

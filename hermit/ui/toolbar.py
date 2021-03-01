@@ -1,6 +1,4 @@
-import asyncio
-
-from .base import *
+from .base import DeadTime
 import hermit.ui.state as state
 
 Bars = "#" * DeadTime + " " * DeadTime

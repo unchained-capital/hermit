@@ -1,4 +1,4 @@
-from buidl import HDPrivateKey, HDPublicKey
+from buidl import HDPrivateKey
 from mnemonic import Mnemonic
 from hermit import shards
 from hermit.errors import HermitError
@@ -33,10 +33,11 @@ class HDWallet(object):
             seed = Mnemonic.to_seed(words, passphrase=passphrase)
             hd_obj = HDPrivateKey.from_seed(seed, testnet=self.testnet)
             self.root_xpriv = hd_obj.xprv()
-            self.xfp_hex = hd_obj.fingerprint().hex()  # later needed to identify us as cosigner
+            self.xfp_hex = (
+                hd_obj.fingerprint().hex()
+            )  # later needed to identify us as cosigner
         else:
             raise HermitError("Wallet words failed checksum.")
-
 
     def lock(self) -> None:
         self.root_xpriv = None

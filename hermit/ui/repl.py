@@ -1,4 +1,3 @@
-import asyncio
 import traceback
 
 
@@ -8,8 +7,12 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.patch_stdout import patch_stdout
 
-from .base import *
-from .toolbar import *
+from typing import Dict
+
+from .base import DeadTime
+from .toolbar import bottom_toolbar
+
+from hermit.errors import HermitError
 import hermit.ui.state as state
 
 Bindings = KeyBindings()

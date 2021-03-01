@@ -7,13 +7,19 @@
 #
 #
 
-import hashlib
-import hmac
-import os
-
 import shamir_mnemonic
-from shamir_mnemonic import *
-from shamir_mnemonic import _encrypt, _decrypt, _int_from_indices, _int_to_indices
+from shamir_mnemonic import (
+    _encrypt,
+    _decrypt,
+    _int_from_indices,
+    _int_to_indices,
+    mnemonic_from_indices,
+    RADIX_BITS,
+    mnemonic_to_indices,
+    bits_to_bytes,
+    decode_mnemonic,
+    encode_mnemonic,
+)
 
 # shamir_mnemonic expects us to update its local copy of RANDOM_BYTES in order
 # to override the random number generator. Instead of exposing this complication
@@ -29,7 +35,8 @@ def set_random_bytes(rng):
 
 
 def restore_random_bytes():
-    if length(old_rngs) > 0:
+    # FIXME: this code should have thrown an error, investigate if being used?
+    if len(old_rngs) > 0:
         shamir_mnemonic.RANDOM_BYTES = old_rngs.pop()
 
 

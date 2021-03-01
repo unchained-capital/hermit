@@ -1,9 +1,7 @@
-from .base import *
+from .base import HermitError, print_formatted_text, DeadTime, clear_screen
 from .wallet import wallet_command
 from .shards import shard_command
 import hermit.ui.state as state
-import traceback
-import sys
 from hermit import __version__
 
 
@@ -68,7 +66,7 @@ def toggle_debug():
 
 @wallet_command("version")
 @shard_command("version")
-def unlock():
+def version():
     """usage:  version
 
     Print out the version of hermit currently running.
