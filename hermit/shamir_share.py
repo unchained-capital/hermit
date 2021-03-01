@@ -35,8 +35,12 @@ def set_random_bytes(rng):
 
 
 def restore_random_bytes():
+<<<<<<< HEAD
     # FIXME: this code should have thrown an error, investigate if being used?
     if len(old_rngs) > 0:
+=======
+    if length(old_rngs) > 0:
+>>>>>>> blackify
         shamir_mnemonic.RANDOM_BYTES = old_rngs.pop()
 
 

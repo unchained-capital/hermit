@@ -19,7 +19,6 @@ def unlock():
         state.Wallet.unlock()
     except HermitError as e:
         print_formatted_text("Unable to unlock wallet: ", e)
-        # traceback.print_exc(file=sys.stdout)
     if state.Wallet.unlocked:
         state.Timeout = DeadTime
 
