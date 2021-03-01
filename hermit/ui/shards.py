@@ -1,6 +1,9 @@
 from base64 import b64encode, b64decode
 
-from .base import command, reader, displayer, clear_screen, print_formatted_text, HTML
+from prompt_toolkit import print_formatted_text, HTML
+
+from .base import command, clear_screen
+from hermit.qrcode import reader, displayer
 import hermit.ui.state as state
 
 from typing import Dict

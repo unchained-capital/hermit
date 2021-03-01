@@ -1,12 +1,13 @@
-from prompt_toolkit import print_formatted_text
+from prompt_toolkit import print_formatted_text, HTML
 from json import dumps
 
-from hermit.signer import BitcoinSigner, EchoSigner
+from hermit.signer import BitcoinSigner
 
-from .base import command, displayer, clear_screen, HTML
+from .base import command, clear_screen
 from .repl import repl
 from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
+from hermit.qrcode import displayer
 
 from typing import Dict
 
@@ -17,27 +18,6 @@ WalletCommands: Dict = {}
 def wallet_command(name):
     return command(name, WalletCommands)
 
-
-@wallet_command("sign-echo")
-def echo():
-    """usage:  sign-echo
-
-    Scans, "signs", and then displays a QR code.
-
-    Hermit will open a QR code reader window and wait for you to scan a
-    QR code.
-
-    Once scanned, the data in the QR code will be displayed on screen
-    and you will be prompted whether or not you want to "sign" the
-    "transaction".
-
-    If you agree, Hermit will open a window displaying the original QR
-    code.
-
-    Agreeing to "sign" does not require unlocking the wallet.
-
-    """
-    EchoSigner(state.Wallet, state.Session).sign(testnet=state.Testnet)
 
 
 @wallet_command("sign-bitcoin")
