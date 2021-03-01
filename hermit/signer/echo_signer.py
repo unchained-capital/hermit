@@ -14,7 +14,7 @@ class EchoSigner(Signer):
 
     def validate_request(self) -> None:
         """Validate the signature request
-        
+
         Does nothing :)
         """
         pass
@@ -25,9 +25,13 @@ class EchoSigner(Signer):
 
     def display_request(self) -> None:
         """Prints the signature request"""
-        print("""QR Code:
+        print(
+            """QR Code:
         {}
-        """.format(self.request))
+        """.format(
+                self.request
+            )
+        )
 
     def create_signature(self) -> None:
         """Create a fake signature
@@ -37,4 +41,4 @@ class EchoSigner(Signer):
         self.signature = self.request
 
     def _signature_label(self) -> str:
-        return 'Request'
+        return "Request"

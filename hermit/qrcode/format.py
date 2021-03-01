@@ -9,14 +9,14 @@ from hermit.errors import InvalidSignatureRequest
 def decode_qr_code_data(encoded: bytes) -> str:
     if not isinstance(encoded, (bytes,)):
         raise InvalidSignatureRequest("Can only decode bytes")
-    if encoded == b'':
+    if encoded == b"":
         raise InvalidSignatureRequest("Cannot decode empty bytes")
     try:
         compressed_bytes = b32decode(encoded)
         try:
             decompressed_bytes = decompress(compressed_bytes)
             try:
-                data = decompressed_bytes.decode('utf-8')
+                data = decompressed_bytes.decode("utf-8")
                 return data
             except UnicodeError:
                 raise InvalidSignatureRequest("Not valid UTF-8")
@@ -29,10 +29,10 @@ def decode_qr_code_data(encoded: bytes) -> str:
 def encode_qr_code_data(decoded: str) -> bytes:
     if not isinstance(decoded, (str,)):
         raise InvalidSignatureRequest("Can only encode strings")
-    if decoded.strip() == '':
+    if decoded.strip() == "":
         raise InvalidSignatureRequest("Cannot encode empty string")
     try:
-        uncompressed_bytes = decoded.encode('utf-8')
+        uncompressed_bytes = decoded.encode("utf-8")
         try:
             compressed_bytes = compress(uncompressed_bytes)
             try:

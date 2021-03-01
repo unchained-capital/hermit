@@ -4,7 +4,6 @@ from hermit.errors import HermitError, InvalidSignatureRequest
 
 
 class TestHermitErrors(object):
-
     def test_HermitError_raisable(self):
         with pytest.raises(HermitError):
             raise HermitError

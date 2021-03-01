@@ -3,10 +3,12 @@ import asyncio
 from .base import *
 import hermit.ui.state as state
 
+
 async def relock_wallet_if_timed_out():
     while True:
         await asyncio.sleep(0.5)
         await _handle_tick()
+
 
 async def _handle_tick():
     global Timeout

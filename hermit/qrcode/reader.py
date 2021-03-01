@@ -33,12 +33,7 @@ async def _capture_qr_code_async() -> Optional[str]:
             # code
             (x, y, w, h) = qrcode.rect
             # Draw this bounding box on the image
-            cv2.rectangle(
-                frame,
-                (x, y),
-                (x + w, y + h),
-                (0, 0, 255),
-                2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
             # Decode the QR code data
             encoded_data = qrcode.data

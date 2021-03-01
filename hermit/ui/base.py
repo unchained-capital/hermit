@@ -8,20 +8,23 @@ from hermit.qrcode import displayer, reader
 
 DeadTime = 30
 
+
 def clear_screen():
     print(chr(27) + "[2J")
+
 
 # is this even used?
 def reset_screen():
     print(chr(27) + "c")
 
-def command(name, commands:Dict):
+
+def command(name, commands: Dict):
     def _command_decorator(f):
         nonlocal name
         if name is None:
             name = f.name
         if name in commands:
-            raise Exception('command already defined: '+name)
+            raise Exception("command already defined: " + name)
 
         @wraps(f)
         def wrapper(*args, **kwargs):

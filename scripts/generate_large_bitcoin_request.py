@@ -3,7 +3,8 @@ from os.path import basename
 import string
 import random
 
-# python scripts/generate_large_bitcoin_request.py > tests/fixtures/large_bitcoin_signature_request.json 
+# python scripts/generate_large_bitcoin_request.py > tests/fixtures/large_bitcoin_signature_request.json
+
 
 def generate_large_bitcoin_request(N):
     header = """{
@@ -37,15 +38,21 @@ def generate_large_bitcoin_request(N):
             "amount": """
     tmp3 = """
         }"""
-    input_array = [(tmp1
-                    + ''.join([random.choice(string.hexdigits[:16]) for x in range(64)])
-                    + tmp2
-                    + ''.join([random.choice(string.digits[1:]) for x in range(7)])
-                    + tmp3) for x in range(N)]
-    input_array = ','.join(input_array)
+    input_array = [
+        (
+            tmp1
+            + "".join([random.choice(string.hexdigits[:16]) for x in range(64)])
+            + tmp2
+            + "".join([random.choice(string.digits[1:]) for x in range(7)])
+            + tmp3
+        )
+        for x in range(N)
+    ]
+    input_array = ",".join(input_array)
     print(header + input_array + footer)
 
-if __name__  == '__main__':
+
+if __name__ == "__main__":
     if len(argv) < 2:
         print("usage: {} NUM_INPUTS".format(basename(__file__)))
         exit(1)

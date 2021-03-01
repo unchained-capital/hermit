@@ -18,6 +18,7 @@ Banner = r"""
 You are in WALLET mode.  Type 'help' for help.               (v{})
 """
 
+
 def main():
     clear_screen()
     print(Banner.format(__version__))

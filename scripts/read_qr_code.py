@@ -14,9 +14,9 @@ The data contained in the QR code will be unwrapped and uncompressed
 before printing.
 """
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    if ('--help' in argv) or ('-h' in argv) or len(argv) != 2:
+    if ("--help" in argv) or ("-h" in argv) or len(argv) != 2:
         print(HELP)
         exit(1)
 

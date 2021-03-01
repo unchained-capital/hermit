@@ -7,8 +7,11 @@ from prompt_toolkit import PromptSession, print_formatted_text, HTML
 import hermit
 from hermit.errors import HermitError, InvalidSignatureRequest
 from hermit.qrcode import reader, displayer
-from hermit.wallet import (compressed_private_key_from_bip32,
-                           compressed_public_key_from_bip32, HDWallet)
+from hermit.wallet import (
+    compressed_private_key_from_bip32,
+    compressed_public_key_from_bip32,
+    HDWallet,
+)
 
 
 class Signer(object):
@@ -34,9 +37,7 @@ class Signer(object):
     BIP32_PATH_REGEX = "^m(/[0-9]+'?)+$"
     BIP32_NODE_MAX_VALUE = 2147483647
 
-    def __init__(self,
-                 signing_wallet: HDWallet,
-                 session: PromptSession = None) -> None:
+    def __init__(self, signing_wallet: HDWallet, session: PromptSession = None) -> None:
         self.wallet = signing_wallet
         self.session = session
         self.signature: Optional[Dict] = None
@@ -75,7 +76,7 @@ class Signer(object):
         """
         pass
 
-    def validate_bip32_path(self, bip32_path:str) -> None:
+    def validate_bip32_path(self, bip32_path: str) -> None:
         """Validate a BIP32 path
 
         Used by concrete subclasses to validate a BIP32 path in a
@@ -86,7 +87,7 @@ class Signer(object):
         if not re.match(self.BIP32_PATH_REGEX, bip32_path):
             err_msg = "invalid BIP32 path formatting"
             raise InvalidSignatureRequest(err_msg)
-        nodes = bip32_path.split('/')[1:]
+        nodes = bip32_path.split("/")[1:]
         node_values = [int(x.replace("'", "")) for x in nodes]
         for node_value in node_values:
             if node_value > self.BIP32_NODE_MAX_VALUE:
@@ -120,7 +121,7 @@ class Signer(object):
         """
         pass
 
-    def generate_child_keys(self, bip32_path:str) -> Dict:
+    def generate_child_keys(self, bip32_path: str) -> Dict:
         """Return keys at a given BIP32 path in the current wallet.
 
         The dictionary returned will contain the following items from
@@ -137,8 +138,8 @@ class Signer(object):
             xprv=xprv,
             xpub=xpub,
             private_key=compressed_private_key_from_bip32(xprv).hex(),
-            public_key=compressed_public_key_from_bip32(xpub).hex())
-
+            public_key=compressed_public_key_from_bip32(xpub).hex(),
+        )
 
     def _wait_for_request(self) -> None:
         self.request_data = reader.read_qr_code()
@@ -148,11 +149,12 @@ class Signer(object):
             try:
                 self.request = json.loads(self.request_data)
             except ValueError as e:
-                err_msg = ("Invalid signature request: {} ({})"
-                           .format(e, type(e).__name__))
+                err_msg = "Invalid signature request: {} ({})".format(
+                    e, type(e).__name__
+                )
                 raise HermitError(err_msg)
         else:
-            raise HermitError('No Request Data')
+            raise HermitError("No Request Data")
 
     def _confirm_create_signature(self) -> bool:
         self.display_request()
@@ -163,8 +165,7 @@ class Signer(object):
         else:
             response = input(prompt_msg)
 
-        return response.strip().lower().startswith('y')
-
+        return response.strip().lower().startswith("y")
 
     def _show_signature(self) -> None:
         name = self._signature_label()
@@ -172,9 +173,8 @@ class Signer(object):
         print(json.dumps(self.signature, indent=2))
         displayer.display_qr_code(self._serialized_signature(), name=name)
 
-
     def _serialized_signature(self) -> str:
         return json.dumps(self.signature)
 
     def _signature_label(self) -> str:
-        return 'Signature'
+        return "Signature"
