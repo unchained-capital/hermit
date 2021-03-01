@@ -1,5 +1,6 @@
 class HermitError(Exception):
     """Generic Hermit Error"""
+
     pass
 
 
@@ -12,5 +13,4 @@ class InvalidSignatureRequest(HermitError):
         :param message: more details on the error.
         """
 
-        HermitError.__init__(self,
-                             "Invalid signature request: {}.".format(message))
+        HermitError.__init__(self, "Invalid signature request: {}.".format(message))

@@ -2,11 +2,13 @@ from re import match
 from typing import Tuple
 
 from mnemonic import Mnemonic
-from pybitcointools import (bip32_ckd,
-                            bip32_privtopub,
-                            bip32_master_key,
-                            bip32_deserialize,
-                            bip32_extract_key)
+from pybitcointools import (
+    bip32_ckd,
+    bip32_privtopub,
+    bip32_master_key,
+    bip32_deserialize,
+    bip32_extract_key,
+)
 
 from hermit import shards
 from hermit.errors import HermitError
@@ -27,7 +29,7 @@ def compressed_public_key_from_bip32(bip32_xkey: str) -> bytes:
 
 def _hardened(id: int) -> int:
     hardening_offset = 2 ** 31
-    return (hardening_offset + id)
+    return hardening_offset + id
 
 
 def _decode_segment(segment: str) -> int:
@@ -38,8 +40,7 @@ def _decode_segment(segment: str) -> int:
 
 
 def bip32_sequence(bip32_path: str) -> Tuple[int, ...]:
-    """Turn a BIP32 path into a tuple of deriviation points
-    """
+    """Turn a BIP32 path into a tuple of deriviation points"""
     bip32_path_regex = "^m(/[0-9]+'?)+$"
 
     if not match(bip32_path_regex, bip32_path):
@@ -47,8 +48,9 @@ def bip32_sequence(bip32_path: str) -> Tuple[int, ...]:
 
     return tuple(
         _decode_segment(segment)
-        for segment in bip32_path[2:].split('/')
-        if len(segment) != 0)
+        for segment in bip32_path[2:].split("/")
+        if len(segment) != 0
+    )
 
 
 class HDWallet(object):

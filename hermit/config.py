@@ -31,16 +31,16 @@ class HermitConfig:
     #: * `restoreBackup` -- copy from backup storage to file system
     #:
     DefaultCommands = {
-        'persistShards': "cat {0} | gzip -c - > {0}.persisted",
-        'backupShards': "cp {0}.persisted {0}.backup",
-        'restoreBackup': "zcat {0}.backup > {0}",
-        'getPersistedShards': "zcat {0}.persisted > {0}"
+        "persistShards": "cat {0} | gzip -c - > {0}.persisted",
+        "backupShards": "cp {0}.persisted {0}.backup",
+        "restoreBackup": "zcat {0}.backup > {0}",
+        "getPersistedShards": "zcat {0}.persisted > {0}",
     }
 
     DefaultPaths = {
-        'config_file':  '/etc/hermit.yaml',
-        'shards_file': '/tmp/shard_words.bson',
-        'plugin_dir': '/var/lib/hermit',
+        "config_file": "/etc/hermit.yaml",
+        "shards_file": "/tmp/shard_words.bson",
+        "plugin_dir": "/var/lib/hermit",
     }
 
     def __init__(self, config_file: str):
@@ -52,20 +52,20 @@ class HermitConfig:
         """
 
         self.config_file = config_file
-        self.shards_file = self.DefaultPaths['shards_file']
-        self.plugin_dir = self.DefaultPaths['plugin_dir']
+        self.shards_file = self.DefaultPaths["shards_file"]
+        self.plugin_dir = self.DefaultPaths["plugin_dir"]
         self.config: Dict = {}
         self.commands: Dict = {}
 
         if path.exists(config_file):
             self.config = yaml.safe_load(open(config_file))
 
-        if 'shards_file' in self.config:
-            self.shards_file = self.config['shards_file']
-        if 'plugin_dir' in self.config:
-            self.plugin_dir = self.config['plugin_dir']
-        if 'commands' in self.config:
-            self.commands = self.config['commands']
+        if "shards_file" in self.config:
+            self.shards_file = self.config["shards_file"]
+        if "plugin_dir" in self.config:
+            self.plugin_dir = self.config["plugin_dir"]
+        if "commands" in self.config:
+            self.commands = self.config["commands"]
 
         defaults = self.DefaultCommands.copy()
 
@@ -79,4 +79,6 @@ class HermitConfig:
 
     @classmethod
     def load(cls):
-        return HermitConfig(environ.get("HERMIT_CONFIG", cls.DefaultPaths['config_file']))
+        return HermitConfig(
+            environ.get("HERMIT_CONFIG", cls.DefaultPaths["config_file"])
+        )

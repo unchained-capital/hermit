@@ -18,7 +18,7 @@ async def _display_qr_code_async(data: str, name: str = "Preview") -> None:
     image = create_qr_code_image(data)
 
     cv2.namedWindow(name)
-    cv2.imshow(name, np.array(image.convert('RGB'))[:, :, ::-1].copy())
+    cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
 
     while window_is_open(name):
         await asyncio.sleep(0.01)

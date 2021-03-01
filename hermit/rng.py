@@ -4,6 +4,7 @@ import zlib
 from prompt_toolkit import prompt, print_formatted_text, HTML
 from typing import List
 
+
 def self_entropy(input: str) -> float:
     """Measure the self-entropy of a given string
 
@@ -11,8 +12,8 @@ def self_entropy(input: str) -> float:
     https://en.wikipedia.org/wiki/Entropy_(information_theory)#Data_as_a_Markov_process
 
     """
-    inputBytes = input.encode('utf8')
-    counts = [0]*256
+    inputBytes = input.encode("utf8")
+    counts = [0] * 256
     for byte in inputBytes:
         counts[byte] += 1
     total = len(inputBytes)
@@ -28,7 +29,7 @@ def compression_entropy(input: str) -> float:
 
     Compresses the string with the zlib algorithm.
     """
-    return 8 * len(zlib.compress(input.encode('utf-8'), 9))
+    return 8 * len(zlib.compress(input.encode("utf-8"), 9))
 
 
 def entropy(input: str) -> float:
@@ -45,11 +46,17 @@ def enter_randomness(chunks: int) -> bytes:
     The total number of bits of randomness is equal to `chunks * 256`.
 
     """
-    print_formatted_text(HTML("""
+    print_formatted_text(
+        HTML(
+            """
 <b>Enter at least {} bits worth of random data.</b>
 
 Hit <b>CTRL-D</b> when done.
-""".format(chunks * 256)))
+""".format(
+                chunks * 256
+            )
+        )
+    )
     lines: List = []
     input_entropy = 0.0
 
@@ -59,18 +66,16 @@ Hit <b>CTRL-D</b> when done.
 
     while True:
         try:
-            prompt_msg = (
-                "Collected {0:5.1f} bits>:"
-                .format(input_entropy))
+            prompt_msg = "Collected {0:5.1f} bits>:".format(input_entropy)
             line = prompt(prompt_msg).strip()
         except EOFError:
             break
 
         lines += line
-        input_entropy = entropy(''.join(lines))
+        input_entropy = entropy("".join(lines))
 
         if input_entropy > target:
-            output += hashlib.sha256(''.join(lines).encode('utf-8')).digest()
+            output += hashlib.sha256("".join(lines).encode("utf-8")).digest()
             target += 256
 
     return output
@@ -85,7 +90,7 @@ class RandomGenerator:
     """
 
     def __init__(self) -> None:
-        self.bytes = b''
+        self.bytes = b""
         self.size = 0
         self.active = True
 
@@ -96,7 +101,7 @@ class RandomGenerator:
         self.size += len(more)
 
     def random(self, size: int) -> bytes:
-        while(self.size < size):
+        while self.size < size:
             self.get_more(size - self.size)
 
         out = self.bytes[:size]
