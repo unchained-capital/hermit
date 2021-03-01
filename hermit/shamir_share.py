@@ -13,13 +13,16 @@ from shamir_mnemonic import (
     _decrypt,
     _int_from_indices,
     _int_to_indices,
+    mnemonic_to_indices,
     mnemonic_from_indices,
     RADIX_BITS,
-    mnemonic_to_indices,
     bits_to_bytes,
-    decode_mnemonic,
     encode_mnemonic,
+    decode_mnemonic,
 )
+
+# unused but later imported in shard_set.py (FIXME: very hackey!)
+from shamir_mnemonic import combine_mnemonics, generate_mnemonics  # type: ignore  # noqa: F401
 
 # shamir_mnemonic expects us to update its local copy of RANDOM_BYTES in order
 # to override the random number generator. Instead of exposing this complication

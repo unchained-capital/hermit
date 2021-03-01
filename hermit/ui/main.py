@@ -6,6 +6,10 @@ from .wallet import clear_screen, wallet_repl
 from .relocker import asyncio, relock_wallet_if_timed_out
 from hermit import __version__
 
+# HACK to initiate all the commands:
+from .common import unlock, lock, clear, toggle_debug, version  # type: ignore  # noqa: F401
+
+
 Banner = r"""
  _   _                     _ _
 | | | |                   (_) |      Command-line, sharded HD wallet
