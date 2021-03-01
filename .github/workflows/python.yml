@@ -28,7 +28,7 @@ jobs:
         black . --diff --check
     - name: Lint with flake8
       run: |
-        flake8 . --count --statistics
+        flake8 hermit --count --statistics
     - name: Test with pytest
       run: |
         pytest --cov=hermit --cov-config=test/.coveragerc --ignore=vendor
