@@ -1,7 +1,7 @@
 from prompt_toolkit import print_formatted_text
 from json import dumps
 
-from hermit.signer import BitcoinSigner
+from hermit.signer import BitcoinSigner, EchoSigner
 
 from .base import *
 from .repl import repl

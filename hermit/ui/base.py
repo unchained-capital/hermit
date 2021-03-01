@@ -9,6 +9,7 @@ from hermit.qrcode import displayer, reader
 DeadTime = 60
 
 
+
 def clear_screen():
     print(chr(27) + "[2J")
 

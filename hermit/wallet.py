@@ -1,6 +1,5 @@
 from buidl import HDPrivateKey, HDPublicKey
 from mnemonic import Mnemonic
-
 from hermit import shards
 from hermit.errors import HermitError
 
