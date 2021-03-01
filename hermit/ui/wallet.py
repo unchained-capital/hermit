@@ -19,7 +19,6 @@ def wallet_command(name):
     return command(name, WalletCommands)
 
 
-
 @wallet_command("sign-bitcoin")
 def sign_bitcoin(unsigned_psbt_b64=None):
     """usage:  sign-bitcoin
