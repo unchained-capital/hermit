@@ -10,6 +10,7 @@ DeadTime = 60
 
 
 
+
 def clear_screen():
     print(chr(27) + "[2J")
 
