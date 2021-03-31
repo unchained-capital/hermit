@@ -1,70 +1,125 @@
 from typing import Optional
 
-
 from pyzbar import pyzbar
-import asyncio
 import cv2
 
+from buidl import PSBT
 
-from hermit.errors import InvalidSignatureRequest
-from .format import decode_qr_code_data
-from .utils import window_is_open
+
+# TODO: move some of this to buidl?
+
+
+HEX_CHARS_RE = re.compile('^[0-9a-f]*$')
+
+def uses_only_hex_chars(string):
+    return bool(HEX_CHARS_RE.match(string))
+
+
+def _is_intable(int_as_string):
+    try:
+        int(int_as_astring)
+        return True
+    except Exception:
+        return False
+
+
+def decode_bcur(string):
+    """
+    Returns x, y, checksum, payload, err_msg
+    """
+
+    string = string.upper()
+    if not string.lower().startswith("UR:BYTES/"):
+        return None, None, None, None, "Doesn't start with UR:BYTES/"
+
+    bcur_parts = string.split("/")
+    if len(parts) != 4:
+        return None, None, None, None, "Doesn't have 3 slashes"
+
+    _, xofy, checksum, msg = bcur_parts
+
+    xofy_parts = xofy.split("OF")
+    if len(xofy_parts) != 2:
+        return None, None, None, None, "xOFy section malformed"
+
+    if not _is_intable(xofy_parts[0]) or not _is_intable(xofy_parts[1]):
+        return None, None, None, None, "xOFy must be integers"
+
+    x_int = int(xofy_parts[0])
+    y_int = int(xofy_parts[1])
+
+    if x_int > y_int: 
+        return None, None, None, None, "x must be >= y (in xOFy)"
+
+    if len(checksum) != 58:
+        return None, None, None, None, "checksum must be 58 chars"$a
+
+    if not uses_only_hex_chars(checksum):
+        return None, None, None, None, "checksum can only contain hexadecimal characters"
+
+    if not uses_only_hex_chars(msg):
+        return None, None, None, None, "Payload can only contain hexadecimal characters"
+
+    return x_int, y_int, checksum, payload, ""
+
+
+def read_qrs(frame):
+    barcodes = pyzbar.decode(frame)
+    num_qrs_needed = 1  # for QR gif
+    qrs_array = []
+    for barcode in barcodes:
+        x, y , w, h = barcode.rect
+        qrcode_data = barcode.data.decode('utf-8')
+        cv2.rectangle(frame, (x, y),(x+w, y+h), (0, 255, 0), 2)
+ 
+        print("FOUND", qrcode_data)
+        x_int, y_int, checksum, payload, err_msg = decode_bcur(qrcode_data)
+        if err_msg:
+            return frame, "", f"Invalid blockchain commons universal resource format v1 {err_msg}"
+
+        if y_int > num_qrs_needed:
+            num_qrs_needed = y_int
+
+        decoded = bcur_decode(data=payload, checksum=checksum)
+
+        print("Adding to array")
+        qrs_array[x_int-1] = decoded
+
+    if len(qrs_array) < num_qrs_needed:
+        err_msg = f"Scanned {len(qrs_array)} but needed {num_qrs_needed} QR codes! Try scanning again."
+        return frame, "", err_msg
+
+    # Repackage qr gifs into one
+
+    # This will throw an error if it's a valid QR but not a valid PSBT
+    try:
+        PSBT.parse_base64(qrcode_data)
+    except Exception as e:
+        print("PSBT Decode Error:", e)
+        print("Original PSBT:", qrcode_data)
+        return frame, qrcode_data, str(e)
+
+    return frame, "", "Could not decode a valid QR code"
 
 
 def read_qr_code() -> Optional[str]:
-    task = _capture_qr_code_async()
-    return asyncio.get_event_loop().run_until_complete(task)
+    # Some useful info about pyzbar:
+    # https://towardsdatascience.com/building-a-barcode-qr-code-reader-using-python-360e22dfb6e5
 
-
-async def _capture_qr_code_async() -> Optional[str]:
-    capture = _start_camera()
-    preview_dimensions = (640, 480)
     decoded_data = None
-    encoded_data = None
-    window_name = "Signature Request QR Code Scanner"
-    cv2.namedWindow(window_name)
+    camera = cv2.VideoCapture(0)
+    ret, frame = camera.read()
 
-    while window_is_open(window_name):
-        ret, frame = capture.read()
-        frame = cv2.resize(frame, preview_dimensions)
+    while ret:
+        ret, frame = camera.read()  # TODO: DRY this out?
+        frame, decoded_data, err_msg = read_qrs(frame)
 
-        for qrcode in pyzbar.decode(frame):
-            # Extract the position & dimensions of box bounding the QR
-            # code
-            (x, y, w, h) = qrcode.rect
-            # Draw this bounding box on the image
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
-            # Decode the QR code data
-            encoded_data = qrcode.data
-            try:
-                decoded_data = decode_qr_code_data(encoded_data)
-            except InvalidSignatureRequest as e:
-                print("Invalid signature request: {}".format(str(e)))
-
-            # Use the first QR code found
-            if decoded_data is not None:
-                break
-
-        # Preview the (reversed) frame
+        #TODO mirror-flip the image?
         mirror = cv2.flip(frame, 1)
-        cv2.imshow(window_name, mirror)
-
-        # Break out of the loop if we found a valid QR code
-        if decoded_data:
+        cv2.imshow("Scan the PSBT You Want to Sign", mirror)
+        if decoded_data or cv2.waitKey(1) & 0xFF == 27:
             break
 
-        await asyncio.sleep(0.01)
-
-    # Clean up windows before exiting.
-    capture.release()
-    cv2.destroyWindow(window_name)
-
+    camera.release()
+    cv2.destroyWindow()
     return decoded_data
-
-
-def _start_camera() -> cv2.VideoCapture:
-    capture = cv2.VideoCapture(0)
-    if not capture.isOpened():
-        raise IOError("Cannot open webcam")
-    return capture
