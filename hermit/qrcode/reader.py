@@ -1,11 +1,11 @@
 from typing import Optional
 
+from binascii import b2a_base64
 from pyzbar import pyzbar
 import cv2
 import re
 
 from buidl import PSBT
-
 from buidl.bech32 import bcur_decode
 
 from prompt_toolkit import print_formatted_text  # FIXME
@@ -93,7 +93,11 @@ def read_single_qr(frame):
             return {}, f"Invalid blockchain commons universal resource format v1:\n{err_msg}"
 
         print_formatted_text("before")
-        decoded = bcur_decode(data=payload, checksum=checksum)  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
+        try:
+            enc = bcur_decode(data=payload, checksum=checksum)  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
+            clear = b2a_base64(enc).strip().decode()
+        except Exception as e:
+            print("BINGO", e)
         print_formatted_text("after")
 
         single_qr_dict = {
@@ -101,7 +105,7 @@ def read_single_qr(frame):
             "y_int": y_int,
             "checksum": checksum,
             "payload": payload,
-            "decoded": decoded,
+            "clear": clear,
         }
 
         print_formatted_text(f"returing single {single_qr_dict}...")
@@ -124,11 +128,12 @@ def read_qr_code() -> Optional[str]:
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
     while psbt_b64 == '':
         ret, frame = camera.read()
-        single_qr_dict, err_msg = read_single_qr(frame)
-
-        #TODO mirror-flip the image?
+        #mirror-flip the image for UI
         mirror = cv2.flip(frame, 1)
         cv2.imshow("Scan the PSBT You Want to Sign", mirror)
+
+        single_qr_dict, err_msg = read_single_qr(frame)
+
         if err_msg:
             print_formatted_text("red")
             print_formatted_text(err_msg)
