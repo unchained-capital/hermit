@@ -39,8 +39,8 @@ def sign_bitcoin(unsigned_psbt_b64=''):
 
     """
     BitcoinSigner(
-        state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64
-    ).sign(testnet=state.Testnet)
+        state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64, testnet=state.Testnet,
+    ).sign()
 
 
 @wallet_command("export-xpub")
@@ -60,34 +60,11 @@ def export_xpub(path):
       wallet> export-xpub m/44'/60'/2'
 
     """
-    xpub = state.Wallet.extended_public_key(path)
+    xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
     name = "Extended public key for BIP32 path {}:".format(path)
     print_formatted_text("\n" + name)
     print_formatted_text(xpub)
     displayer.display_qr_code(dumps(dict(bip32_path=path, xpub=xpub)), name=name)
-
-
-@wallet_command("export-pub")
-def export_pub(path):
-    """usage:  export-pub BIP32_PATH
-
-    Displays the public key at a given BIP32 path.
-
-    Hermit will open a window displaying the public key as a QR code.
-
-    Exporting a public key requires unlocking the wallet.
-
-    Examples:
-
-      wallet> export-pub m/45'/0'/0'/10/20
-      wallet> export-pub m/44'/60'/2'/1/12
-
-    """
-    pubkey = state.Wallet.public_key(path)
-    name = "Public key for BIP32 path {}:".format(path)
-    print_formatted_text("\n" + name)
-    print_formatted_text(pubkey)
-    displayer.display_qr_code(dumps(dict(bip32_path=path, pubkey=pubkey)), name=name)
 
 
 @wallet_command("shards")

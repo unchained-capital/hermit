@@ -23,12 +23,14 @@ class BitcoinSigner(object):
         signing_wallet: HDWallet,
         session: PromptSession = None,
         unsigned_psbt_b64: str = None,
+        testnet: bool = False,
     ) -> None:
         self.wallet = signing_wallet
         self.session = session
         self.unsigned_psbt_b64: Optional[str] = unsigned_psbt_b64
+        self.testnet = testnet
 
-    def sign(self, testnet: bool = False) -> None:
+    def sign(self) -> None:
         """Initiate signing.
 
         Will wait for a signature request, handle validation,
@@ -39,7 +41,6 @@ class BitcoinSigner(object):
             print_formatted_text("WARNING: wallet is LOCKED.")
             print_formatted_text("You can inspect an unsigned PSBT, but you cannot sign it without first unlocking the wallet.")
 
-        self.testnet = testnet
         if not self.unsigned_psbt_b64:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
             self.unsigned_psbt_b64 = reader.read_qr_code()
