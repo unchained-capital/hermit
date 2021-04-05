@@ -44,28 +44,33 @@ def parse_bcur(string):
         return None, None, None, None, "Doesn't start with UR:BYTES/"
 
     bcur_parts = string.split("/")
-    if len(bcur_parts) != 4:
-        return None, None, None, None, "Doesn't have 3 slashes"
+    if len(bcur_parts) == 2:
+        # Non-animated QR code (just 1 qr, doesn't display 1of1 nor checksum)
+        _, payload = bcur_parts
+        checksum, x_int, y_int = None, 1, 1
+    elif len(bcur_parts) == 4:
+        # Animated QR code
+        _, xofy, checksum, payload = bcur_parts
 
-    _, xofy, checksum, payload = bcur_parts
+        xofy_parts = xofy.split("OF")
+        if len(xofy_parts) != 2:
+            return None, None, None, None, "xOFy section malformed"
 
-    xofy_parts = xofy.split("OF")
-    if len(xofy_parts) != 2:
-        return None, None, None, None, "xOFy section malformed"
+        if not _is_intable(xofy_parts[0]) or not _is_intable(xofy_parts[1]):
+            return None, None, None, None, f"y in xOFy must be an integer: {xofy_parts}"
 
-    if not _is_intable(xofy_parts[0]) or not _is_intable(xofy_parts[1]):
-        return None, None, None, None, f"y in xOFy must be an integer: {xofy_parts}"
+        x_int = int(xofy_parts[0])
+        y_int = int(xofy_parts[1])
 
-    x_int = int(xofy_parts[0])
-    y_int = int(xofy_parts[1])
+        if x_int > y_int: 
+            return None, None, None, None, "x must be >= y (in xOFy)"
+    else:
+        return None, None, None, None, "Doesn't have 3-4 slashes"
 
-    if x_int > y_int: 
-        return None, None, None, None, "x must be >= y (in xOFy)"
-
-    if len(checksum) != 58:
+    if checksum and len(checksum) != 58:
         return None, None, None, None, "checksum must be 58 chars"
 
-    if not uses_only_bech32_chars(checksum):
+    if checksum and not uses_only_bech32_chars(checksum):
         return None, None, None, None, f"checksum can only contain bech32 characters: {checksum}"
 
     if not uses_only_bech32_chars(payload):
@@ -80,9 +85,7 @@ def read_single_qr(frame):
     """
     barcodes = pyzbar.decode(frame)
     # we don't know how many QRs we'll need until the scanning begins, so initialize as none
-    print_formatted_text("starting loop")
     for barcode in barcodes:
-        print_formatted_text("this is 1 frame")
         x, y , w, h = barcode.rect
         qrcode_data = barcode.data.decode('utf-8')
         cv2.rectangle(frame, (x, y),(x+w, y+h), (0, 255, 0), 2)
@@ -91,12 +94,6 @@ def read_single_qr(frame):
         x_int, y_int, checksum, payload, err_msg = parse_bcur(qrcode_data)
         if err_msg:
             return {}, f"Invalid blockchain commons universal resource format v1:\n{err_msg}"
-
-        print_formatted_text("before")
-        print_formatted_text("xint", x_int)
-        print_formatted_text("yint", y_int)
-        print_formatted_text("checksum", checksum)
-        print_formatted_text("payload", payload)
 
         single_qr_dict = {
             "x_int": x_int,
@@ -125,11 +122,11 @@ def read_qr_code() -> Optional[str]:
     ret, frame = camera.read()  # can delete this line?
 
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
-    print_formatted_text("Kicking off outer loop")
-    while psbt_payload == '': 
+    print_formatted_text("Starting QR code scanner (window should pop-up)...")
+    while True: 
         if qrs_array:
             num_scanned = len([x for x in qrs_array if x is not None])
-            print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)}")
+            print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)} QRs")
 
         ret, frame = camera.read()
 
@@ -143,10 +140,10 @@ def read_qr_code() -> Optional[str]:
             break
 
         if err_msg:
-            print_formatted_text("red:" + err_msg)
+            if err_msg != "No qr found":
+                # Otherwise we get constant errors for tons of frames where the scanner doesn't see QR code
+                print_formatted_text("PSBT scan error:" + err_msg)
             continue
-
-        print_formatted_text("We made it htis far")
 
         # First time we've scanned a QR gif, initializing the results array and checksum
         if qrs_array == []:
@@ -154,7 +151,7 @@ def read_qr_code() -> Optional[str]:
             checksum = single_qr_dict["checksum"]
 
         if qrs_array[single_qr_dict["x_int"]-1] is None:
-            print_formatted_text("Adding to array")  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
+            print_formatted_text("Adding to array")
             qrs_array[single_qr_dict["x_int"]-1] = single_qr_dict["payload"]
         else:
             print_formatted_text(f"Already scanned QR #{single_qr_dict['x_int']}, ignoring")
@@ -163,6 +160,7 @@ def read_qr_code() -> Optional[str]:
         if None not in qrs_array:
             psbt_payload = "".join(qrs_array)
             print_formatted_text("Finalizing PSBT payload", psbt_payload)
+            break
 
     print_formatted_text("Releasing camera and destorying window")
     camera.release()
