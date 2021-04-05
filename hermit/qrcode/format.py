@@ -30,15 +30,4 @@ def encode_qr_code_data(decoded: str) -> bytes:
         raise InvalidSignatureRequest("Can only encode strings")
     if decoded.strip() == "":
         raise InvalidSignatureRequest("Cannot encode empty string")
-    try:
-        uncompressed_bytes = decoded.encode("utf-8")
-        try:
-            compressed_bytes = compress(uncompressed_bytes)
-            try:
-                return b32encode(compressed_bytes)
-            except TypeError:
-                raise InvalidSignatureRequest("Failed to Base32-encode")
-        except OSError:
-            raise InvalidSignatureRequest("Failed to gzip")
-    except UnicodeError:
-        raise InvalidSignatureRequest("Failed to encode as UTF-8")
+    return decoded.encode("utf-8")
