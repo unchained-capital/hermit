@@ -61,10 +61,11 @@ def export_xpub(path):
 
     """
     xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
-    name = "Extended public key for BIP32 path {}:".format(path)
-    print_formatted_text("\n" + name)
-    print_formatted_text(xpub)
-    displayer.display_qr_code(dumps(dict(bip32_path=path, xpub=xpub)), name=name)
+    xfp_hex = state.Wallet.xfp_hex
+    title = f"Extended Public Key Info"
+    to_display = f"[{xfp_hex}/{path[2:]}]{xpub}"
+    print_formatted_text(f"\n{title}:\n{to_display}")
+    displayer.display_qr_code(data=to_display, name=title)
 
 
 @wallet_command("shards")

@@ -34,6 +34,6 @@ def create_qr_code_image(data: str) -> PilImage:
         box_size=10,
         border=4,
     )
-    qr.add_data(encode_qr_code_data(data))
+    qr.add_data(encode_qr_code_data(decoded=data))
     qr.make(fit=True)
     return qr.make_image(fill_color="black", back_color="white")
