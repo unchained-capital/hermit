@@ -109,9 +109,9 @@ def read_single_qr(frame):
         }
 
         print_formatted_text(f"returing single {single_qr_dict}...")
-        return single_qr_dict, ""
+        return frame, single_qr_dict, ""
 
-    return {}, "No qr found"
+    return frame, {}, "No qr found"
 
 
 def read_qr_code() -> Optional[str]:
@@ -128,15 +128,19 @@ def read_qr_code() -> Optional[str]:
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
     while psbt_b64 == '':
         ret, frame = camera.read()
-        #mirror-flip the image for UI
+
+        frame, single_qr_dict, err_msg = read_single_qr(frame)
+
+        # Mirror-flip the image for UI
         mirror = cv2.flip(frame, 1)
         cv2.imshow("Scan the PSBT You Want to Sign", mirror)
 
-        single_qr_dict, err_msg = read_single_qr(frame)
+        # Unclear why this line matters, but if we don't include it then then the scan-preview won't display (at least on macOS):
+        if cv2.waitKey(1) & 0xFF == 27:
+            break
 
         if err_msg:
-            print_formatted_text("red")
-            print_formatted_text(err_msg)
+            print_formatted_text("red:" + err_msg)
             continue
 
         print_formatted_text("We made it htis far")
