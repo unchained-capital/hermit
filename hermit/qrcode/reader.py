@@ -93,19 +93,16 @@ def read_single_qr(frame):
             return {}, f"Invalid blockchain commons universal resource format v1:\n{err_msg}"
 
         print_formatted_text("before")
-        try:
-            enc = bcur_decode(data=payload, checksum=checksum)  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
-            clear = b2a_base64(enc).strip().decode()
-        except Exception as e:
-            print("BINGO", e)
-        print_formatted_text("after")
+        print_formatted_text("xint", x_int)
+        print_formatted_text("yint", y_int)
+        print_formatted_text("checksum", checksum)
+        print_formatted_text("payload", payload)
 
         single_qr_dict = {
             "x_int": x_int,
             "y_int": y_int,
             "checksum": checksum,
             "payload": payload,
-            "clear": clear,
         }
 
         print_formatted_text(f"returing single {single_qr_dict}...")
@@ -118,15 +115,20 @@ def read_qr_code() -> Optional[str]:
     # Some useful info about pyzbar:
     # https://towardsdatascience.com/building-a-barcode-qr-code-reader-using-python-360e22dfb6e5
 
+    # initialize variables
     qrs_array = []
-    psbt_b64 = ''
+    psbt_checksum, psbt_payload = '', ''
 
     camera = cv2.VideoCapture(0)
     ret, frame = camera.read()  # can delete this line?
 
-    print_formatted_text("Kicking off outer loop")
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
-    while psbt_b64 == '':
+    print_formatted_text("Kicking off outer loop")
+    while psbt_payload == '': 
+        if qrs_array:
+            num_scanned = len([x for x in qrs_array if x is not None])
+            print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)}")
+
         ret, frame = camera.read()
 
         frame, single_qr_dict, err_msg = read_single_qr(frame)
@@ -134,9 +136,8 @@ def read_qr_code() -> Optional[str]:
         # Mirror-flip the image for UI
         mirror = cv2.flip(frame, 1)
         cv2.imshow("Scan the PSBT You Want to Sign", mirror)
-
-        # Unclear why this line matters, but if we don't include it then then the scan-preview won't display (at least on macOS):
         if cv2.waitKey(1) & 0xFF == 27:
+            # Unclear why this line matters, but if we don't include this immediately after `imshow` then then the scanner preview won't display (on macOS):
             break
 
         if err_msg:
@@ -145,29 +146,37 @@ def read_qr_code() -> Optional[str]:
 
         print_formatted_text("We made it htis far")
 
-        # First time we've scanned a QR gif, initializing the result array
+        # First time we've scanned a QR gif, initializing the results array and checksum
         if qrs_array == []:
             qrs_array = [None for _ in range(single_qr_dict["y_int"])]
+            checksum = single_qr_dict["checksum"]
 
         if qrs_array[single_qr_dict["x_int"]-1] is None:
-            print_formatted_text("Already scanned this QR, ignore")
-        else:
             print_formatted_text("Adding to array")  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
             qrs_array[single_qr_dict["x_int"]-1] = single_qr_dict["payload"]
-
-        if cv2.waitKey(1) & 0xFF == 27:
-            break
+        else:
+            print_formatted_text(f"Already scanned QR #{single_qr_dict['x_int']}, ignoring")
 
         # TODO: something more performant?
         if None not in qrs_array:
-            psbt_b64 = ".".join(qrs_array)
-            print_formatted_text("Finalizing PSBT", psbt_b64)
+            psbt_payload = "".join(qrs_array)
+            print_formatted_text("Finalizing PSBT payload", psbt_payload)
 
-    if psbt_b64:
-        # need the if clause in case of user escaping
+    if psbt_payload:
+        # need the if clause in case of user escaping during QR scanning
+        # TODO: streamline control logic to avoid this if statement?
+
+        try:
+            enc = bcur_decode(data=psbt_payload, checksum=checksum)  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
+            psbt_b64 = b2a_base64(enc).strip().decode()
+        except Exception as e:
+            print("BINGO", e)
+        print_formatted_text("after")
+
         try:
             # This will throw an error if it's a valid QR but not a valid PSBT
             PSBT.parse_base64(psbt_b64)
+            print_formatted_text(f"PSBT {psbt_b64} successfully parsed")
         except Exception as e:
             print_formatted_text("PSBT Decode Error:", e)
             print_formatted_text("Original PSBT:", psbt_b64)
@@ -177,5 +186,5 @@ def read_qr_code() -> Optional[str]:
     camera.release()
     cv2.destroyWindow()
 
-    print_formatted_text("Returning outer loop")
+    print_formatted_text(f"Returning outer loop {psbt_b64}")
     return psbt_b64
