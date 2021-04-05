@@ -34,7 +34,7 @@ docs:
 	$(SPHINX_BUILD) -c docs hermit docs/_build
 
 clean:
-	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info $(VENV_DIR)
+	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info $(VENV_DIR) /tmp/shard_words.bson*
 
 freeze:
 	$(PIP) freeze -l > $(PYTHON_FROZEN_REQUIREMENTS)
