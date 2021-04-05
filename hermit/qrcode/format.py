@@ -16,8 +16,7 @@ def decode_qr_code_data(encoded: bytes) -> str:
         try:
             decompressed_bytes = decompress(compressed_bytes)
             try:
-                data = decompressed_bytes.decode("utf-8")
-                return data
+                return decompressed_bytes.decode("utf-8")
             except UnicodeError:
                 raise InvalidSignatureRequest("Not valid UTF-8")
         except OSError:
@@ -36,8 +35,7 @@ def encode_qr_code_data(decoded: str) -> bytes:
         try:
             compressed_bytes = compress(uncompressed_bytes)
             try:
-                data = b32encode(compressed_bytes)
-                return data
+                return b32encode(compressed_bytes)
             except TypeError:
                 raise InvalidSignatureRequest("Failed to Base32-encode")
         except OSError:
