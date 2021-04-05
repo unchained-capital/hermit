@@ -20,7 +20,7 @@ def wallet_command(name):
 
 
 @wallet_command("sign-bitcoin")
-def sign_bitcoin(unsigned_psbt_b64=None):
+def sign_bitcoin(unsigned_psbt_b64=''):
     """usage:  sign-bitcoin
 
     Create a signature for a Bitcoin transaction.

@@ -34,21 +34,26 @@ class BitcoinSigner(object):
         Will wait for a signature request, handle validation,
         confirmation, generation, and display of a signature.
         """
+        if not self.wallet.unlocked():
+            # TODO: add UX flow where the user inspects the TX and can then unlock the wallet?
+            print_formatted_text("WARNING: wallet is LOCKED.")
+            print_formatted_text("You can inspect an unsigned PSBT, but you cannot sign it without first unlocking the wallet.")
 
         self.testnet = testnet
         if not self.unsigned_psbt_b64:
-            # Allow scanning PSBT via webcam if not already passed in as an argument
-            self._wait_for_qrscan()
-        if self.unsigned_psbt_b64:
-            self.parse_psbt()
-            self.validate_psbt()
-            self.display_request()
-            if self._confirm_create_signature():
-                self.create_signature()
-                self._show_signature()
+            # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
+            self.unsigned_psbt_b64 = reader.read_qr_code()
 
-    def _wait_for_qrscan(self) -> None:
-        self.unsigned_psbt_b64 = reader.read_qr_code()
+        self.parse_psbt()
+        self.validate_psbt()
+        self.display_request()
+        if not self.wallet.unlocked():
+            print_formatted_text("Wallet is LOCKED, aborting without attempting to sign")
+            return
+
+        if self._confirm_create_signature():
+            self.create_signature()
+            self._show_signature()
 
     def parse_psbt(self) -> None:
         if self.unsigned_psbt_b64 is None:

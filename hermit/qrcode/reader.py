@@ -115,6 +115,8 @@ def read_qr_code() -> Optional[str]:
     # Some useful info about pyzbar:
     # https://towardsdatascience.com/building-a-barcode-qr-code-reader-using-python-360e22dfb6e5
 
+    # FIXME: get rid of all the debug prints in here
+
     # initialize variables
     qrs_array = []
     psbt_checksum, psbt_payload = '', ''
@@ -162,29 +164,31 @@ def read_qr_code() -> Optional[str]:
             psbt_payload = "".join(qrs_array)
             print_formatted_text("Finalizing PSBT payload", psbt_payload)
 
-    if psbt_payload:
-        # need the if clause in case of user escaping during QR scanning
-        # TODO: streamline control logic to avoid this if statement?
-
-        try:
-            enc = bcur_decode(data=psbt_payload, checksum=checksum)  # TODO: NEEDS b2a_base64(enc).strip().decode() ?
-            psbt_b64 = b2a_base64(enc).strip().decode()
-        except Exception as e:
-            print("BINGO", e)
-        print_formatted_text("after")
-
-        try:
-            # This will throw an error if it's a valid QR but not a valid PSBT
-            PSBT.parse_base64(psbt_b64)
-            print_formatted_text(f"PSBT {psbt_b64} successfully parsed")
-        except Exception as e:
-            print_formatted_text("PSBT Decode Error:", e)
-            print_formatted_text("Original PSBT:", psbt_b64)
-            raise(e)  # TODO: better error handling
-
     print_formatted_text("Releasing camera and destorying window")
     camera.release()
-    cv2.destroyWindow()
+    # For some reason, this breaks the hermit UI?:
+    # cv2.destroyWindow()
 
-    print_formatted_text(f"Returning outer loop {psbt_b64}")
-    return psbt_b64
+    # TODO: better/consistent error handling on all these failure cases
+
+    if not psbt_payload:
+        # need the if clause in case of user escaping during QR scanning
+        # TODO: streamline control logic to avoid this if statement?
+        return
+
+    try:
+        enc = bcur_decode(data=psbt_payload, checksum=checksum)
+        psbt_b64 = b2a_base64(enc).strip().decode()
+    except Exception as e:
+        print_formatted_text(f"Invalid PSBT: {e}")
+        return
+
+    try:
+        # This will throw an error if it's a valid QR payload but not a valid PSBT
+        PSBT.parse_base64(psbt_b64)
+        print_formatted_text(f"PSBT {psbt_b64} successfully parsed")
+        return psbt_b64
+    except Exception as e:
+        print_formatted_text("PSBT Decode Error:", e)
+        print_formatted_text("Original PSBT:", psbt_b64)
+        raise(e)
