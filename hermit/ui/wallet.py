@@ -43,6 +43,43 @@ def sign_bitcoin(unsigned_psbt_b64=''):
     ).sign()
 
 
+def _is_intable(int_as_string):
+    # TODO: move me to a util/helper library somewhere
+    try:
+        int(int_as_string)
+        return True
+    except Exception:
+        return False
+
+
+def is_valid_bip32_path(path):
+    # TODO: move to buidl
+    print('one')
+    path = path.lower().strip().replace("'", "h").replace("//", "/")  # be forgiving
+
+    print('two')
+    if not path.startswith("m/"):
+        return False
+
+    print('four')
+    sub_paths = path[2:].split("/")
+    if len(sub_paths) >= 256:
+        # https://bitcoin.stackexchange.com/a/92057
+        return False
+
+    print('five')
+    for sub_path in sub_paths:
+        if sub_path.endswith("h"):
+            sub_path = sub_path[:-1]
+        if not _is_intable(sub_path):
+            return False
+        if int(sub_path) >= 2**31:
+            # https://bitcoin.stackexchange.com/a/92057
+            return False
+
+    print('six')
+    return True
+
 @wallet_command("export-xpub")
 def export_xpub(path):
     """usage:  export-xpub BIP32_PATH
@@ -60,12 +97,16 @@ def export_xpub(path):
       wallet> export-xpub m/44'/60'/2'
 
     """
+    if not is_valid_bip32_path(path):
+        raise RuntimeError("Invalid BIP32 Path")
     xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
     xfp_hex = state.Wallet.xfp_hex
-    title = f"Extended Public Key Info"
-    to_display = f"[{xfp_hex}/{path[2:]}]{xpub}"
-    print_formatted_text(f"\n{title}:\n{to_display}")
-    displayer.display_qr_code(data=to_display, name=title)
+    title = f"Extended Public Key Info for Seed ID {xfp_hex}"
+    xpub_info_text = f"[{xfp_hex}/{path[2:]}]{xpub}"
+    # both work, but the json version is less ambiguous (for machine-readable stuff)
+    xpub_info_json = dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
+    print_formatted_text(f"\n{title}:\n{xpub_info_text}")
+    displayer.display_qr_code(data=xpub_info_json, name=title)
 
 
 @wallet_command("shards")

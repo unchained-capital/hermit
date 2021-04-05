@@ -27,6 +27,7 @@ def uses_only_bech32_chars(string):
 
 
 def _is_intable(int_as_string):
+    # TODO: move me to a util/helper library somewhere
     try:
         int(int_as_string)
         return True
