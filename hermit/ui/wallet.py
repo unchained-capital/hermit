@@ -54,20 +54,16 @@ def _is_intable(int_as_string):
 
 def is_valid_bip32_path(path):
     # TODO: move to buidl
-    print('one')
     path = path.lower().strip().replace("'", "h").replace("//", "/")  # be forgiving
 
-    print('two')
     if not path.startswith("m/"):
         return False
 
-    print('four')
     sub_paths = path[2:].split("/")
     if len(sub_paths) >= 256:
         # https://bitcoin.stackexchange.com/a/92057
         return False
 
-    print('five')
     for sub_path in sub_paths:
         if sub_path.endswith("h"):
             sub_path = sub_path[:-1]
@@ -77,7 +73,6 @@ def is_valid_bip32_path(path):
             # https://bitcoin.stackexchange.com/a/92057
             return False
 
-    print('six')
     return True
 
 @wallet_command("export-xpub")
