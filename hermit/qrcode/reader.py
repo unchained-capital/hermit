@@ -4,6 +4,7 @@ from binascii import b2a_base64
 from pyzbar import pyzbar
 import cv2
 import re
+from math import ceil
 
 from buidl import PSBT
 from buidl.bech32 import bcur_decode
@@ -33,6 +34,35 @@ def _is_intable(int_as_string):
         return True
     except Exception:
         return False
+
+
+def encode_payload_to_bcur_qrgif(payload, max_size_per_chunk=300, animate=True):
+    """
+    This algorithm makes all the chunks of about equal length.
+    This makes sure that the last chunk is not (too) different in size which is visually noticeable when animation occurs
+    Inspired by https://github.com/cryptoadvance/specter-desktop/blob/da35e7d88072475746077432710c77f799017eb0/src/cryptoadvance/specter/templates/includes/qr-code.html
+
+    If animate=False, then max_size_per_chunk is ignored
+
+    # FIXME: move this to buidl!
+    """
+
+    # Calculate values to chunk
+    enc, enc_hash = bcur_encode(a2b_base64(payload))
+
+    number_of_chunks = ceil(len(payload) / max_size_per_chunk)
+    chunk_length = ceil(len(payload) / number_of_chunks)
+
+    # It would be possible to create a unique code-path for number_of_chunks == 1 (with no longer needs a checksum)
+    # Including the checksum seems harmless (maybe beneficial) and improves readability
+
+    resulting_chunks = []
+    for cnt in range(number_of_chunks):
+        start_idx = cnt*chunk_length
+        finish_idx = (cnt+1) * chunk_length + 1
+        resulting_chunks.append(f"BC:UR/{cnt}OF{number_of_chunks+1}/{enc_hash}/{payload[start_idx:finish_idx]}")
+
+    return resulting_chunks
 
 
 def parse_bcur(string):
