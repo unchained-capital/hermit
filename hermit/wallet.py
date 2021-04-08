@@ -1,5 +1,4 @@
 from buidl import HDPrivateKey
-from buidl.hd import TESTNET_XPUB, MAINNET_XPUB
 from mnemonic import Mnemonic
 from hermit import shards
 from hermit.errors import HermitError
@@ -44,12 +43,8 @@ class HDWallet(object):
 
     def extended_public_key(self, bip32_path: str, testnet: bool = False) -> str:
         self.unlock()
-        # TODO: move version info into buidl by default to clean this up
-        if testnet:
-            version = TESTNET_XPUB
-        else:
-            version = MAINNET_XPUB
-        return HDPrivateKey.parse(self.root_xpriv).traverse(path=bip32_path).xpub(version=version)
+        # buidl will automatically display xpub or tpub based on HDPrivateKey's network
+        return HDPrivateKey.parse(self.root_xpriv).traverse(path=bip32_path).xpub()
 
     def get_child_private_key_objs(self, bip32_paths):
         """

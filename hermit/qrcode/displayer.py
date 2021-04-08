@@ -11,7 +11,7 @@ from .utils import window_is_open
 
 
 def display_qr_code(data: str, name: str = "Preview") -> asyncio.Task:
-    task = _display_qr_code_async(data=qrs_data, name=name)
+    task = _display_qr_code_async(data=data, name=name)
     return asyncio.get_event_loop().create_task(task)
 
 

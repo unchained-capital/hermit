@@ -9,6 +9,8 @@ from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
 from hermit.qrcode import displayer
 
+from buidl.hd import is_valid_bip32_path
+
 from typing import Dict
 
 
@@ -42,38 +44,6 @@ def sign_bitcoin(unsigned_psbt_b64=''):
         state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64, testnet=state.Testnet,
     ).sign()
 
-
-def _is_intable(int_as_string):
-    # TODO: move me to a util/helper library somewhere
-    try:
-        int(int_as_string)
-        return True
-    except Exception:
-        return False
-
-
-def is_valid_bip32_path(path):
-    # TODO: move to buidl
-    path = path.lower().strip().replace("'", "h").replace("//", "/")  # be forgiving
-
-    if not path.startswith("m/"):
-        return False
-
-    sub_paths = path[2:].split("/")
-    if len(sub_paths) >= 256:
-        # https://bitcoin.stackexchange.com/a/92057
-        return False
-
-    for sub_path in sub_paths:
-        if sub_path.endswith("h"):
-            sub_path = sub_path[:-1]
-        if not _is_intable(sub_path):
-            return False
-        if int(sub_path) >= 2**31:
-            # https://bitcoin.stackexchange.com/a/92057
-            return False
-
-    return True
 
 @wallet_command("export-xpub")
 def export_xpub(path):

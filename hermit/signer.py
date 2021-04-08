@@ -9,6 +9,7 @@ from hermit.qrcode import reader, displayer
 from hermit.wallet import HDWallet
 
 from buidl import PSBT
+from buidl.bcur import encode_to_bcur_qrgif
 
 
 class BitcoinSigner(object):
@@ -143,5 +144,5 @@ class BitcoinSigner(object):
         # TODO: is there a smaller signatures only format for less bandwidth?
         print_formatted_text(HTML("<i>SIGNED PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
-        chunks = reader.encode_payload_to_bcur_qrgif(payload=self.signed_psbt_b64, animate=True)  # FIXME: move this somewhere appropriate
+        chunks = encode_to_bcur_qrgif(payload=self.signed_psbt_b64, animate=True)
         displayer.display_qr_gif(qrs_data=chunks, name="Signed PSBT")

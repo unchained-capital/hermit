@@ -7,107 +7,10 @@ import re
 from math import ceil
 
 from buidl import PSBT
-from buidl.bech32 import bcur_decode, bcur_encode
+from buidl.bcur import bcur_decode, parse_bcur
 
 from prompt_toolkit import print_formatted_text  # FIXME
 
-
-# TODO: move some of this to buidl?
-
-
-HEX_CHARS_RE = re.compile('^[0-9a-f]*$')
-BECH32_CHARS_RE = re.compile("^[qpzry9x8gf2tvdw0s3jn54khce6mua7l]*$")
-
-
-def uses_only_hex_chars(string):
-    return bool(HEX_CHARS_RE.match(string.lower()))
-
-
-def uses_only_bech32_chars(string):
-    return bool(BECH32_CHARS_RE.match(string.lower()))
-
-
-def _is_intable(int_as_string):
-    # TODO: move me to a util/helper library somewhere
-    try:
-        int(int_as_string)
-        return True
-    except Exception:
-        return False
-
-
-def encode_payload_to_bcur_qrgif(payload, max_size_per_chunk=300, animate=True):
-    """
-    This algorithm makes all the chunks of about equal length.
-    This makes sure that the last chunk is not (too) different in size which is visually noticeable when animation occurs
-    Inspired by https://github.com/cryptoadvance/specter-desktop/blob/da35e7d88072475746077432710c77f799017eb0/src/cryptoadvance/specter/templates/includes/qr-code.html
-
-    If animate=False, then max_size_per_chunk is ignored
-
-    # FIXME: move this to buidl!
-    """
-
-    # Calculate values to chunk
-    enc, enc_hash = bcur_encode(a2b_base64(payload))
-
-    number_of_chunks = ceil(len(enc) / max_size_per_chunk)
-    chunk_length = ceil(len(enc) / number_of_chunks)
-
-    # It would be possible to create a unique code-path for number_of_chunks == 1 (with no longer needs a checksum)
-    # Including the checksum seems harmless (maybe beneficial) and improves readability
-
-    resulting_chunks = []
-    for cnt in range(number_of_chunks):
-        start_idx = cnt*chunk_length
-        finish_idx = (cnt+1) * chunk_length + 1
-        resulting_chunks.append(f"UR:BYTES/{cnt+1}OF{number_of_chunks+1}/{enc_hash}/{enc[start_idx:finish_idx]}")
-
-    return resulting_chunks
-
-
-def parse_bcur(string):
-    """
-    Returns x, y, checksum, payload, err_msg
-    """
-
-    string = string.upper().strip()
-    if not string.startswith("UR:BYTES/"):
-        return None, None, None, None, "Doesn't start with UR:BYTES/"
-
-    bcur_parts = string.split("/")
-    if len(bcur_parts) == 2:
-        # Non-animated QR code (just 1 qr, doesn't display 1of1 nor checksum)
-        _, payload = bcur_parts
-        checksum, x_int, y_int = None, 1, 1
-    elif len(bcur_parts) == 4:
-        # Animated QR code
-        _, xofy, checksum, payload = bcur_parts
-
-        xofy_parts = xofy.split("OF")
-        if len(xofy_parts) != 2:
-            return None, None, None, None, "xOFy section malformed"
-
-        if not _is_intable(xofy_parts[0]) or not _is_intable(xofy_parts[1]):
-            return None, None, None, None, f"y in xOFy must be an integer: {xofy_parts}"
-
-        x_int = int(xofy_parts[0])
-        y_int = int(xofy_parts[1])
-
-        if x_int > y_int: 
-            return None, None, None, None, "x must be >= y (in xOFy)"
-    else:
-        return None, None, None, None, "Doesn't have 3-4 slashes"
-
-    if checksum and len(checksum) != 58:
-        return None, None, None, None, "checksum must be 58 chars"
-
-    if checksum and not uses_only_bech32_chars(checksum):
-        return None, None, None, None, f"checksum can only contain bech32 characters: {checksum}"
-
-    if not uses_only_bech32_chars(payload):
-        return None, None, None, None, f"payload can only contain bech32 characters: {payload}"
-
-    return x_int, y_int, checksum, payload, ""
 
 
 def read_single_qr(frame):
