@@ -3,6 +3,6 @@ import cv2
 
 def window_is_open(window_name):
     return (
-        cv2.waitKey(1) & 0xFF == ord('q')  # FIXME: some way to abort!
+        cv2.waitKey(1) & 0xFF == ord("q")  # FIXME: some way to abort!
         and cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) == 1.0
     )

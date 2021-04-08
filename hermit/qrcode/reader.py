@@ -12,7 +12,6 @@ from buidl.bcur import bcur_decode, parse_bcur
 from prompt_toolkit import print_formatted_text  # FIXME
 
 
-
 def read_single_qr(frame):
     """
     Return frame, single_qr_dict, err_msg
@@ -20,14 +19,17 @@ def read_single_qr(frame):
     barcodes = pyzbar.decode(frame)
     # we don't know how many QRs we'll need until the scanning begins, so initialize as none
     for barcode in barcodes:
-        x, y , w, h = barcode.rect
-        qrcode_data = barcode.data.decode('utf-8')
-        cv2.rectangle(frame, (x, y),(x+w, y+h), (0, 255, 0), 2)
- 
+        x, y, w, h = barcode.rect
+        qrcode_data = barcode.data.decode("utf-8")
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
         print_formatted_text("FOUND", qrcode_data)
         x_int, y_int, checksum, payload, err_msg = parse_bcur(qrcode_data)
         if err_msg:
-            return {}, f"Invalid blockchain commons universal resource format v1:\n{err_msg}"
+            return (
+                {},
+                f"Invalid blockchain commons universal resource format v1:\n{err_msg}",
+            )
 
         single_qr_dict = {
             "x_int": x_int,
@@ -50,14 +52,14 @@ def read_qr_code() -> Optional[str]:
 
     # initialize variables
     qrs_array = []
-    psbt_checksum, psbt_payload = '', ''
+    psbt_checksum, psbt_payload = "", ""
 
     camera = cv2.VideoCapture(0)
     ret, frame = camera.read()  # can delete this line?
 
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
     print_formatted_text("Starting QR code scanner (window should pop-up)...")
-    while True: 
+    while True:
         if qrs_array:
             num_scanned = len([x for x in qrs_array if x is not None])
             print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)} QRs")
@@ -84,11 +86,13 @@ def read_qr_code() -> Optional[str]:
             qrs_array = [None for _ in range(single_qr_dict["y_int"])]
             checksum = single_qr_dict["checksum"]
 
-        if qrs_array[single_qr_dict["x_int"]-1] is None:
+        if qrs_array[single_qr_dict["x_int"] - 1] is None:
             print_formatted_text("Adding to array")
-            qrs_array[single_qr_dict["x_int"]-1] = single_qr_dict["payload"]
+            qrs_array[single_qr_dict["x_int"] - 1] = single_qr_dict["payload"]
         else:
-            print_formatted_text(f"Already scanned QR #{single_qr_dict['x_int']}, ignoring")
+            print_formatted_text(
+                f"Already scanned QR #{single_qr_dict['x_int']}, ignoring"
+            )
 
         # TODO: something more performant?
         if None not in qrs_array:
@@ -123,4 +127,4 @@ def read_qr_code() -> Optional[str]:
     except Exception as e:
         print_formatted_text("PSBT Decode Error:", e)
         print_formatted_text("Original PSBT:", psbt_b64)
-        raise(e)
+        raise (e)

@@ -22,7 +22,7 @@ def wallet_command(name):
 
 
 @wallet_command("sign-bitcoin")
-def sign_bitcoin(unsigned_psbt_b64=''):
+def sign_bitcoin(unsigned_psbt_b64=""):
     """usage:  sign-bitcoin
 
     Create a signature for a Bitcoin transaction.
@@ -41,7 +41,10 @@ def sign_bitcoin(unsigned_psbt_b64=''):
 
     """
     BitcoinSigner(
-        state.Wallet, state.Session, unsigned_psbt_b64=unsigned_psbt_b64, testnet=state.Testnet,
+        state.Wallet,
+        state.Session,
+        unsigned_psbt_b64=unsigned_psbt_b64,
+        testnet=state.Testnet,
     ).sign()
 
 

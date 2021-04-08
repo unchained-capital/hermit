@@ -40,7 +40,9 @@ class BitcoinSigner(object):
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can then unlock the wallet?
             print_formatted_text("WARNING: wallet is LOCKED.")
-            print_formatted_text("You can inspect an unsigned PSBT, but you cannot sign it without first unlocking the wallet.")
+            print_formatted_text(
+                "You can inspect an unsigned PSBT, but you cannot sign it without first unlocking the wallet."
+            )
 
         if not self.unsigned_psbt_b64:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
@@ -50,7 +52,9 @@ class BitcoinSigner(object):
         self.validate_psbt()
         self.display_request()
         if not self.wallet.unlocked():
-            print_formatted_text("Wallet is LOCKED, aborting without attempting to sign")
+            print_formatted_text(
+                "Wallet is LOCKED, aborting without attempting to sign"
+            )
             return
 
         if self._confirm_create_signature():

@@ -15,7 +15,6 @@ def display_qr_code(data: str, name: str = "Preview") -> asyncio.Task:
     return asyncio.get_event_loop().create_task(task)
 
 
-
 async def _display_qr_code_async(data: str, name: str = "Preview") -> None:
     image = create_qr_code_image(data)
 
@@ -45,12 +44,10 @@ def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
 
         cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
 
-        time.sleep(.1)
-
+        time.sleep(0.1)
 
     # TODO: better exit-condition or window-closing handling?
     cv2.destroyWindow(name)
-
 
 
 def create_qr_code_image(data: str) -> PilImage:
