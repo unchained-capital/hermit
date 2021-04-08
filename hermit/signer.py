@@ -143,6 +143,5 @@ class BitcoinSigner(object):
         # TODO: is there a smaller signatures only format for less bandwidth?
         print_formatted_text(HTML("<i>SIGNED PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
-        displayer.display_qr_code(
-            json.dumps({"psbt": self.signed_psbt_b64}), name="Signed PSBT"
-        )
+        chunks = reader.encode_payload_to_bcur_qrgif(payload=self.signed_psbt_b64, animate=True)  # FIXME: move this somewhere appropriate
+        displayer.display_qr_gif(qrs_data=chunks, name="Signed PSBT")

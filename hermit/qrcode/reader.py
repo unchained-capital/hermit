@@ -1,13 +1,13 @@
 from typing import Optional
 
-from binascii import b2a_base64
+from binascii import b2a_base64, a2b_base64
 from pyzbar import pyzbar
 import cv2
 import re
 from math import ceil
 
 from buidl import PSBT
-from buidl.bech32 import bcur_decode
+from buidl.bech32 import bcur_decode, bcur_encode
 
 from prompt_toolkit import print_formatted_text  # FIXME
 
@@ -50,8 +50,8 @@ def encode_payload_to_bcur_qrgif(payload, max_size_per_chunk=300, animate=True):
     # Calculate values to chunk
     enc, enc_hash = bcur_encode(a2b_base64(payload))
 
-    number_of_chunks = ceil(len(payload) / max_size_per_chunk)
-    chunk_length = ceil(len(payload) / number_of_chunks)
+    number_of_chunks = ceil(len(enc) / max_size_per_chunk)
+    chunk_length = ceil(len(enc) / number_of_chunks)
 
     # It would be possible to create a unique code-path for number_of_chunks == 1 (with no longer needs a checksum)
     # Including the checksum seems harmless (maybe beneficial) and improves readability
@@ -60,7 +60,7 @@ def encode_payload_to_bcur_qrgif(payload, max_size_per_chunk=300, animate=True):
     for cnt in range(number_of_chunks):
         start_idx = cnt*chunk_length
         finish_idx = (cnt+1) * chunk_length + 1
-        resulting_chunks.append(f"BC:UR/{cnt}OF{number_of_chunks+1}/{enc_hash}/{payload[start_idx:finish_idx]}")
+        resulting_chunks.append(f"UR:BYTES/{cnt+1}OF{number_of_chunks+1}/{enc_hash}/{enc[start_idx:finish_idx]}")
 
     return resulting_chunks
 
