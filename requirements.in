@@ -1,5 +1,5 @@
 bson==0.5.8
-git+https://github.com/buidl-bitcoin/buidl-python.git@multisig-wallet#egg=buidl
+buidl==0.2.12
 flake8==3.7.7
 imutils==0.5.1
 mnemonic==0.18
