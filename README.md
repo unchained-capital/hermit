@@ -306,7 +306,7 @@ $ make lint
 
 Hermit has been tested on the following platforms:
 
-* OS X High Sierra 10.13.6
+* macOS Big Sur 11.3
 * Linux Ubuntu 18.04
 * Linux Slax 9.6.4
 
@@ -352,11 +352,12 @@ $ make test
 $ make lint
 ```
 
-(Linting is done with [flake8] and [mypy].)
+(Linting is done with [flake8], [mypy], and [black].)
 
 [pytest]: https://docs.pytest.org/en/latest/
 [flake8]: http://flake8.pycqa.org/en/latest/
 [mypy]: http://mypy-lang.org/
+[black]: https://black.readthedocs.io/en/stable/
 [bip32]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
 ## Key rotation
@@ -366,8 +367,3 @@ copies of the passphrase to decrypt the share. The share only exists on the
 Hermit device, and it's encrypted. Rotating out a member is achieved by using
 one of the other team members to decrypt the share and then re-encrypting the
 share with a new passphrase, thus excluding the previous user.
-
-## TODO
-
-* Validate wallet public keys/signatures against the provided redeem script in the bitcoin signer.
-* Re-do QR-code protocol details once a [standard emerges](https://www.blockchaincommons.com)
