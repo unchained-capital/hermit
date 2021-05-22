@@ -9,7 +9,7 @@ from hermit.qrcode import reader, displayer
 from hermit.wallet import HDWallet
 
 from buidl import PSBT
-from buidl.bcur import encode_to_bcur_qrgif
+from buidl.bcur import BCURMulti
 
 
 class BitcoinSigner(object):
@@ -37,6 +37,7 @@ class BitcoinSigner(object):
         Will wait for a signature request, handle validation,
         confirmation, generation, and display of a signature.
         """
+        print_formatted_text('one')
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can then unlock the wallet?
             print_formatted_text("WARNING: wallet is LOCKED.")
@@ -44,22 +45,30 @@ class BitcoinSigner(object):
                 "You can inspect an unsigned PSBT, but you cannot sign it without first unlocking the wallet."
             )
 
+        print_formatted_text('two')
         if not self.unsigned_psbt_b64:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
             self.unsigned_psbt_b64 = reader.read_qr_code()
 
+        print_formatted_text('three')
         self.parse_psbt()
+        print_formatted_text('four')
         self.validate_psbt()
+        print_formatted_text('five')
         self.display_request()
+        print_formatted_text('six')
         if not self.wallet.unlocked():
             print_formatted_text(
                 "Wallet is LOCKED, aborting without attempting to sign"
             )
             return
 
+        print_formatted_text('seven')
         if self._confirm_create_signature():
             self.create_signature()
             self._show_signature()
+
+        print_formatted_text('eight')
 
     def parse_psbt(self) -> None:
         if self.unsigned_psbt_b64 is None:
@@ -88,7 +97,8 @@ class BitcoinSigner(object):
             raise InvalidSignatureRequest("Invalid PSBT")
 
         self.tx_description = self.psbt_obj.describe_basic_multisig_tx(
-            root_fingerprint_for_signing=self.wallet.xfp_hex
+            hdpubkey_map={},
+            xfp_for_signing=self.wallet.xfp_hex,
         )
 
     def display_request(self, verbose=False) -> None:
@@ -148,5 +158,7 @@ class BitcoinSigner(object):
         # TODO: is there a smaller signatures only format for less bandwidth?
         print_formatted_text(HTML("<i>SIGNED PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
-        chunks = encode_to_bcur_qrgif(payload=self.signed_psbt_b64, animate=True)
+        bcur_multi_obj = BCURMulti(text_b64=self.signed_psbt_b64)
+        # TODO: toggle animation? Leaving on always for UX.
+        chunks = bcur_multi_obj.encode(animate=True)
         displayer.display_qr_gif(qrs_data=chunks, name="Signed PSBT")

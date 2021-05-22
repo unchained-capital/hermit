@@ -7,14 +7,36 @@ import re
 from math import ceil
 
 from buidl import PSBT
-from buidl.bcur import bcur_decode, parse_bcur
 
 from prompt_toolkit import print_formatted_text  # FIXME
 
+def parse_specter_desktop_qr(qrcode_data):
+    """
+    returns payload, x_int, y_int
+    """
+    parts = qrcode_data.split(" ")
+    if len(parts) == 1:
+        # it's just 1 chunk of data, no encoding of any kind
+        return qrcode_data, 1, 1
+    elif len(parts) == 2:
+        xofy, payload = parts
+        # xofy might look like p2of4
+        xofy_re = re.match("p([0-9]*)of([0-9]*)", xofy)
+        if xofy_re is None:
+            raise ValueError(f"Invalid QR payload: {qrcode_data}")
+        # safe to int these because we know from the regex that they're composed of ints only:
+        print_formatted_text('xofy', xofy)
+        print_formatted_text('xofy_re', xofy_re)
+        x_int = int(xofy_re[1])
+        y_int = int(xofy_re[2])
+        return payload, x_int, y_int
+    else:
+        raise ValueError(f"Invalid QR payload: {qrcode_data}")
+        
 
 def read_single_qr(frame):
     """
-    Return frame, single_qr_dict, err_msg
+    Return frame, single_qr_dict
     """
     barcodes = pyzbar.decode(frame)
     # we don't know how many QRs we'll need until the scanning begins, so initialize as none
@@ -24,24 +46,20 @@ def read_single_qr(frame):
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         print_formatted_text("FOUND", qrcode_data)
-        x_int, y_int, checksum, payload, err_msg = parse_bcur(qrcode_data)
-        if err_msg:
-            return (
-                {},
-                f"Invalid blockchain commons universal resource format v1:\n{err_msg}",
-            )
+        # At this point we don't know if it's single or part of a multi, and if multi we don't have all the pieces to parse
+        # If this throws a ValueError it will be handled by the caller
+        payload, x_int, y_int = parse_specter_desktop_qr(qrcode_data)
 
         single_qr_dict = {
             "x_int": x_int,
             "y_int": y_int,
-            "checksum": checksum,
             "payload": payload,
         }
 
         print_formatted_text(f"returing single {single_qr_dict}...")
-        return frame, single_qr_dict, ""
+        return frame, single_qr_dict
 
-    return frame, {}, "No qr found"
+    return frame, {}
 
 
 def read_qr_code() -> Optional[str]:
@@ -60,14 +78,6 @@ def read_qr_code() -> Optional[str]:
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
     print_formatted_text("Starting QR code scanner (window should pop-up)...")
     while True:
-        if qrs_array:
-            num_scanned = len([x for x in qrs_array if x is not None])
-            print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)} QRs")
-
-        ret, frame = camera.read()
-
-        frame, single_qr_dict, err_msg = read_single_qr(frame)
-
         # Mirror-flip the image for UI
         mirror = cv2.flip(frame, 1)
         cv2.imshow("Scan the PSBT You Want to Sign", mirror)
@@ -75,16 +85,28 @@ def read_qr_code() -> Optional[str]:
             # Unclear why this line matters, but if we don't include this immediately after `imshow` then then the scanner preview won't display (on macOS):
             break
 
-        if err_msg:
-            if err_msg != "No qr found":
-                # Otherwise we get constant errors for tons of frames where the scanner doesn't see QR code
-                print_formatted_text("PSBT scan error:" + err_msg)
+        if qrs_array:
+            num_scanned = len([x for x in qrs_array if x is not None])
+            print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)} QRs")
+
+        ret, frame = camera.read()
+
+        try:
+            frame, single_qr_dict = read_single_qr(frame)
+
+        except ValueError as e:
+            print_formatted_text(f"QR Scan Error:\n{e}")
             continue
 
-        # First time we've scanned a QR gif, initializing the results array and checksum
+        if not single_qr_dict:
+            # No qr found
+            continue
+
+        print_formatted_text(f"Found {single_qr_dict}")
+
+        # First time we've scanned a QR gif we initialize the results array
         if qrs_array == []:
             qrs_array = [None for _ in range(single_qr_dict["y_int"])]
-            checksum = single_qr_dict["checksum"]
 
         if qrs_array[single_qr_dict["x_int"] - 1] is None:
             print_formatted_text("Adding to array")
@@ -105,26 +127,12 @@ def read_qr_code() -> Optional[str]:
     # For some reason, this breaks the hermit UI?:
     # cv2.destroyWindow()
 
-    # TODO: better/consistent error handling on all these failure cases
+    return psbt_payload
 
-    if not psbt_payload:
-        # need the if clause in case of user escaping during QR scanning
-        # TODO: streamline control logic to avoid this if statement?
-        return
-
-    try:
-        enc = bcur_decode(data=psbt_payload, checksum=checksum)
-        psbt_b64 = b2a_base64(enc).strip().decode()
-    except Exception as e:
-        print_formatted_text(f"Invalid PSBT: {e}")
-        return
-
-    try:
-        # This will throw an error if it's a valid QR payload but not a valid PSBT
-        PSBT.parse_base64(psbt_b64)
-        print_formatted_text(f"PSBT {psbt_b64} successfully parsed")
-        return psbt_b64
-    except Exception as e:
-        print_formatted_text("PSBT Decode Error:", e)
-        print_formatted_text("Original PSBT:", psbt_b64)
-        raise (e)
+    if False:
+        # FIXME
+        # Confirm this is OK. psbt_payload initialized as "" but this is returning None (better?)
+        if not psbt_payload:
+            # need the if clause in case of user escaping during QR scanning
+            # TODO: streamline control logic to avoid this if statement?
+            return
