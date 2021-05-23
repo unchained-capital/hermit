@@ -19,7 +19,7 @@ def unlock():
 
     """
     try:
-        state.Wallet.unlock()
+        state.Wallet.unlock(testnet=state.Testnet)
     except HermitError as e:
         print_formatted_text("Unable to unlock wallet: ", e)
     if state.Wallet.unlocked:

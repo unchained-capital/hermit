@@ -11,6 +11,12 @@ from .interface import ShardWordUserInterface
 from .shard import Shard
 from hermit.rng import RandomGenerator
 
+# FIXME
+# os.system() calls should be removed
+# https://docs.python.org/3/library/os.html#os.system
+# At a minimum, we should `wait` for results
+# Preferably, this whole thing should be re-written in something pythonic
+
 
 RNG = RandomGenerator()
 shamir_share.set_random_bytes(RNG.random)
@@ -98,6 +104,8 @@ class ShardSet(object):
         return bson.dumps(data)
 
     def save(self) -> None:
+        # Note: this is called via `write()` method
+        # FIXME: standardize naming convention on something logical
         with open(self.config.shards_file, "wb") as f:
             f.write(self.to_bytes())
 

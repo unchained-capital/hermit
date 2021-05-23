@@ -10,6 +10,7 @@ import hermit.ui.state as state
 from hermit.qrcode import displayer
 
 from buidl.hd import is_valid_bip32_path
+from buidl.libsec_status import is_libsec_enabled
 
 from typing import Dict
 
@@ -67,7 +68,7 @@ def export_xpub(path):
     """
     if not is_valid_bip32_path(path):
         raise RuntimeError("Invalid BIP32 Path")
-    xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
+    xpub = state.Wallet.extended_public_key(bip32_path=path)
     xfp_hex = state.Wallet.xfp_hex
     title = f"Extended Public Key Info for Seed ID {xfp_hex}"
     xpub_info_text = f"[{xfp_hex}/{path[2:]}]{xpub}"
@@ -75,6 +76,59 @@ def export_xpub(path):
     xpub_info_json = dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
     print_formatted_text(f"\n{title}:\n{xpub_info_text}")
     displayer.display_qr_code(data=xpub_info_json, name=title)
+
+
+@wallet_command("set-account-map")
+def set_account_map(account_map_str):
+    """usage:  set-account-map ACCOUNT_MAP_STRING
+
+    Sets the account map (for change and receiving address validation) with the collection of public key records that you get from your Coordinator software
+
+    Examples:
+
+      wallet> set-account-map FIXME
+
+    """
+    # FIXME: this should be persisted, but persistance is currently written using dangerous os.system() calls and only stored at the shards level (not the wallet level)
+    # A major persistence refactor is needed
+
+    # TODO: add QR functionality!
+    if (
+        state.Wallet.set_account_map(
+            account_map_str=account_map_str, testnet=state.Testnet
+        )
+        is True
+    ):
+        print("Account map set")
+    else:
+        print("Account map NOT set")
+        # TODO: this is an ugly hack to get around the fact that we store xpriv/tpriv (which has a version byte), but what we really want to store is the secret (mnemonic)
+        # Get rid of this in the future when Hermit state overhaul is complete
+        state.Wallet.lock()
+
+
+@wallet_command("display-address")
+def display_address(offset=0, limit=10, is_change=0):
+    if not state.Wallet.quorum_m or not state.Wallet.pubkey_records:
+        print(
+            "Account map not previously set. Please use set-account-map first to set an account map that we can derive bitcoin addresses from"
+        )
+        return
+
+    # TODO: allow user to modify limit/offset and toggle change/receiving
+    is_change = bool(is_change)
+    testnet = state.Testnet
+
+    to_print = f"{state.Wallet.quorum_m}-of-{len(state.Wallet.pubkey_records)} Multisig {'Change' if is_change else 'Receive'} Addresses"
+    if not is_libsec_enabled():
+        # TODO: use libsec bindings in buidl for 100x performance increase
+        to_print += "\n(this is ~100x faster if you install libsec)"
+    print_formatted_text(to_print + ":")
+    generator = state.Wallet.derive_child_address(
+        testnet=testnet, is_change=is_change, offset=offset, limit=limit
+    )
+    for cnt, address in enumerate(generator):
+        print_formatted_text(f"#{cnt + offset}: {address}")
 
 
 @wallet_command("shards")

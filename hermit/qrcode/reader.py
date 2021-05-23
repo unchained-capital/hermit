@@ -10,6 +10,7 @@ from buidl import PSBT
 
 from prompt_toolkit import print_formatted_text  # FIXME
 
+
 def parse_specter_desktop_qr(qrcode_data):
     """
     returns payload, x_int, y_int
@@ -25,14 +26,12 @@ def parse_specter_desktop_qr(qrcode_data):
         if xofy_re is None:
             raise ValueError(f"Invalid QR payload: {qrcode_data}")
         # safe to int these because we know from the regex that they're composed of ints only:
-        print_formatted_text('xofy', xofy)
-        print_formatted_text('xofy_re', xofy_re)
         x_int = int(xofy_re[1])
         y_int = int(xofy_re[2])
         return payload, x_int, y_int
     else:
         raise ValueError(f"Invalid QR payload: {qrcode_data}")
-        
+
 
 def read_single_qr(frame):
     """
