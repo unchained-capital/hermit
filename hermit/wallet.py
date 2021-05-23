@@ -63,8 +63,16 @@ class HDWallet(object):
         hd_pubkey_obj = self._extended_public_key_obj(
             bip32_path=bip32_path, testnet=testnet
         )
-        # buidl will automatically display xpub or tpub based on HDPrivateKey's network:
-        return hd_pubkey_obj.xpub()
+
+        # use slip132 version byte
+        # hopefully, slip132 will be deprecated one day, BUT
+        # for now it is the only way to guarantee seemless Specter-Desktop compatibility (p2wsh & mainnet/testnet)
+        # https://github.com/satoshilabs/slips/blob/master/slip-0132.md#registered-hd-version-bytes
+        if testnet is True:
+            p2wsh_version_byte = '02575483'
+        else:
+            p2wsh_version_byte = '02aa7ed3'
+        return hd_pubkey_obj.xpub(version=bytes.fromhex(p2wsh_version_byte))
 
     def get_child_private_key_objs(self, bip32_paths):
         """

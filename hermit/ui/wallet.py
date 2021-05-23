@@ -68,7 +68,7 @@ def export_xpub(path):
     """
     if not is_valid_bip32_path(path):
         raise RuntimeError("Invalid BIP32 Path")
-    xpub = state.Wallet.extended_public_key(bip32_path=path)
+    xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
     xfp_hex = state.Wallet.xfp_hex
     title = f"Extended Public Key Info for Seed ID {xfp_hex}"
     xpub_info_text = f"[{xfp_hex}/{path[2:]}]{xpub}"
