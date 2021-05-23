@@ -37,12 +37,6 @@ def set_random_bytes(rng):
     shamir_mnemonic.RANDOM_BYTES = rng
 
 
-def restore_random_bytes():
-    # FIXME: this code was fixed but should have thrown an error, investigate if being used?
-    if len(old_rngs) > 0:
-        shamir_mnemonic.RANDOM_BYTES = old_rngs.pop()
-
-
 def mnemonic_from_bytes(bytes_data):
     """
     Converts a 32-byte array into mnemonics.
