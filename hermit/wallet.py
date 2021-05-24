@@ -89,6 +89,9 @@ class HDWallet(object):
 
         We would get False if the account map were invalid or our seed was not a part of it
         """
+        # TODO: this should be persisted along with shamir shares, but the way Hermit handles persistance is hackey (os.system() calls)
+        # Also, persistance is currently on the shards class and not the Wallet class
+
         # Will use whatever network the xpriv/trpiv is saved as from the unlock method
         wsh_dict = parse_wshsortedmulti(output_record=account_map_str)
 

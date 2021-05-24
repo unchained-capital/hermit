@@ -1,5 +1,4 @@
 from prompt_toolkit import print_formatted_text, HTML
-from json import dumps
 
 from hermit.signer import BitcoinSigner
 
@@ -50,7 +49,7 @@ def sign_bitcoin(unsigned_psbt_b64=""):
 
 
 @wallet_command("export-xpub")
-def export_xpub(path):
+def export_xpub(path=""):
     """usage:  export-xpub BIP32_PATH
 
     Displays the extended public key (xpub) at a given BIP32 path.
@@ -59,23 +58,32 @@ def export_xpub(path):
     code.
 
     Exporting an extended public key requires unlocking the wallet.
+    TODO: this shouldn't be a requirement
 
     Examples:
 
-      wallet> export-xpub m/45'/0'/0'
-      wallet> export-xpub m/44'/60'/2'
+      wallet> export-xpub m/48'/0'/0'/2'
 
     """
+    if not path:
+        # Use default paths if none are supplied
+        if state.Testnet:
+            path = "m/48'/1'/0'/2'"
+        else:
+            path = "m/48'/0'/0'/2'"
+        print_formatted_text(f"No path supplied, using default path {path}...\n")
+
     if not is_valid_bip32_path(path):
         raise RuntimeError("Invalid BIP32 Path")
+
     xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
     xfp_hex = state.Wallet.xfp_hex
     title = f"Extended Public Key Info for Seed ID {xfp_hex}"
     xpub_info_text = f"[{xfp_hex}/{path[2:]}]{xpub}"
-    # both work, but the json version is less ambiguous (for machine-readable stuff)
-    xpub_info_json = dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
+    # TODO: offer to save this json file somewhere?
+    # xpub_info_json = json.dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
     print_formatted_text(f"\n{title}:\n{xpub_info_text}")
-    displayer.display_qr_code(data=xpub_info_json, name=title)
+    displayer.display_qr_code(data=xpub_info_text, name=title)
 
 
 @wallet_command("set-account-map")

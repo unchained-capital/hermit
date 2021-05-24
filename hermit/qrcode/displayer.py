@@ -16,7 +16,7 @@ def display_qr_code(data: str, name: str = "Preview") -> asyncio.Task:
 
 
 async def _display_qr_code_async(data: str, name: str = "Preview") -> None:
-    image = create_qr_code_image(data)
+    image = create_qr_code_image(data, animated=False)
 
     cv2.namedWindow(name)
     cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
@@ -40,7 +40,7 @@ def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
             qr_idx = 0
 
         print("attempting with", qr_idx, qrs_data[qr_idx])
-        image = create_qr_code_image(qrs_data[qr_idx])
+        image = create_qr_code_image(qrs_data[qr_idx], animated=True)
 
         cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
 
@@ -50,14 +50,21 @@ def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
     cv2.destroyWindow(name)
 
 
-def create_qr_code_image(data: str) -> PilImage:
+def create_qr_code_image(data: str, animated=False) -> PilImage:
+
+    if animated:
+        version = 20
+        fit = False  # otherwise gifs are of different sizes
+    else:
+        version = 1
+        fit = True
 
     qr = qrcode.QRCode(
-        version=20,
+        version=version,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
         border=4,
     )
     qr.add_data(encode_qr_code_data(decoded=data))
-    qr.make(fit=False)  # fit=False because otherwise gifs are of different sizes
+    qr.make(fit=fit)
     return qr.make_image(fill_color="black", back_color="white")
