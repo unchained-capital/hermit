@@ -7,6 +7,7 @@ from buidl.hd import (
 from mnemonic import Mnemonic
 from hermit import shards
 from hermit.errors import HermitError
+from hermit.qrcode import reader
 
 
 class HDWallet(object):
@@ -57,22 +58,30 @@ class HDWallet(object):
         self.unlock(testnet=testnet)
         return HDPrivateKey.parse(self.root_xpriv).traverse(path=bip32_path).pub
 
-    def extended_public_key(self, bip32_path: str, testnet: bool = False) -> str:
+    def extended_public_key(
+        self, bip32_path: str, testnet: bool = False, use_slip132: bool = False
+    ) -> str:
+        # hopefully, slip132 will be deprecated one day and this can be removed, BUT
+        # for now it is the only way to guarantee seemless Specter-Desktop compatibility when uploading an xpub (on setup) from Hermit
+        # https://github.com/satoshilabs/slips/blob/master/slip-0132.md#registered-hd-version-bytes
+
         # Will use whatever network the xpriv/trpiv is saved as from the unlock method
         self.unlock(testnet=testnet)
         hd_pubkey_obj = self._extended_public_key_obj(
             bip32_path=bip32_path, testnet=testnet
         )
 
-        # use slip132 version byte
-        # hopefully, slip132 will be deprecated one day, BUT
-        # for now it is the only way to guarantee seemless Specter-Desktop compatibility (p2wsh & mainnet/testnet)
-        # https://github.com/satoshilabs/slips/blob/master/slip-0132.md#registered-hd-version-bytes
-        if testnet is True:
-            p2wsh_version_byte = "02575483"
+        if use_slip132:
+            if testnet is True:
+                p2wsh_version_byte = "02575483"
+            else:
+                p2wsh_version_byte = "02aa7ed3"
+            version = bytes.fromhex(p2wsh_version_byte)
         else:
-            p2wsh_version_byte = "02aa7ed3"
-        return hd_pubkey_obj.xpub(version=bytes.fromhex(p2wsh_version_byte))
+            # This will automatically determine if we are xpub or tpub
+            version = None
+
+        return hd_pubkey_obj.xpub(version=version)
 
     def get_child_private_key_objs(self, bip32_paths):
         """
@@ -92,6 +101,11 @@ class HDWallet(object):
         # TODO: this should be persisted along with shamir shares, but the way Hermit handles persistance is hackey (os.system() calls)
         # Also, persistance is currently on the shards class and not the Wallet class
 
+        if not account_map_str:
+            # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
+            account_map_dict = reader.read_qr_code(qrtype="accountmap")
+            account_map_str = account_map_dict["account_map_str"]
+
         # Will use whatever network the xpriv/trpiv is saved as from the unlock method
         wsh_dict = parse_wshsortedmulti(output_record=account_map_str)
 
@@ -100,7 +114,7 @@ class HDWallet(object):
         for key_record in wsh_dict["key_records"]:
             # TODO: performance optimize this for large multisigs (99% of multisig re-uses the same paths)
             calculated_xpub = self.extended_public_key(
-                bip32_path=key_record["path"], testnet=testnet
+                bip32_path=key_record["path"], testnet=testnet, use_slip132=False
             )
             if calculated_xpub == key_record["xpub_parent"]:
                 included = True
@@ -109,7 +123,7 @@ class HDWallet(object):
             if calculated_xpub[:4] != key_record["xpub_parent"][:4]:
                 # TODO: better way to convey this back to user?
                 print(
-                    f"Network mistmatch: account map has {key_record['xpub_parent'][:4]} and we are looking for {calculated_xpub[:4]}."
+                    f"Network mismatch: account map has {key_record['xpub_parent'][:4]} and we are looking for {calculated_xpub[:4]}."
                 )
                 print(f"Please toggle testnet and try again.")
                 return False

@@ -76,7 +76,9 @@ def export_xpub(path=""):
     if not is_valid_bip32_path(path):
         raise RuntimeError("Invalid BIP32 Path")
 
-    xpub = state.Wallet.extended_public_key(bip32_path=path, testnet=state.Testnet)
+    xpub = state.Wallet.extended_public_key(
+        bip32_path=path, testnet=state.Testnet, use_slip132=True
+    )
     xfp_hex = state.Wallet.xfp_hex
     title = f"Extended Public Key Info for Seed ID {xfp_hex}"
     xpub_info_text = f"[{xfp_hex}/{path[2:]}]{xpub}"
@@ -87,20 +89,22 @@ def export_xpub(path=""):
 
 
 @wallet_command("set-account-map")
-def set_account_map(account_map_str):
-    """usage:  set-account-map ACCOUNT_MAP_STRING
+def set_account_map(account_map_str=""):
+    """usage:  set-account-map
 
     Sets the account map (for change and receiving address validation) with the collection of public key records that you get from your Coordinator software
 
+    The account map can be supplied via CLI, or if left blank the camera will open to scan the account map from you Coordinator software.
+
     Examples:
 
-      wallet> set-account-map FIXME
+      wallet> set-account-map
+      wallet> set-account-map wsh(sortedmulti(2,[deadbeef/48h/0h/0h/2h]Zpub...))
 
     """
     # FIXME: this should be persisted, but persistance is currently written using dangerous os.system() calls and only stored at the shards level (not the wallet level)
     # A major persistence refactor is needed
 
-    # TODO: add QR functionality!
     if (
         state.Wallet.set_account_map(
             account_map_str=account_map_str, testnet=state.Testnet
