@@ -20,13 +20,17 @@ def _parse_specter_desktop_psbt(qrcode_data):
     parts = qrcode_data.split(" ")
     if len(parts) == 1:
         # it's just 1 chunk of data, no encoding of any kind
-        return qrcode_data, 1, 1
+        return {
+            "x_int": 1,
+            "y_int": 1,
+            "payload": qrcode_data,
+        }
     elif len(parts) == 2:
         xofy, payload = parts
         # xofy might look like p2of4
         xofy_re = re.match("p([0-9]*)of([0-9]*)", xofy)
         if xofy_re is None:
-            raise ValueError(f"Invalid QR payload: {qrcode_data}")
+            raise ValueError(f"Invalid 2-part QR payload: {qrcode_data}")
         # safe to int these because we know from the regex that they're composed of ints only:
         x_int = int(xofy_re[1])
         y_int = int(xofy_re[2])
@@ -36,7 +40,17 @@ def _parse_specter_desktop_psbt(qrcode_data):
             "payload": payload,
         }
     else:
-        raise ValueError(f"Invalid QR payload: {qrcode_data}")
+        raise ValueError(f"Invalid {len(parts)} part QR payload: {qrcode_data}")
+
+
+def _parse_specter_desktop_accountmap(qrcode_data):
+    """
+    returns a dict of the payload
+
+    TODO: support QR code GIFs (no need for them, more of a UX issue if someone selects that and then it doesn't work)
+    """
+    parse_wshsortedmulti(qrcode_data)  # this confirms it's valid
+    return {"account_map_str": qrcode_data}
 
 
 def read_single_qr(frame, qrtype):
@@ -50,11 +64,11 @@ def read_single_qr(frame, qrtype):
     # we don't know how many QRs we'll need until the scanning begins, so initialize as none
     for barcode in barcodes:
         x, y, w, h = barcode.rect
-        qrcode_data = barcode.data.decode("utf-8")
+        qrcode_data = barcode.data.decode("utf-8").strip()
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         # FIXME: make this a debug print
-        print_formatted_text("FOUND", qrcode_data)
+        print_formatted_text(f"FOUND {len(qrcode_data)}: qrcode_data")
 
         # At this point we don't know if it's single or part of a multi, and if multi we don't have all the pieces to parse
         # If this throws a ValueError it will be handled by the caller
@@ -63,8 +77,7 @@ def read_single_qr(frame, qrtype):
         elif qrtype == "accountmap":
             # we want to test parsing (should throw an error if invalid), but we want to return the string (not the parsed result)
             # the easiest way to do this is to throw the string into the dict we return
-            single_qr_dict = parse_wshsortedmulti(qrcode_data)
-            single_qr_dict["account_map_str"] = qrcode_data
+            single_qr_dict = _parse_specter_desktop_accountmap(qrcode_data)
 
         print_formatted_text(f"returing single {single_qr_dict}...")
         return frame, single_qr_dict
