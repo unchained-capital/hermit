@@ -37,6 +37,14 @@ class BitcoinSigner(object):
         Will wait for a signature request, handle validation,
         confirmation, generation, and display of a signature.
         """
+        if not self.wallet.has_account_map():
+            print_formatted_text(
+                "Before signing you must register your account map (xpubs) so that hermit can do proper change detection"
+            )
+            print_formatted_text(
+                "Use set-account-map to register your account map from your Coordinator software"
+            )
+
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can then unlock the wallet?
             print_formatted_text("WARNING: wallet is LOCKED.")
@@ -46,11 +54,12 @@ class BitcoinSigner(object):
 
         if not self.unsigned_psbt_b64:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
-            self.unsigned_psbt_b64 = reader.read_qr_code()
+            self.unsigned_psbt_b64 = reader.read_qr_code(qrtype="psbt")
 
         self.parse_psbt()
         self.validate_psbt()
         self.display_request()
+
         if not self.wallet.unlocked():
             print_formatted_text(
                 "Wallet is LOCKED, aborting without attempting to sign"

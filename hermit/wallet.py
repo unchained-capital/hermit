@@ -141,6 +141,9 @@ class HDWallet(object):
         self.hdpubkey_map = hd_pubkey_map
         return True
 
+    def has_account_map(self):
+        return self.quorum_m > 0
+
     def derive_child_address(
         self,
         testnet: bool = False,
