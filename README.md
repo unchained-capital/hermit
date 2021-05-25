@@ -320,22 +320,12 @@ see and test all functionality.
 #### Integrating
 
 Hermit needs an external, online wallet application in order to work.
-This application has a few ways it may need to integrate with
-Hermit:
-
-* Read a public key displayed by Hermit
-
-* Generate a signature request for Hermit (see [examples/signature_requests/bitcoin_testnet.json](examples/signature_requests/bitcoin_testnet.json))
-
-* Read a signature displayed by Hermit (see [examples/signatures/bitcoin.json](examples/signatures/bitcoin.json))
-
-In all cases, Hermit uses the same scheme to encode/decode data into
-QR codes.  The pipelines look like this:
-
-  * To create a QR code from a `string`: utf-8 encode -> gzip-compress -> Base32 encode
-  * To parse a QR code `string`: Base32 decode -> gzip-decompress -> utf-8 decode
-
-The `string` data may sometimes itself be JSON.
+This application uses output descriptors/PSBT, which is now the standard for Coordinators.
+You can Coordinate this using:
+* Specter-Desktop
+* Sparrow
+* Fully Noded
+* More coming soon
 
 #### Contributing to Hermit
 
