@@ -9,7 +9,7 @@ from math import ceil
 from buidl import PSBT
 from buidl.hd import parse_wshsortedmulti
 
-from prompt_toolkit import print_formatted_text  # FIXME
+from prompt_toolkit import print_formatted_text
 
 
 def _parse_specter_desktop_psbt(qrcode_data):
@@ -49,9 +49,25 @@ def _parse_specter_desktop_accountmap(qrcode_data):
 
     TODO: support QR code GIFs (no need for them, more of a UX issue if someone selects that and then it doesn't work)
     """
-    parse_wshsortedmulti(qrcode_data)  # this confirms it's valid
-    return {"account_map_str": qrcode_data}
+    # TODO: move this to buidl?
+    parts = qrcode_data.split(" ")
+    xofy = parts[0]
+    xofy_re = re.match("p([0-9]*)of([0-9]*)", xofy)
+    if xofy_re is None:
+        # This is the whole payload, we validate it and return it
+        parse_wshsortedmulti(qrcode_data)  # this confirms it's valid
+        return {"payload": qrcode_data}
 
+    else:
+        # safe to int these because we know from the regex that they're composed of ints only:
+        x_int = int(xofy_re[1])
+        y_int = int(xofy_re[2])
+        # This is a multipart payload, so we parse the x/y and return it without validation
+        return {
+            "x_int": x_int,
+            "y_int": y_int,
+            "payload": " ".join(parts[1:]),
+        }
 
 def read_single_qr(frame, qrtype):
     """
@@ -67,8 +83,8 @@ def read_single_qr(frame, qrtype):
         qrcode_data = barcode.data.decode("utf-8").strip()
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        # FIXME: make this a debug print
-        print_formatted_text(f"FOUND {len(qrcode_data)}: qrcode_data")
+        # TODO: add debug print feature:
+        # print_formatted_text(f"FOUND {len(qrcode_data)}: qrcode_data")
 
         # At this point we don't know if it's single or part of a multi, and if multi we don't have all the pieces to parse
         # If this throws a ValueError it will be handled by the caller
@@ -79,7 +95,9 @@ def read_single_qr(frame, qrtype):
             # the easiest way to do this is to throw the string into the dict we return
             single_qr_dict = _parse_specter_desktop_accountmap(qrcode_data)
 
-        print_formatted_text(f"returing single {single_qr_dict}...")
+        # TODO: add debug print feature:
+        print_formatted_text("QR scanned!")
+        # print_formatted_text(f"returing single {single_qr_dict}...")
         return frame, single_qr_dict
 
     return frame, {}
@@ -125,11 +143,12 @@ def read_qr_code(qrtype) -> Optional[str]:
             # No qr found
             continue
 
-        print_formatted_text(f"Found {single_qr_dict}")
+        # TODO: add debug print feature:
+        # print_formatted_text(f"Found {single_qr_dict}")
 
         if single_qr_dict.get("y_int", 1) == 1:
             # This is the whole payload, lets return it
-            return single_qr_dict
+            return single_qr_dict['payload']
 
         # This is one frame of many QRs to scan, so we process it accordingly
 
@@ -152,21 +171,16 @@ def read_qr_code(qrtype) -> Optional[str]:
 
         # TODO: something more performant?
         if None not in qrs_array:
-            psbt_payload = "".join(qrs_array)
-            print_formatted_text("Finalizing PSBT payload", psbt_payload)
             break
 
     print_formatted_text("Releasing camera and destorying window")
     camera.release()
+
     # For some reason, this breaks the hermit UI?:
     # cv2.destroyWindow()
 
-    return psbt_payload
+    result_payload = "".join(qrs_array)
 
-    if False:
-        # FIXME
-        # Confirm this is OK. psbt_payload initialized as "" but this is returning None (better?)
-        if not psbt_payload:
-            # need the if clause in case of user escaping during QR scanning
-            # TODO: streamline control logic to avoid this if statement?
-            return
+    # TODO: debug print
+    # print_formatted_text("Finalizing PSBT payload", result_payload)
+    return result_payload

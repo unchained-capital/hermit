@@ -44,6 +44,7 @@ class BitcoinSigner(object):
             print_formatted_text(
                 "Use set-account-map to register your account map from your Coordinator software"
             )
+            return
 
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can then unlock the wallet?
@@ -55,6 +56,9 @@ class BitcoinSigner(object):
         if not self.unsigned_psbt_b64:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
             self.unsigned_psbt_b64 = reader.read_qr_code(qrtype="psbt")
+
+            # TODO debug print:
+            print("PSBT to sign:", self.unsigned_psbt_b64)
 
         self.parse_psbt()
         self.validate_psbt()
@@ -161,4 +165,4 @@ class BitcoinSigner(object):
         bcur_multi_obj = BCURMulti(text_b64=self.signed_psbt_b64)
         # TODO: toggle animation? Leaving on always for UX.
         chunks = bcur_multi_obj.encode(animate=True)
-        displayer.display_qr_gif(qrs_data=chunks, name="Signed PSBT")
+        displayer.display_qr_gif(qrs_data=[chunk.upper() for chunk in chunks], name="Signed PSBT")

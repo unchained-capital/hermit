@@ -43,7 +43,7 @@ def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
 
         cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
 
-        time.sleep(0.1)
+        time.sleep(0.2)
 
     # TODO: better exit-condition or window-closing handling?
     cv2.destroyWindow(name)
@@ -52,8 +52,8 @@ def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
 def create_qr_code_image(data: str, animated=False) -> PilImage:
 
     if animated:
-        version = 20
-        fit = False  # otherwise gifs are of different sizes
+        version = 12
+        fit = True  # otherwise gifs are of different sizes
     else:
         version = 1
         fit = True
