@@ -111,9 +111,9 @@ def set_account_map(account_map_str=""):
         )
         is True
     ):
-        print("Account map set")
+        print_formatted_text("Account map set")
     else:
-        print("Account map NOT set")
+        print_formatted_text("Account map NOT set")
         # TODO: this is an ugly hack to get around the fact that we store xpriv/tpriv (which has a version byte), but what we really want to store is the secret (mnemonic)
         # Get rid of this in the future when Hermit state overhaul is complete
         state.Wallet.lock()
@@ -121,13 +121,28 @@ def set_account_map(account_map_str=""):
 
 @wallet_command("display-address")
 def display_address(offset=0, limit=10, is_change=0):
+    """usage:  display-address
+
+    Display bitcoin address(es) that belong to your account map.
+    By default, this will display the first 10 addresses on the receive branch.
+
+    You can customize the offset, limit, and the receive/change branch as follows.
+
+    Examples:
+
+      wallet> display-address
+      wallet> display-address 4 5 1
+
+    """
     if not state.Wallet.quorum_m or not state.Wallet.pubkey_records:
-        print(
+        print_formatted_text(
             "Account map not previously set. Please use set-account-map first to set an account map that we can derive bitcoin addresses from"
         )
         return
 
-    # TODO: allow user to modify limit/offset and toggle change/receiving
+    # Format params
+    offset = int(offset)
+    limit = int(limit)
     is_change = bool(is_change)
     testnet = state.Testnet
 

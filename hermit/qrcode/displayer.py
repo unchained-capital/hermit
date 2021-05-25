@@ -39,7 +39,6 @@ def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
         if qr_idx == len(qrs_data):
             qr_idx = 0
 
-        print("attempting with", qr_idx, qrs_data[qr_idx])
         image = create_qr_code_image(qrs_data[qr_idx], animated=True)
 
         cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
