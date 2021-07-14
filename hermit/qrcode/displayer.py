@@ -5,58 +5,47 @@ import numpy as np
 import qrcode
 import time
 from qrcode.image.pil import PilImage
-
-from .format import encode_qr_code_data
 from .utils import window_is_open
 
-
-def display_qr_code(data: str, name: str = "Preview") -> asyncio.Task:
-    task = _display_qr_code_async(data=data, name=name)
-    return asyncio.get_event_loop().create_task(task)
+from buidl.bcur import BCURMulti
 
 
-async def _display_qr_code_async(data: str, name: str = "Preview") -> None:
-    image = create_qr_code_image(data, animated=False)
-
-    cv2.namedWindow(name)
-    cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
-
-    while window_is_open(name):
-        await asyncio.sleep(0.01)
-
-    cv2.destroyWindow(name)
-
+def display_qr_code(data: str, name: str = "Preview") -> None:
+    bc = BCURMulti(text_b64=data)
+    chunks=bc.encode(animate=True)
+    return display_qr_gif(qrs_data=chunks, name=name)
 
 def display_qr_gif(qrs_data: list, name: str = "Preview") -> None:
-    cv2.namedWindow(name)
+    # Build images to display before we show the window.
+    images = [create_qr_code_image(data, animated=True) for data in qrs_data]
 
-    qr_idx = -1
-    while True:
-        _ = window_is_open(name)  # needed for some reason?
+    winname="displayqr"
 
-        # Increment index of which qr to show, cycling back 0 once all seen
-        qr_idx += 1
-        if qr_idx == len(qrs_data):
-            qr_idx = 0
+    cv2.namedWindow(winname, cv2.WINDOW_NORMAL | cv2.WINDOW_GUI_NORMAL)
+    cv2.resizeWindow(winname, 300, 300)
+    cv2.setWindowProperty(winname, cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
+    cv2.moveWindow(winname, 100, 100)
 
-        image = create_qr_code_image(qrs_data[qr_idx], animated=True)
+    finished = False
+    total = len(images)
+    try:
+        while not finished:
+            for index, image in enumerate(images):
+                cv2.imshow(winname, image) #np.array(image.convert("RGB"))[:, :, ::-1])
+                cv2.setWindowTitle(winname, f"{name}: QR Code {index+1} of {total}")
 
-        cv2.imshow(name, np.array(image.convert("RGB"))[:, :, ::-1].copy())
+                # Allow the window to update and wait for 200ms for a keypress
+                if not window_is_open(winname,200):
+                    finished = True
+                    break
 
-        time.sleep(0.2)
-
-    # TODO: better exit-condition or window-closing handling?
-    cv2.destroyWindow(name)
+    finally:
+        cv2.destroyWindow(winname)
 
 
-def create_qr_code_image(data: str, animated=False) -> PilImage:
-
-    if animated:
-        version = 12
-        fit = True  # otherwise gifs are of different sizes
-    else:
-        version = 1
-        fit = True
+def create_qr_code_image(data: str, animated=False):
+    version = 12
+    fit = True  # otherwise gifs are of different sizes
 
     qr = qrcode.QRCode(
         version=version,
@@ -64,6 +53,8 @@ def create_qr_code_image(data: str, animated=False) -> PilImage:
         box_size=10,
         border=4,
     )
-    qr.add_data(encode_qr_code_data(decoded=data))
+    qr.add_data(bytes(data, 'utf-8'))
     qr.make(fit=fit)
-    return qr.make_image(fill_color="black", back_color="white")
+    image = qr.make_image(fill_color="black", back_color="white")
+
+    return np.array(image.convert("RGB"))[:, :, ::-1]

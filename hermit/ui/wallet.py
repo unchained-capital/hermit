@@ -6,7 +6,7 @@ from .base import command, clear_screen
 from .repl import repl
 from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
-from hermit.qrcode import displayer
+from hermit.qrcode import displayer, reader
 
 from buidl.hd import is_valid_bip32_path
 from buidl.libsec_status import is_libsec_enabled
@@ -19,6 +19,16 @@ WalletCommands: Dict = {}
 
 def wallet_command(name):
     return command(name, WalletCommands)
+
+@wallet_command("echo")
+def echo_qr(unsigned_psbt_b64=""):
+    """usage:  echo
+
+    Print out the contents of a QR code.
+
+    """
+    data = reader.read_qr_code("Scan data to echo")
+    print_formatted_text(data)
 
 
 @wallet_command("sign-bitcoin")

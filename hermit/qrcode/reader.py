@@ -10,177 +10,101 @@ from buidl import PSBT
 from buidl.hd import parse_wshsortedmulti
 
 from prompt_toolkit import print_formatted_text
+from .utils import window_is_open
+from buidl.bcur import BCURMulti, BCURSingle
+
+from .parser import QRParser, ParserException
+from prompt_toolkit.shortcuts import ProgressBar
 
 
-def _parse_specter_desktop_psbt(qrcode_data):
+
+def read_qrs_in_frame(frame):
     """
-    returns a dict of the payload, as well as the pxofy (e.g. p2of3) in the form x_int and y_int
+    Return frame, [data_str1, data_str2, ...]
+
+    The returned frame is the original frame with a green box
+    drawn around each of the identified QR codes.
     """
-    # TODO: move this to buidl?
-    parts = qrcode_data.split(" ")
-    if len(parts) == 1:
-        # it's just 1 chunk of data, no encoding of any kind
-        return {
-            "x_int": 1,
-            "y_int": 1,
-            "payload": qrcode_data,
-        }
-    elif len(parts) == 2:
-        xofy, payload = parts
-        # xofy might look like p2of4
-        xofy_re = re.match("p([0-9]*)of([0-9]*)", xofy)
-        if xofy_re is None:
-            raise ValueError(f"Invalid 2-part QR payload: {qrcode_data}")
-        # safe to int these because we know from the regex that they're composed of ints only:
-        x_int = int(xofy_re[1])
-        y_int = int(xofy_re[2])
-        return {
-            "x_int": x_int,
-            "y_int": y_int,
-            "payload": payload,
-        }
-    else:
-        raise ValueError(f"Invalid {len(parts)} part QR payload: {qrcode_data}")
-
-
-def _parse_specter_desktop_accountmap(qrcode_data):
-    """
-    returns a dict of the payload
-
-    TODO: support QR code GIFs (no need for them, more of a UX issue if someone selects that and then it doesn't work)
-    """
-    # TODO: move this to buidl?
-    parts = qrcode_data.split(" ")
-    xofy = parts[0]
-    xofy_re = re.match("p([0-9]*)of([0-9]*)", xofy)
-    if xofy_re is None:
-        # This is the whole payload, we validate it and return it
-        parse_wshsortedmulti(qrcode_data)  # this confirms it's valid
-        return {"payload": qrcode_data}
-
-    else:
-        # safe to int these because we know from the regex that they're composed of ints only:
-        x_int = int(xofy_re[1])
-        y_int = int(xofy_re[2])
-        # This is a multipart payload, so we parse the x/y and return it without validation
-        return {
-            "x_int": x_int,
-            "y_int": y_int,
-            "payload": " ".join(parts[1:]),
-        }
-
-def read_single_qr(frame, qrtype):
-    """
-    Return frame, single_qr_dict
-    """
-    if qrtype not in ("accountmap", "psbt"):
-        raise RuntimeError(f"Invalid QR Code Type {qrtype}")
-
     barcodes = pyzbar.decode(frame)
-    # we don't know how many QRs we'll need until the scanning begins, so initialize as none
+
+    # Mark the qr codes in the image
     for barcode in barcodes:
         x, y, w, h = barcode.rect
-        qrcode_data = barcode.data.decode("utf-8").strip()
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        # TODO: add debug print feature:
-        # print_formatted_text(f"FOUND {len(qrcode_data)}: qrcode_data")
+    # Extract qr code data
+    results = [
+        barcode.data.decode("utf-8").strip()
+        for barcode in barcodes
+    ]
 
-        # At this point we don't know if it's single or part of a multi, and if multi we don't have all the pieces to parse
-        # If this throws a ValueError it will be handled by the caller
-        if qrtype == "psbt":
-            single_qr_dict = _parse_specter_desktop_psbt(qrcode_data)
-        elif qrtype == "accountmap":
-            # we want to test parsing (should throw an error if invalid), but we want to return the string (not the parsed result)
-            # the easiest way to do this is to throw the string into the dict we return
-            single_qr_dict = _parse_specter_desktop_accountmap(qrcode_data)
+    return frame, results
 
-        # TODO: add debug print feature:
-        print_formatted_text("QR scanned!")
-        # print_formatted_text(f"returing single {single_qr_dict}...")
-        return frame, single_qr_dict
+# This method handles reading QR codes from the camera and
+# parses the results looking for vaious mulit-part QR encodings.
+# If it finds one, it attempts to load the full data payload, and
+# displays a handy progress bar giving the user some feedback about
+# how many segments are left to read.
 
-    return frame, {}
+def read_qr_code(title=None) -> Optional[str]:
+    if title is None:
+        title = "Scan the barcode."
 
+    name = "readqr"
 
-def read_qr_code(qrtype) -> Optional[str]:
-    if qrtype not in ("accountmap", "psbt"):
-        raise RuntimeError(f"Invalid QR Code Type {qrtype}")
-    # Some useful info about pyzbar:
-    # https://towardsdatascience.com/building-a-barcode-qr-code-reader-using-python-360e22dfb6e5
+    # Dont include a toolbar or a status bar at the bottom.
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL | cv2.WINDOW_GUI_NORMAL)
 
-    # FIXME: get rid of all the debug prints in here
+    # Change the title
+    cv2.setWindowTitle(name, title)
 
-    # initialize variables
-    # at this point, we don't know if we're scanning a GIF or a single frame
-    # the logic must handle both
-    qrs_array, result_payload = [], ""
+    # Move the window to a sane place on the screen
+    cv2.moveWindow(name, 100, 100)
 
     # Start the video capture
     camera = cv2.VideoCapture(0)
-    ret, frame = camera.read()  # TODO: can delete this line?
+    parser = QRParser()
 
     # need to do a lot of iterative processing to gather QR gifs and assemble them into one payload, so this is a bit complex
     print_formatted_text("Starting QR code scanner (window should pop-up)...")
-    while True:
-        # Mirror-flip the image for UI
-        mirror = cv2.flip(frame, 1)
-        cv2.imshow("Scan the PSBT You Want to Sign", mirror)
-        if cv2.waitKey(1) & 0xFF == 27:
-            # Unclear why this line matters, but if we don't include this immediately after `imshow` then then the scanner preview won't display (on macOS):
-            break
 
-        ret, frame = camera.read()
+    try:
+        with ProgressBar() as pb:
+            progress_bar_counter = pb()
 
-        try:
-            frame, single_qr_dict = read_single_qr(frame=frame, qrtype=qrtype)
+            while not parser.is_complete():
+                ret, frame = camera.read()
+                frame, data = read_qrs_in_frame(frame)
+                mirror = cv2.flip(frame, 1)
+                cv2.imshow(name, mirror)
 
-        except ValueError as e:
-            print_formatted_text(f"QR Scan Error:\n{e}")
-            continue
+                # Quit the loop if someone hits a key, or closes
+                # the camera winow
+                if not window_is_open(name, 100):
+                    break
 
-        if not single_qr_dict:
-            # No qr found
-            continue
+                # Iterate through the identified qr codes and
+                # parse them.
+                for data_item in data:
+                    message = parser.parse(data_item)
 
-        # TODO: add debug print feature:
-        # print_formatted_text(f"Found {single_qr_dict}")
+                    # Parse returns something non-None when it
+                    # sees a new value
+                    if message is not None:
+                        if parser.total is not None:
+                            progress_bar_counter.total = parser.total
+                        progress_bar_counter.label = f"{parser.type} {message}"
+                        progress_bar_counter.current += 1
 
-        if single_qr_dict.get("y_int", 1) == 1:
-            # This is the whole payload, lets return it
-            return single_qr_dict['payload']
+        result_payload = parser.decode()
 
-        # This is one frame of many QRs to scan, so we process it accordingly
+    except ParserException as pe:
+        print_formattrd_text(f"Error while parsing QRs: {pe.args[0]}")
 
-        # First time we've scanned a QR gif we initialize the results array
-        if qrs_array == []:
-            qrs_array = [None for _ in range(single_qr_dict["y_int"])]
+    finally:
+        # Clean up window stuff.
+        print_formatted_text("Releasing camera and destorying window")
+        cv2.destroyWindow(name)
+        camera.release()
 
-        # Debug print
-        num_scanned = len([x for x in qrs_array if x is not None])
-        print_formatted_text(f"Scanned {num_scanned} of {len(qrs_array)} QRs")
-
-        # More debug print
-        if qrs_array[single_qr_dict["x_int"] - 1] is None:
-            print_formatted_text("Adding to array")
-            qrs_array[single_qr_dict["x_int"] - 1] = single_qr_dict["payload"]
-        else:
-            print_formatted_text(
-                f"Already scanned QR #{single_qr_dict['x_int']}, ignoring"
-            )
-
-        # TODO: something more performant?
-        if None not in qrs_array:
-            break
-
-    print_formatted_text("Releasing camera and destorying window")
-    camera.release()
-
-    # For some reason, this breaks the hermit UI?:
-    # cv2.destroyWindow()
-
-    result_payload = "".join(qrs_array)
-
-    # TODO: debug print
-    # print_formatted_text("Finalizing PSBT payload", result_payload)
     return result_payload

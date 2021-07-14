@@ -31,21 +31,12 @@ class BitcoinSigner(object):
         self.unsigned_psbt_b64: Optional[str] = unsigned_psbt_b64
         self.testnet = testnet
 
-    def sign(self) -> None:
+    def sign(self, testnet) -> None:
         """Initiate signing.
 
         Will wait for a signature request, handle validation,
         confirmation, generation, and display of a signature.
         """
-        if not self.wallet.has_account_map():
-            print_formatted_text(
-                "Before signing you must register your account map (xpubs) so that hermit can do proper change detection"
-            )
-            print_formatted_text(
-                "Use set-account-map to register your account map from your Coordinator software"
-            )
-            return
-
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can then unlock the wallet?
             print_formatted_text("WARNING: wallet is LOCKED.")
@@ -55,7 +46,7 @@ class BitcoinSigner(object):
 
         if not self.unsigned_psbt_b64:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
-            self.unsigned_psbt_b64 = reader.read_qr_code(qrtype="psbt")
+            self.unsigned_psbt_b64 = reader.read_qr_code()
 
             # TODO debug print:
             print("PSBT to sign:", self.unsigned_psbt_b64)
@@ -162,7 +153,5 @@ class BitcoinSigner(object):
         # TODO: is there a smaller signatures only format for less bandwidth?
         print_formatted_text(HTML("<i>SIGNED PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
-        bcur_multi_obj = BCURMulti(text_b64=self.signed_psbt_b64)
-        # TODO: toggle animation? Leaving on always for UX.
-        chunks = bcur_multi_obj.encode(animate=True)
-        displayer.display_qr_gif(qrs_data=[chunk.upper() for chunk in chunks], name="Signed PSBT")
+
+        displayer.display_qr_code(self.signed_psbt_b64, name="Signed PSBT")

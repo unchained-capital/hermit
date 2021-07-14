@@ -20,7 +20,7 @@ with open(__path("hermit/VERSION")) as version_file:
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-requirementPath = __path("requirements.frozen.txt")
+requirementPath = __path("requirements.txt")
 install_requires = []
 if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
@@ -44,7 +44,7 @@ setuptools.setup(
     scripts=["bin/hermit"],
     install_requires=install_requires,
     data_files=[
-        ("pybitcointools", ["pybitcointools/english.txt"]),
+#        ("pybitcointools", ["pybitcointools/english.txt"]),
         ("hermit", ["hermit/wordlists/shard.txt", "hermit/wordlists/wallet.txt"]),
     ],
     include_package_data=True,

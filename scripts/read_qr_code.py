@@ -1,17 +1,13 @@
+
 from sys import argv
+import base64
+from buidl.bcur import BCURMulti
+from hermit.qrcode import reader
 
-from pyzbar import pyzbar
-from PIL import Image
-
-from hermit.qrcode.format import decode_qr_code_data
-
-HELP = """usage: python read_qr_code.py image.png
+HELP = """usage: python read_qr_code.py
 
 This program prints data from an image file containing a
 Hermit-compatible QR code.
-
-The data contained in the QR code will be unwrapped and uncompressed
-before printing.
 """
 
 if __name__ == "__main__":
@@ -20,8 +16,5 @@ if __name__ == "__main__":
         print(HELP)
         exit(1)
 
-    input_path = argv[1]
-    image = Image.open(input_path)
-    for qrcode in pyzbar.decode(image):
-        print(decode_qr_code_data(qrcode.data))
-        break
+    result = reader.read_qr_code()
+    print(base64.b64decode(result).decode('utf-8'))

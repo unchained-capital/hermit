@@ -103,10 +103,7 @@ class HDWallet(object):
 
         if not account_map_str:
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
-            account_map_str = reader.read_qr_code(qrtype="accountmap")
-
-            # TODO: debug print
-            print("Account Map:", account_map_str)
+            account_map_str = reader.read_qr_code("Scan the accountmap.")
 
         # Will use whatever network the xpriv/trpiv is saved as from the unlock method
         wsh_dict = parse_wshsortedmulti(output_record=account_map_str)

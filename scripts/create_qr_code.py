@@ -1,14 +1,12 @@
 from sys import stdin, argv
+import base64
+from buidl.bcur import BCURMulti
+from hermit.qrcode import displayer
 
-from hermit.qrcode.displayer import create_qr_code_image
-
-HELP = """usage: cat ... | python create_qr_code.py image.png
+HELP = """usage: cat ... | python create_qr_code.py
 
 This program reads input data over STDIN and transforms it into an
-image file containing a Hermit-compatible QR code.
-
-The data contained in the QR code will be a wrapped & compressed
-version of the input data.
+image containing a hermit compatible QR code, which it displays.
 """
 
 if __name__ == "__main__":
@@ -17,7 +15,6 @@ if __name__ == "__main__":
         print(HELP)
         exit(1)
 
-    output_path = argv[1]
     data = stdin.read()
-    image = create_qr_code_image(data)
-    image.save(open(output_path, "wb"))
+    encoded=base64.b64encode(data)
+    displayer.display_qr_code(encoded, name="Jack")

@@ -10,6 +10,7 @@ from mnemonic import Mnemonic
 from .interface import ShardWordUserInterface
 from .shard import Shard
 from hermit.rng import RandomGenerator
+import shamir_mnemonic
 
 # FIXME
 # os.system() calls should be removed
@@ -153,7 +154,7 @@ class ShardSet(object):
         (group_threshold, groups) = self.interface.enter_group_information()
 
         RNG.ensure_bytes(self._needed_entropy_bytes(group_threshold, groups) + 32)
-        mnemonics = shamir_share.generate_mnemonics_random(
+        mnemonics = shamir_mnemonic.generate_mnemonics_random(
             group_threshold, groups, strength_bits=256
         )
         self._import_share_mnemonic_groups(mnemonics)
