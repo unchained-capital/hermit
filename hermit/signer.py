@@ -48,9 +48,6 @@ class BitcoinSigner(object):
             # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
             self.unsigned_psbt_b64 = reader.read_qr_code()
 
-            # TODO debug print:
-            print("PSBT to sign:", self.unsigned_psbt_b64)
-
         self.parse_psbt()
         self.validate_psbt()
         self.display_request()

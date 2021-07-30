@@ -12,6 +12,7 @@ from buidl.hd import is_valid_bip32_path
 from buidl.libsec_status import is_libsec_enabled
 
 from typing import Dict
+from hermit.qrcode import reader
 
 
 WalletCommands: Dict = {}
@@ -50,6 +51,12 @@ def sign_bitcoin(unsigned_psbt_b64=""):
     Creating a signature requires unlocking the wallet.
 
     """
+
+    if unsigned_psbt_b64 is None:
+        # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
+        unsigned_pstb_b64 = reader.read_qr_code("Scan the psbt.")
+
+
     BitcoinSigner(
         state.Wallet,
         state.Session,

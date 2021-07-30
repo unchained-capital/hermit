@@ -44,7 +44,6 @@ setuptools.setup(
     scripts=["bin/hermit"],
     install_requires=install_requires,
     data_files=[
-#        ("pybitcointools", ["pybitcointools/english.txt"]),
         ("hermit", ["hermit/wordlists/shard.txt", "hermit/wordlists/wallet.txt"]),
     ],
     include_package_data=True,
