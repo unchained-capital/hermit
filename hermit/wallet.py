@@ -38,7 +38,7 @@ class HDWallet(object):
         words = self.shards.wallet_words()
         if mnemonic.check(words):
             seed = Mnemonic.to_seed(words, passphrase=passphrase)
-            hd_obj = HDPrivateKey.from_seed(seed, testnet=testnet)
+            hd_obj = HDPrivateKey.from_seed(seed)
             # Note that xprv conveys network info (xprv vs tprv) and this is only reset on locking/unlocking the wallet
             # TODO: a more elegant way to persist this data?
             self.root_xpriv = hd_obj.xprv()
