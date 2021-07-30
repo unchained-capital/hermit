@@ -6,9 +6,6 @@ import cv2
 import re
 from math import ceil
 
-from buidl import PSBT
-from buidl.hd import parse_wshsortedmulti
-
 from prompt_toolkit import print_formatted_text
 from .utils import window_is_open
 from buidl.bcur import BCURMulti, BCURSingle
@@ -100,6 +97,7 @@ def read_qr_code(title=None) -> Optional[str]:
 
     except ParserException as pe:
         print_formattrd_text(f"Error while parsing QRs: {pe.args[0]}")
+        return None
 
     finally:
         # Clean up window stuff.

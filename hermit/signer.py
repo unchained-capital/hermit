@@ -31,7 +31,7 @@ class BitcoinSigner(object):
         self.unsigned_psbt_b64: Optional[str] = unsigned_psbt_b64
         self.testnet = testnet
 
-    def sign(self, testnet) -> None:
+    def sign(self) -> None:
         """Initiate signing.
 
         Will wait for a signature request, handle validation,
@@ -68,7 +68,7 @@ class BitcoinSigner(object):
 
         try:
             self.psbt_obj = PSBT.parse_base64(
-                self.unsigned_psbt_b64, testnet=self.testnet
+                self.unsigned_psbt_b64,
             )
         except Exception as e:
             err_msg = "Invalid PSBT: {} ({})".format(e, type(e).__name__)
