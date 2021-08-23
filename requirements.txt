@@ -16,7 +16,7 @@ bleach==3.3.0
     # via readme-renderer
 bson==0.5.8
     # via -r requirements.in
-buidl==git+https://github.com/buidl-bitcoin/buidl-python.git
+git+https://github.com/buidl-bitcoin/buidl-python.git
     # via -r requirements.in
 certifi==2020.12.5
     # via requests
