@@ -1,5 +1,5 @@
 bson==0.5.8
-buidl==0.2.15
+buidl==0.2.25
 flake8==3.7.7
 imutils==0.5.1
 mnemonic==0.18
@@ -14,3 +14,4 @@ qrcode[pil]==6.0
 twine==1.13.0
 sphinx==1.8.5
 shamir-mnemonic==0.1
+fbpygif==1.0.5
