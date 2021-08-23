@@ -3,8 +3,8 @@ import os
 
 import sys
 
-if sys.version_info < (3, 7):
-    sys.exit("Sorry, Python < 3.7 is not supported")
+if sys.version_info < (3, 5):
+    sys.exit("Sorry, Python < 3.5 is not supported")
 
 
 def __path(filename):
