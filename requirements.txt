@@ -6,6 +6,8 @@
 #
 alabaster==0.7.12
     # via sphinx
+ansicolors==1.1.8
+    # via -r requirements.in
 atomicwrites==1.4.0
     # via pytest
 attrs==20.3.0
