@@ -334,4 +334,4 @@ class BitcoinSigner(object):
         print_formatted_text(HTML("<i>SIGNED PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
 
-        displayer.display_qr_code(self.signed_psbt_b64, name="Signed PSBT")
+        displayer.display_qr_code(self.signed_psbt_b64)

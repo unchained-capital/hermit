@@ -1,5 +1,5 @@
 from .base import QRCamera
-from PIL import IMAGE
+from PIL import Image
 import cv2
 
 class OpenCVCamera(QRCamera):
