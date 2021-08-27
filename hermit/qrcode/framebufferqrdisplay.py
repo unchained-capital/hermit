@@ -70,10 +70,10 @@ class FrameBufferQRDisplay(QRDisplay):
         try:
             while not finished:
                 for image in images:
-                    write_image_to_fb(-100, 100, image)
+                    write_image_to_fb(self.x_position, self.y_position, image)
                     time.sleep(0.2)
         finally:
-            write_image_to_fb(-100, 100, saved)
+            write_image_to_fb(self.x_position, self.y_position, saved)
 
     def setup_camera_display(self):
         self.saved = None
@@ -85,10 +85,10 @@ class FrameBufferQRDisplay(QRDisplay):
 
     def display_camera_image(self, image):
         if self.saved is None:
-            self.saved = copy_image_from_fb(-100,100, image.width, image.height )
+            self.saved = copy_image_from_fb(self.x_position, self.y_position, image.width, image.height )
 
         r,g,b = image.split()
         bgr = Image.merge("RGB", (b,g,r))
 
-        write_image_to_fb(-100, 100, bgr)
+        write_image_to_fb(self.x_position, self.y_position, bgr)
         return True
