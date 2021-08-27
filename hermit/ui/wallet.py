@@ -28,7 +28,7 @@ def echo_qr(unsigned_psbt_b64=""):
     Print out the contents of a QR code.
 
     """
-    data = reader.read_qr_code("Scan data to echo")
+    data = reader.read_qr_code()
     print_formatted_text(data)
 
 @wallet_command("qr")
@@ -37,7 +37,7 @@ def create_qr(data=""):
 
     Display an animated QR code containing the given data.
     """
-    displayer.display_qr_code(data=data, name="QR Code")
+    displayer.display_qr_code(data=data)
 
 @wallet_command("sign-bitcoin")
 def sign_bitcoin(unsigned_psbt_b64=""):
@@ -60,7 +60,7 @@ def sign_bitcoin(unsigned_psbt_b64=""):
 
     if not unsigned_psbt_b64:
         # Get unsigned PSBT from webcam (QR gif) if not already passed in as an argument
-        unsigned_psbt_b64 = reader.read_qr_code("Scan the psbt.")
+        unsigned_psbt_b64 = reader.read_qr_code()
 
     try:
         BitcoinSigner(
@@ -109,7 +109,7 @@ def export_xpub(path=""):
     # TODO: offer to save this json file somewhere?
     # xpub_info_json = json.dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
     print_formatted_text(f"\n{title}:\n{xpub_info_text}")
-    displayer.display_qr_code(data=xpub_info_text, name=title)
+    displayer.display_qr_code(data=xpub_info_text)
 
 
 @wallet_command("set-account-map")

@@ -43,6 +43,13 @@ class HermitConfig:
         "plugin_dir": "/var/lib/hermit",
     }
 
+
+    DefaultQRSystem = {
+        "type": "opencv",
+        "x_position": 100,
+        "y_position": 100,
+    }
+
     def __init__(self, config_file: str):
 
         """
@@ -66,6 +73,10 @@ class HermitConfig:
             self.plugin_dir = self.config["plugin_dir"]
         if "commands" in self.config:
             self.commands = self.config["commands"]
+        if "qr_system" in self.config:
+            self.qr_system = self.config["qr_system"]
+        else:
+            self.qr_system = self.DefaultQRSystem
 
         defaults = self.DefaultCommands.copy()
 
@@ -77,8 +88,19 @@ class HermitConfig:
             formatted_key = self.commands[key].format(self.shards_file)
             self.commands[key] = formatted_key
 
+
     @classmethod
     def load(cls):
         return HermitConfig(
             environ.get("HERMIT_CONFIG", cls.DefaultPaths["config_file"])
         )
+
+_global_config = None
+
+def get_config():
+    global _global_config
+
+    if _global_config is None:
+        _global_config = HermitConfig.load()
+
+    return _global_config

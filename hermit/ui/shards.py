@@ -173,7 +173,7 @@ def export_shard_as_qr(name):
 
     """
     shard_data = b64encode(state.Wallet.shards.qr_shard(name)).decode("utf-8")
-    displayer.display_qr_code(shard_data, name=name)
+    displayer.display_qr_code(shard_data)
 
 
 @shard_command("copy-shard")

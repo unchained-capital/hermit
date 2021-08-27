@@ -1,2 +1,2 @@
 from .reader import read_qr_code
-from .displayer import display_qr_code, create_qr_code_image
+from .displayer import display_qr_code
