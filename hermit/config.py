@@ -46,6 +46,8 @@ class HermitConfig:
 
     DefaultQRSystem = {
         "type": "opencv",
+        "display": "opencv",
+        "camera": "opencv",
         "x_position": 100,
         "y_position": 100,
     }

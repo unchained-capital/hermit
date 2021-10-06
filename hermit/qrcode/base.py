@@ -44,15 +44,16 @@ class QRSystem():
             from .imageiocamera import ImageIOCamera
             self.camera = ImageIOCamera()
 
-        if qr_config['display'] == 'opencv':
+        display = qr_config.get('display', 'opencv')
+        if display == 'opencv':
             from .opencvqrdisplay import OpenCVQRDisplay
             self.display = OpenCVQRDisplay(qr_config)
 
-        elif qr_config['display'] == 'ascii':
+        elif display == 'ascii':
             from .asciiqrdisplay import ASCIIQRDisplay
             self.display = ASCIIQRDisplay(qr_config)
 
-        elif qr_config['display'] == 'framebuffer':
+        elif display == 'framebuffer':
             from .framebufferqrdisplay import FrameBufferQRDisplay
             self.display = FrameBufferQRDisplay(qr_config)
 
