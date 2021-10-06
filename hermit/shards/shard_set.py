@@ -81,7 +81,11 @@ class ShardSet(object):
                     f.write(bson.dumps({}))
 
             with open(self.config.shards_file, "rb") as f:
-                bdata = bson.loads(f.read())
+                bbytes = f.read()
+                if len(bbytes) == 0:
+                    bdata = {}
+                else:
+                    bdata = bson.loads(bbytes)
 
             for name, shard_bytes in bdata.items():
                 self.shards[name] = Shard(
