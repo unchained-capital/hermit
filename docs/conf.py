@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 project = "Hermit"
 copyright = "2019, Unchained Capital"
-author = "Chris Howe, Destry Saul, Dhruv Bansal"
+author = "Chris Howe, Destry Saul, Dhruv Bansal, Michael Flaxman"
 
 # The short X.Y version
 version = "0.1"
