@@ -1,15 +1,25 @@
-import qrcode
-from buidl.bcur import BCURMulti
-from ..config import get_config
-from typing import Optional
-from .parser import QRParser, ParserException
-from pyzbar import pyzbar
-from prompt_toolkit import print_formatted_text
+# Image processing libs
 from PIL import Image, ImageOps
 from PIL.ImageDraw import ImageDraw
 
+# Packetizes data
+from buidl.bcur import BCURMulti
+
+# Generate QR code image from data
+import qrcode
+
+# Locate QR code within image & decode its data
+from pyzbar import pyzbar
+
+from ..config import get_config
+from typing import Optional
+from .parser import QRParser, ParserException
+
+from prompt_toolkit import print_formatted_text
 
 class QRDisplay():
+    """Base class for displaying animated QR codes."""
+
     def animate_qrs(self, qrs: list) -> None:
         pass
 
@@ -24,6 +34,7 @@ class QRDisplay():
 
 
 class QRCamera():
+    """Base class for camera."""
     def open(self):
         pass
 

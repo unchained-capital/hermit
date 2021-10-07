@@ -1,4 +1,5 @@
 import buidl
+from buidl import ltrim_path
 from buidl.psbt import PSBT, SuspiciousTransaction, HDPublicKey
 from collections import defaultdict
 
@@ -6,7 +7,6 @@ from buidl.script import (
     RedeemScript,
     WitnessScript,
 )
-
 
 def describe_basic_inputs(psbt, hdpubkey_map):
 
@@ -155,7 +155,16 @@ def describe_basic_outputs(
             output_desc["is_change"] = True
 
             # FIXME: Confirm this works with a fake change test case
-            output_quorum_m, output_quorum_n = psbt_out.witness_script.get_quorum()
+            if psbt_out.witness_script:
+                output_quorum_m, output_quorum_n = psbt_out.witness_script.get_quorum()
+            elif psbt_out.redeem_script:
+                output_quorum_m, output_quorum_n = psbt_out.redeem_script.get_quorum()
+            else:
+                # TODO: add support for legacy TXs?
+                raise SuspiciousTransaction(
+                    f"output #{index} does not contain a redeem or a witness script. "
+                )
+
             if expected_quorum_m != output_quorum_m:
                 raise SuspiciousTransaction(
                     f"Previous output(s) set a max quorum of threshold of {expected_quorum_m}, but this transaction is {output_quorum_m}"
@@ -338,9 +347,6 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
 
     tx_fee_sats = psbt.tx_obj.fee()
 
-    root_paths_for_signing = set()
-
-
     if not psbt.hd_pubs:
         raise ValueError(
             "Cannot describe multisig PSBT without `hd_pubs` nor `hdpubkey_map`"
@@ -353,11 +359,8 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
             hdpubkey.xpub()
         )
 
-
-
-    # These will be used for all inputs and change outputs
-    tx_quorum_m, tx_quorum_n = None, None
-
+    # # These will be used for all inputs and change outputs
+    # tx_quorum_m, tx_quorum_n = None, None
 
     inputs_described = describe_basic_inputs(psbt, hdpubkey_map=hdpubkey_map)
     total_input_sats = inputs_described["total_input_sats"]
@@ -400,25 +403,26 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
         "tx_fee_sats": tx_fee_sats,
         "total_input_sats": total_input_sats,
         "output_spend_sats": spend_sats,
-        "change_addr": change_addr,
-        "output_change_sats": output_change_sats,
-        "change_sats": total_input_sats - tx_fee_sats - output_spend_sats,
+        "change_addr": outputs_described["change_addr"],
+        "output_change_sats": outputs_described["change_sats"],
+        "change_sats": total_input_sats - tx_fee_sats - spend_sats,
         "spend_addr": spend_addr,
+
         # Input/output level
         "inputs_desc": inputs_described,
         "outputs_desc": outputs_described,
     }
 
     if xfp_for_signing:
-        if not root_paths_for_signing:
+        if not inputs_described["root_paths_for_signing"]:
             # We confirmed above that all inputs have identical encumberance so we choose the first one as representative
             err = [
                 "Did you enter a root fingerprint for another seed?",
-                f"The xfp supplied ({xfp_for_signing}) does not correspond to the transaction inputs, which are {input_quorum_m} of the following:",
+                f"The xfp supplied ({xfp_for_signing}) does not correspond to the transaction inputs, which are {inputs_described['inputs_quorum_m']} of the following:",
                 ", ".join(sorted(list(hdpubkey_map.keys()))),
             ]
             raise Exception("\n".join(err))
 
-        to_return["root_paths"] = root_paths_for_signing
+        to_return["root_paths"] = inputs_described["root_paths_for_signing"]
 
     return to_return

@@ -13,7 +13,7 @@ from .confirm_transaction import confirm_transaction_dialog
 from buidl import PSBT
 from buidl.bcur import BCURMulti
 
-from .psbt import describe_basic_p2sh_multisig_tx
+from .psbt import describe_basic_psbt
 
 class BitcoinSigner(object):
 
@@ -54,25 +54,23 @@ class BitcoinSigner(object):
         self.parse_psbt()
         self.validate_psbt()
 
-        #self.display_request()
-
-        sign = confirm_transaction_dialog(transaction=self.transaction_description()).run()
-
-        if not sign:
-            return
-
         if not self.wallet.unlocked():
+            self.print_transaction_description()
             print_formatted_text(
                 "Wallet is LOCKED, aborting without attempting to sign"
             )
             return
 
-        self.create_signature()
-        self._show_signature()
+        sign = confirm_transaction_dialog(transaction=self.transaction_description()).run()
 
-        # if self._confirm_create_signature():
-            # self.create_signature()
-            # self._show_signature()
+        if not sign:
+            print_formatted_text(
+                "Signature request REJECTED, aborting without attempting to sign"
+            )
+            return
+
+        self.create_signature()
+        self.show_signature()
 
     def parse_psbt(self) -> None:
         if self.unsigned_psbt_b64 is None:
@@ -101,13 +99,19 @@ class BitcoinSigner(object):
         if self.psbt_obj.validate() is not True:
             raise InvalidSignatureRequest("Invalid PSBT")
 
-        self.tx_description = describe_basic_p2sh_multisig_tx(
+        self.tx_description = describe_basic_psbt(
             self.psbt_obj,
             xfp_for_signing=self.wallet.xfp_hex,
         )
 
-
     def transaction_description(self, verbose=True) -> str:
+        return "\n".join(map(lambda line: line, self._transaction_description_lines(verbose=verbose)))
+
+    def print_transaction_description(self, verbose=True):
+        for line in self._transaction_description_lines(verbose=verbose):
+            print_formatted_text(line)
+
+    def _transaction_description_lines(self, verbose=True) -> [str]:
         tx_desc = self.tx_description
 
         lines = [
@@ -119,7 +123,7 @@ class BitcoinSigner(object):
 
             lines.extend([
                 "",
-                f"TX ID: {tx_desc['txid']}",
+                f"TXID: {tx_desc['txid']}",
                 f"Fee in Sats: {tx_desc['tx_fee_sats']:,}",
                 f"Lock Time: {tx_desc['locktime']}",
                 f"Version: {tx_desc['version']}",
@@ -127,7 +131,7 @@ class BitcoinSigner(object):
                 "INPUTS:",
             ])
 
-            for idx, inp in enumerate(tx_desc["inputs_desc"]):
+            for idx, inp in enumerate(tx_desc["inputs_desc"]["inputs_desc"]):
                 lines.extend([
                     f"  Input {idx}:",
                     f"    Previous TX Hash: {inp['prev_txhash']}",
@@ -139,7 +143,7 @@ class BitcoinSigner(object):
 
                 # TODO: more input stuff here
             lines.append("OUTPUTS:")
-            for idx, output in enumerate(tx_desc["outputs_desc"]):
+            for idx, output in enumerate(tx_desc["outputs_desc"]["outputs_desc"]):
                 lines.extend([
                     f"  Output {idx}:",
                     f"    Address: {output['addr']}",
@@ -149,7 +153,7 @@ class BitcoinSigner(object):
                     "",
                 ])
                 # TODO: more output stuff here
-        return "\n".join(lines)
+        return lines
 
     def display_request(self, verbose=False) -> None:
         """Displays the transaction to be signed"""
@@ -161,7 +165,7 @@ class BitcoinSigner(object):
             verbose or True
         ):  # TODO: set this toggle somewhere and make this a nice display with complete info
             print_formatted_text(HTML(""))
-            print_formatted_text(HTML(f"<i>TX ID:</i> {tx_desc['txid']}"))
+            print_formatted_text(HTML(f"<i>TXID:</i> {tx_desc['txid']}"))
             print_formatted_text(
                 HTML(f"<i>Fee in Sats:</i> {tx_desc['tx_fee_sats']:,}")
             )
@@ -169,7 +173,7 @@ class BitcoinSigner(object):
             print_formatted_text(HTML(f"<i>Version:</i> {tx_desc['version']}"))
             print_formatted_text(HTML(""))
             print_formatted_text(HTML("<i>INPUTS:</i>"))
-            for idx, inp in enumerate(tx_desc["inputs_desc"]):
+            for idx, inp in enumerate(tx_desc["inputs_desc"]["inputs_desc"]):
                 print_formatted_text(HTML(f"  <i>Input {idx}:</i>"))
                 print_formatted_text(
                     HTML(f"    <i>Previous TX Hash:</i> {inp['prev_txhash']}")
@@ -180,7 +184,7 @@ class BitcoinSigner(object):
                 print_formatted_text(HTML(f"    <i>Sats:</i> {inp['sats']:,}"))
                 # TODO: more input stuff here
             print_formatted_text(HTML("<i>OUTPUTS:</i>"))
-            for idx, output in enumerate(tx_desc["outputs_desc"]):
+            for idx, output in enumerate(tx_desc["outputs_desc"]["outputs_desc"]):
                 print_formatted_text(HTML(f"  <i>Output {idx}:</i>"))
                 print_formatted_text(HTML(f"    <i>Address:</i> {output['addr']}"))
                 print_formatted_text(HTML(f"    <i>Sats:</i> {output['sats']:,}"))
@@ -205,7 +209,7 @@ class BitcoinSigner(object):
         self.signed_psbt_b64 = self.psbt_obj.serialize_base64()
         print_formatted_text("success")
 
-    def _show_signature(self) -> None:
+    def show_signature(self) -> None:
         # TODO: is there a smaller signatures only format for less bandwidth?
         print_formatted_text(HTML("<i>SIGNED PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))

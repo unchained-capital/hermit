@@ -67,9 +67,15 @@ def confirm_transaction_dialog(title=None, transaction=None, style=None):
         title=title,
         body=body,
         buttons=[
-            Button(text='Yes', handler=yes_handler, left_symbol='[', right_symbol=']', width=8, ),
+            Button(
+                text='Yes', handler=yes_handler, width=8,
+                # left_symbol='[', right_symbol=']',
+            ),
             Label('    '),
-            Button(text='No', handler=no_handler, left_symbol='[', right_symbol=']', width=8,),
+            Button(
+                text='No', handler=no_handler, width=8,
+                # left_symbol='[', right_symbol=']',
+            ),
         ],
         with_background=False,
     )

@@ -86,9 +86,12 @@ class HDWallet(object):
         Derive child private key objects and return them to (co)sign a transaction.
         """
         hd_priv_obj = HDPrivateKey.parse(self.root_xpriv)
-        return [
-            hd_priv_obj.traverse(bip32_path).private_key for bip32_path in bip32_paths
-        ]
+        priv_key_objs = []
+        for xfp, bip32_paths_for_xfp in bip32_paths.items():
+            for bip32_path in bip32_paths_for_xfp:
+                priv_key_obj = hd_priv_obj.traverse(bip32_path).private_key
+                priv_key_objs.append(priv_key_obj)
+        return priv_key_objs
 
     def set_account_map(self, account_map_str: str, testnet: bool = False) -> bool:
         """
