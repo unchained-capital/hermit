@@ -20,7 +20,8 @@ pipeline {
           . .virtualenv/bin/activate
           python setup.py install
           make lint
-          make test 
+          make test
+          make docs
         '''
       }
     }
@@ -39,5 +40,3 @@ pipeline {
     }
   }
 }
-
-

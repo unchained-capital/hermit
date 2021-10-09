@@ -13,5 +13,6 @@ script:
   - python -m black hermit tests scripts *.py
   - python -m flake8 hermit tests scripts *.py
   - python -m mypy -p hermit
+  - python -m sphinx -c docs hermit docs/_build
 after_success:
   - codecov
