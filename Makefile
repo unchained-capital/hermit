@@ -18,7 +18,6 @@ UNAME := $(shell uname)
 # == Commands ==
 #
 
-CAT        := cat
 PIP        := $(VENV_DIR)/bin/pip
 PYTEST     := $(VENV_DIR)/bin/pytest
 FLAKE8     := $(VENV_DIR)/bin/flake8
@@ -35,7 +34,9 @@ docs:
 	$(SPHINX_BUILD) -c docs hermit docs/_build
 
 assets:
-	$(CAT) examples/signature_requests/2-of-2.p2sh.testnet.psbt | $(PYTHON3) scripts/create_qr_code_sequence.py examples/signature_requests/2-of-2.p2sh.testnet.gif
+	echo 'Hello, world!' | python scripts/create_qr_code_image.py tests/fixtures/hello_world.jpg
+	cat tests/fixtures/lorem.txt | $(PYTHON3) scripts/create_qr_code_animation.py examples/lorem.gif
+	cat examples/signature_requests/2-of-2.p2sh.testnet.psbt | $(PYTHON3) scripts/create_qr_code_animation.py examples/signature_requests/2-of-2.p2sh.testnet.gif true
 
 clean:
 	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info $(VENV_DIR) /tmp/shard_words.bson*
