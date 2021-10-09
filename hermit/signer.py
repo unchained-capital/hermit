@@ -10,6 +10,7 @@ from .io import (
     read_data_from_animated_qrs,
 )
 from .wallet import HDWallet
+from .coordinator import validate_coordinator_signature_if_necessary
 from .psbt import describe_basic_psbt
 
 class Signer(object):
@@ -92,7 +93,9 @@ class Signer(object):
         print_formatted_text(HTML("Validating PSBT..."))
         if self.psbt.validate() is not True:
             raise InvalidPSBT("Invalid PSBT.")
-        # FIXME -- further validatiaon here
+
+        validate_coordinator_signature_if_necessary(self.psbt)
+
 
     #
     # Transaction Description

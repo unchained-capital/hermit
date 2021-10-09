@@ -16,3 +16,4 @@ twine==1.13.0
 sphinx==1.8.5
 shamir-mnemonic==0.1
 fbpygif==1.0.5
+pycryptodome==3.11.0

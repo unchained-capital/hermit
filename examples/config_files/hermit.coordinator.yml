@@ -1,0 +1,13 @@
+---
+
+coordinator:
+  signature_required: true
+
+  # This is from tests/fixtures/coordinator.pub
+  public_key: |-
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDm6LRbZLXjha+bODC7SID5SKY
+    WfhwHNJj9fTI9wxankYzMuSMUiSq29HBmwPkVtFzFdLuYKFnc6+1pIwXHP+Xf7Pc
+    wO4esRMkzEZUK2IR5BniarMTQ9/sBXf7ttj6Nhp1LTQ2aZ4fjGdI9ZWj/hcJY7wY
+    56KIRZHF+/rAzXNFfQIDAQAB
+    -----END PUBLIC KEY-----

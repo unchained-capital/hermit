@@ -26,6 +26,7 @@ class HermitConfig:
     * `paths` -- paths for configuration, shard data, and plugins, see :attr:`DefaultPaths`.
     * `commands` -- command-lines used to manipulate shard data, see :attr:`DefaultCommands`.
     * `io` -- settings for input and output, see :attr:`DefaultIO`.
+    * `coordinator` -- settings for the coordinator, see :attr:`DefaultCoordinator`.
 
     This class is typically not instantiated directly.  Instead, the
     :func:`get_config` method is used to always return the same global
@@ -91,6 +92,19 @@ class HermitConfig:
         "height": 300,
     }
 
+    #: Default settings for the coordinator being used with Hermit.
+    #:
+    #: * `signature_required` -- whether a signature from the
+    #     coordinator is required to sign
+    #:
+    #: * `public_key` -- an RSA public key (in hex) corresponding to
+    #     the private key used to sign by the coordinator
+    #:
+    DefaultCoordinator = {
+        "signature_required": False,
+        'public_key': None,
+    }
+
     @classmethod
     def load(cls):
         """Return a properly initialized `HermitConfig` instance.
@@ -113,6 +127,7 @@ class HermitConfig:
         self.paths = self.config["paths"]
         self.commands = self.config["commands"]
         self.io = self.config["io"]
+        self.coordinator = self.config["coordinator"]
 
     def _load(self, config_file: Optional[str] = None) -> None:
         if config_file is None:
@@ -128,6 +143,7 @@ class HermitConfig:
                 ("paths", self.DefaultPaths), 
                 ("commands", self.DefaultCommands), 
                 ("io", self.DefaultIO),
+                ("coordinator", self.DefaultCoordinator),
         ]:
             if section_key not in self.config:
                 self.config[section_key] = {}

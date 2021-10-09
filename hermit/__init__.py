@@ -4,6 +4,7 @@ from .errors import (
     InvalidQRCodeSequence,
     InvalidPSBT,
     InvalidSignatureRequest,
+    InvalidCoordinatorSignature,
 )
 from .config import get_config
 from .wallet import HDWallet

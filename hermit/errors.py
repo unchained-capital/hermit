@@ -15,3 +15,6 @@ class InvalidSignatureRequest(HermitError):
     """Raised to indicate a signature request was invalid."""
     pass
 
+class InvalidCoordinatorSignature(HermitError):
+    """Raised to indicate a signature from a coordinator was invalid."""
+    pass

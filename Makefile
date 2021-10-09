@@ -36,7 +36,9 @@ docs:
 assets:
 	echo 'Hello, world!' | python scripts/create_qr_code_image.py tests/fixtures/hello_world.jpg
 	cat tests/fixtures/lorem.txt | $(PYTHON3) scripts/create_qr_code_animation.py examples/lorem.gif
-	cat examples/signature_requests/2-of-2.p2sh.testnet.psbt | $(PYTHON3) scripts/create_qr_code_animation.py examples/signature_requests/2-of-2.p2sh.testnet.gif true
+	cat tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt | $(PYTHON3) scripts/create_qr_code_animation.py tests/fixtures/signature_requests/2-of-2.p2sh.testnet.gif true
+	cat tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt | python scripts/sign_psbt_as_coordinator.py tests/fixtures/coordinator.pem  > tests/fixtures/signature_requests/2-of-2.p2sh.testnet.coordinator_signed.psbt
+	cat tests/fixtures/signature_requests/2-of-2.p2sh.testnet.coordinator_signed.psbt | python scripts/create_qr_code_animation.py tests/fixtures/signature_requests/2-of-2.p2sh.testnet.coordinator_signed.gif true
 
 clean:
 	$(RM) -rf docs/_build/* build/* dist/* hermit.egg-info build.info $(VENV_DIR) /tmp/shard_words.bson*

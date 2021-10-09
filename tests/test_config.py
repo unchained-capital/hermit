@@ -51,6 +51,7 @@ class TestHermitConfig(object):
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
         assert config.io == HermitConfig.DefaultIO
+        assert config.coordinator == HermitConfig.DefaultCoordinator
         mock_exists.assert_called_once_with(HermitConfig.DefaultPaths["config_file"])
 
     @patch("hermit.config.exists")
@@ -60,6 +61,7 @@ class TestHermitConfig(object):
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
         assert config.io == HermitConfig.DefaultIO
+        assert config.coordinator == HermitConfig.DefaultCoordinator
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
 
     @patch("hermit.config.exists")
@@ -71,6 +73,7 @@ class TestHermitConfig(object):
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
         assert config.io == HermitConfig.DefaultIO
+        assert config.coordinator == HermitConfig.DefaultCoordinator
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
 
     @patch("hermit.config.exists")
@@ -83,6 +86,7 @@ class TestHermitConfig(object):
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
         assert config.io == HermitConfig.DefaultIO
+        assert config.coordinator == HermitConfig.DefaultCoordinator
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
 
     @patch("hermit.config.exists")
@@ -95,6 +99,7 @@ class TestHermitConfig(object):
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
         assert config.io == HermitConfig.DefaultIO
+        assert config.coordinator == HermitConfig.DefaultCoordinator
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
 
 
@@ -111,6 +116,9 @@ class TestHermitConfig(object):
             io=dict(
                 x_position=200,
                 y_position=200,
+            ),
+            coordinator=dict(
+                public_key="foobar",
             ),
         )
         mock_exists.return_value = True
@@ -133,6 +141,9 @@ class TestHermitConfig(object):
         assert config.io["width"] == 300
         assert config.io["height"] == 300
         assert config.io["qr_code_sequence_delay"] == 200
+
+        assert config.coordinator["public_key"] == "foobar"
+        assert config.coordinator["signature_required"] is False
 
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
 
