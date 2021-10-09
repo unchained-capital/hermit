@@ -1,5 +1,5 @@
-hermit package
-==============
+Hermit
+======
 
 Subpackages
 -----------
@@ -8,7 +8,6 @@ Subpackages
 
     hermit.qrcode
     hermit.shards
-    hermit.signer
     hermit.ui
     hermit.wordlists
 
@@ -43,6 +42,14 @@ hermit.shamir\_share module
 ---------------------------
 
 .. automodule:: hermit.shamir_share
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+hermit.signer module
+-------------------------
+
+.. automodule:: hermit.signer
     :members:
     :undoc-members:
     :show-inheritance:

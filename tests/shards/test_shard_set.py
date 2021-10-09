@@ -1,18 +1,20 @@
 import bson
 import unittest
-from unittest.mock import Mock, create_autospec, mock_open, call, patch
+from unittest.mock import Mock, mock_open, call, patch
 
 import hermit
 from hermit.shards import ShardSet
+from hermit.config import HermitConfig
 import shamir_mnemonic
 
 
 class TestShardSet(object):
+
     def setup(self):
         self.interface = Mock()
-        self.config = create_autospec(hermit.config.HermitConfig)
+        self.config = HermitConfig()
         config_patch = patch(
-            "hermit.shards.shard_set.HermitConfig.load", return_value=self.config
+            "hermit.shards.shard_set.get_config", return_value=self.config
         )
 
         self.config_patch = config_patch.start()
@@ -62,8 +64,8 @@ class TestShardSet(object):
         assert False
 
     def test_initialize_file(self):
+        self.config.paths["shards_file"] = "shards file"
         shard_set = ShardSet(self.interface)
-        shard_set.config.shards_file = "shards file"
 
         with patch("builtins.open", mock_open()) as mock_file:
             shard_set.initialize_file()

@@ -1,13 +1,18 @@
-from .base import QRDisplay
+from io import StringIO
+from time import sleep
+
+from qrcode import QRCode
 from prompt_toolkit import print_formatted_text,ANSI
 from prompt_toolkit.shortcuts import clear
 from PIL import Image, ImageEnhance
-import io
-import time
 
-class Ansi:
-    """This class has some quick and dirty mappings from 24bit color space to
-    16-color ansi terminal space."""
+from .base import Display
+
+class ANSIColorMap:
+    """This class has some quick and dirty mappings from 24bit color space
+    to 16-color ansi terminal space.
+
+    """
 
     Reset = '\u001b[0m'
     Home = '\u001b[1;1H'
@@ -69,11 +74,45 @@ class Ansi:
         return self.RGB2Bit[r][g][b] + char + self.Reset
 
 
-class ASCIIQRDisplay(QRDisplay):
-    def __init__(self, qr_config):
-        self.ansi = True
-        self.width = int(qr_config.get('width', 80))
-        self.height_scale = float(qr_config.get('height_scale', 0.45))
+class ASCIIDisplay(Display):
+
+    DEFAULT_WIDTH = 80
+
+    def __init__(self, io_config):
+        Display.__init__(self, io_config)
+
+        # FIXME This is undocumented in config.py
+        self.height_scale = float(io_config.get('height_scale', 0.45))
+
+    #
+    # Displaying QRs
+    #
+
+    def format_qr(self, qr: QRCode) -> str:
+        f = StringIO()
+        qr.print_ascii(f)
+        return f.getvalue()
+
+    def animate_qrs(self, qrs: list) -> None:
+        ascii_images = [self.format_qr(qr) for qr in qrs]
+
+        total = len(ascii_images)
+        finished = False
+        while not finished:
+            for index, image in enumerate(ascii_images):
+                clear()
+                print_formatted_text(ANSI(image))
+                sleep(self.qr_code_sequence_delay_seconds)
+
+    #
+    # Camera management
+    #
+
+    def display_camera_image(self, image):
+        ascii = self.render(image, width=self.width, height_scale=self.height_scale)
+        clear()
+        print_formatted_text(ANSI(ascii))
+        return True
 
     def render(self, image, width=120, height_scale=0.55, colorize=True):
         org_width, orig_height = image.size
@@ -88,33 +127,10 @@ class ASCIIQRDisplay(QRDisplay):
                 return ' '
             chars = ["B", "S", "#", "&", "@", "$", "%", "*", ":", ".", " "]
             pixel = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
-            return Ansi.color(chars[pixel // 25], r, g, b)
+            return ANSIColorMap.color(chars[pixel // 25], r, g, b)
 
         new_pixels = [mapto(r, g, b, alpha) for r, g, b, alpha in pixels]
         new_pixels_count = len(new_pixels)
         ascii_image = [''.join(new_pixels[index:index + width]) for index in range(0, new_pixels_count, width)]
         ascii_image = "\n".join(ascii_image)
         return ascii_image
-
-    def display_camera_image(self, image):
-        ascii = self.render(image, width=self.width, height_scale=self.height_scale)
-        clear()
-        print_formatted_text(ANSI(ascii))
-        return True
-
-    def ascii_qr(self, qr):
-        f = io.StringIO()
-        qr.print_ascii(f)
-        return f.getvalue()
-
-    def animate_qrs(self, qrs: list) -> None:
-        # Build images to display before we show the window.
-        ascii_images = [self.ascii_qr(qr) for qr in qrs]
-
-        total = len(ascii_images)
-        finished = False
-        while not finished:
-            for index, image in enumerate(ascii_images):
-                clear()
-                print_formatted_text(ANSI(image))
-                time.sleep(0.2)

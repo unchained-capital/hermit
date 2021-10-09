@@ -12,14 +12,6 @@ hermit.qrcode.displayer module
     :undoc-members:
     :show-inheritance:
 
-hermit.qrcode.format module
----------------------------
-
-.. automodule:: hermit.qrcode.format
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 hermit.qrcode.reader module
 ---------------------------
 

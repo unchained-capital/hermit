@@ -3,7 +3,7 @@ import os
 import textwrap
 from hermit import shamir_share
 from prompt_toolkit import print_formatted_text, HTML
-from hermit.config import HermitConfig
+from hermit.config import get_config
 from hermit.errors import HermitError
 from typing import List, Dict, Optional
 from mnemonic import Mnemonic
@@ -54,7 +54,7 @@ class ShardSet(object):
     def __init__(self, interface: Optional[ShardWordUserInterface] = None) -> None:
         self.shards: Dict = {}
         self._shards_loaded = False
-        self.config = HermitConfig.load()
+        self.config = get_config()
         if interface is None:
             self.interface = ShardWordUserInterface()
         else:
@@ -67,7 +67,7 @@ class ShardSet(object):
             # If the shards dont exist at the place where they
             # are expected to by, try to restore them with the externally
             # configured getPersistedShards command.
-            if not os.path.exists(self.config.shards_file):
+            if not os.path.exists(self.config.paths["shards_file"]):
                 try:
                     os.system(self.config.commands["getPersistedShards"])
                 except TypeError:
@@ -76,11 +76,11 @@ class ShardSet(object):
             # If for some reason the persistence layer failed to  create the
             # the shards file, we assume that we just need to initialize
             # it as an empty bson object.
-            if not os.path.exists(self.config.shards_file):
-                with open(self.config.shards_file, "wb") as f:
+            if not os.path.exists(self.config.paths["shards_file"]):
+                with open(self.config.paths["shards_file"], "wb") as f:
                     f.write(bson.dumps({}))
 
-            with open(self.config.shards_file, "rb") as f:
+            with open(self.config.paths["shards_file"], "rb") as f:
                 bbytes = f.read()
                 if len(bbytes) == 0:
                     bdata = {}
@@ -101,7 +101,7 @@ class ShardSet(object):
 
     def initialize_file(self) -> None:
         if self.interface.confirm_initialize_file():
-            with open(self.config.shards_file, "wb") as f:
+            with open(self.config.paths["shards_file"], "wb") as f:
                 f.write(bson.dumps({}))
 
     def to_bytes(self):
@@ -111,7 +111,7 @@ class ShardSet(object):
     def save(self) -> None:
         # Note: this is called via `write()` method
         # FIXME: standardize naming convention on something logical
-        with open(self.config.shards_file, "wb") as f:
+        with open(self.config.paths["shards_file"], "wb") as f:
             f.write(self.to_bytes())
 
     def _needed_entropy_bytes(self, group_threshold, groups):

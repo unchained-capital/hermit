@@ -1,7 +1,6 @@
 #from prompt_toolkit.eventloop.defaults import use_asyncio_event_loop
 
-from hermit.plugin import PluginsLoaded
-
+from ..plugins import load_plugins
 from .wallet import clear_screen, wallet_repl
 from .relocker import asyncio, relock_wallet_if_timed_out
 from hermit import __version__
@@ -23,10 +22,10 @@ You are in WALLET mode.  Type 'help' for help.               (v{})
 
 
 def main():
+    """Start the Hermit REPL user interface."""
     clear_screen()
+    load_plugins()
     print(Banner.format(__version__))
-    for plugin in PluginsLoaded:
-        print("Loaded plugin {}".format(plugin))
     #use_asyncio_event_loop()
     loop = asyncio.get_event_loop()
     loop.create_task(relock_wallet_if_timed_out())  # deadman_task

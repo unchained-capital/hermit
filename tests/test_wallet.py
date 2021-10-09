@@ -1,9 +1,10 @@
-import json
-import pytest
+from unittest.mock import Mock
+from pytest import raises
+from buidl import HDPrivateKey
 
 from hermit.wallet import HDWallet
+from hermit.errors import HermitError
 import hermit
-
 
 class FakeShards:
     def __init__(self, words):
@@ -13,162 +14,85 @@ class FakeShards:
         return self.words
 
 
-class TestCompressedPrivateKeyFromBIP32(object):
-    pass
+class TestHDWalletLocking(object):
 
+    def setup(self):
+        self.wallet = HDWallet()
 
-class TestCompressedPublickKeyFromBIP32(object):
-    pass
+    def test_wallet_starts_out_locked(self):
+        assert not self.wallet.unlocked()
 
+    def test_locked_wallet_can_be_locked(self):
+        self.wallet.lock()
+        assert not self.wallet.unlocked()
 
-class TestHardened(object):
-    pass
+    def test_locked_wallet_can_be_unlocked_if_seed_is_valid(self, opensource_wallet_words):
+        self.wallet.shards = FakeShards(opensource_wallet_words)
+        self.wallet.unlock()
+        assert self.wallet.unlocked()
 
-
-class TestDecodeSegment(object):
-    pass
-
-
-class TestBIP32Sequence(object):
-    def test_invalid_BIP32_paths_raise_error(self):
-        bip32_path = "m/123/"
-        with pytest.raises(hermit.errors.HermitError) as e_info1:
-            hermit.wallet.bip32_sequence(bip32_path)
-
-        bip32_path = "123'/1234/12"
-        with pytest.raises(hermit.errors.HermitError) as e_info2:
-            hermit.wallet.bip32_sequence(bip32_path)
-
-        bip32_path = "m"
-        with pytest.raises(hermit.errors.HermitError) as e_info3:
-            hermit.wallet.bip32_sequence(bip32_path)
-
-        bip32_path = "m123/123'/123/43"
-        with pytest.raises(hermit.errors.HermitError) as e_info4:
-            hermit.wallet.bip32_sequence(bip32_path)
-
-        bip32_path = "m/123'/12''/12/123"
-        with pytest.raises(hermit.errors.HermitError) as e_info5:
-            hermit.wallet.bip32_sequence(bip32_path)
-
-        bip32_path = "m/123'/12'/-12/123"
-        with pytest.raises(hermit.errors.HermitError) as e_info6:
-            hermit.wallet.bip32_sequence(bip32_path)
-
-        expected = "Not a valid BIP32 path."
-        assert str(e_info1.value) == expected
-        assert str(e_info2.value) == expected
-        assert str(e_info3.value) == expected
-        assert str(e_info4.value) == expected
-        assert str(e_info5.value) == expected
-        assert str(e_info6.value) == expected
-
-
-class TestHDWalletInit(object):
-    pass
-
-
-class TestHDWalletUnlocked(object):
-    def test_unlocked_wallet_is_unlocked(self, opensource_wallet_words):
-        wallet = HDWallet()
-        wallet.shards = FakeShards(opensource_wallet_words)
-        wallet.unlock()
-        assert wallet.unlocked() == True
-
-    def test_init_wallet_is_not_unlocked(self):
-        wallet = HDWallet()
-        assert wallet.unlocked() == False
-
-    def test_locked_wallet_is_not_unlocked(self, opensource_wallet_words):
-        wallet = HDWallet()
-        wallet.shards = FakeShards(opensource_wallet_words)
-        wallet.unlock()
-        wallet.lock()
-        assert wallet.unlocked() == False
-
-
-class TestHDWalletUnlock(object):
-    def test_root_priv_from_trezor_vectors(self, trezor_bip39_vectors):
-        # With Passphrase
+    def test_locked_wallet_can_be_unlocked_if_seed_is_valid_with_passphrase(self, trezor_bip39_vectors):
         for v in trezor_bip39_vectors["english"]:
             wallet = HDWallet()
             wallet.shards = FakeShards(v[1])
             wallet.unlock(passphrase="TREZOR")
-            xprv = wallet.root_priv
+            xprv = wallet.root_xprv
             assert xprv == v[3]
 
-    def test_root_priv_from_unchained_vectors(self, unchained_vectors):
-        # Without Passphrase
-        for words in unchained_vectors:
-            wallet = HDWallet()
-            wallet.shards = FakeShards(words)
-            wallet.unlock()
-            xprv = wallet.root_priv
-            expected_xprv = unchained_vectors[words]["m"]["xprv"]
-            assert xprv == expected_xprv
+    def test_locked_wallet_cannot_be_unlocked_if_seed_is_invalid(self):
+        self.wallet.shards = FakeShards("foo bar")
+        with raises(HermitError) as error:
+            self.wallet.unlock()
+        assert "failed checksum" in str(error)
 
-    def test_checksum_failed_raises_error(self):
-        wallet = HDWallet()
+    def test_unlocked_wallet_can_tell_when_unlocked(self):
+        self.wallet._root_xprv = Mock()
+        assert self.wallet.unlocked()
 
-        # https://github.com/trezor/python-mnemonic/blob/master/test_mnemonic.py
-        wallet.shards = FakeShards(
-            "bless cloud wheel regular tiny venue"
-            + "bird web grief security dignity zoo"
-        )
-        with pytest.raises(hermit.errors.HermitError) as e_info1:
-            wallet.unlock()
-
-        # https://github.com/kristovatlas/bip39_gym/blob/master/test_bip39.py
-        wallet.shards = FakeShards("town iron abandon")
-        with pytest.raises(hermit.errors.HermitError) as e_info2:
-            wallet.unlock()
-
-        # https://github.com/tyler-smith/go-bip39/blob/master/bip39_test.go
-        wallet.shards = FakeShards(
-            "abandon abandon abandon abandon abandon"
-            + "abandon abandon abandon abandon abandon"
-            + "abandon yellow"
-        )
-        with pytest.raises(hermit.errors.HermitError) as e_info3:
-            wallet.unlock()
-
-        expected = "Wallet words failed checksum."
-        assert str(e_info1.value) == expected
-        assert str(e_info2.value) == expected
-        assert str(e_info3.value) == expected
+    def test_unlocked_wallet_can_be_unlocked(self):
+        self.wallet._root_xprv = Mock()
+        self.wallet.unlock()
+        assert self.wallet.unlocked()
 
 
-class TestHDWalletExtendedPublicKey(object):
+class TestHDWalletTraversal(object):
+
     def test_bip32_vectors(self, bip32_vectors):
         for seed in bip32_vectors:
             wallet = HDWallet()
-            wallet.root_priv = bip32_vectors[seed]["m"]["xprv"]
+            wallet.root_xprv = bip32_vectors[seed]["m"]["xprv"]
             for path in bip32_vectors[seed]:
                 if path != "m":
-                    xpub = wallet.extended_public_key(path)
+
+                    # The test vectors file doesn't have private keys,
+                    # just xprv, so we have do calculate the private
+                    # key from the xprv ourselves here in order to
+                    # compare
+                    xprv = bip32_vectors[seed][path]["xprv"]
+                    expected_private_key = HDPrivateKey.parse(xprv).private_key
+                    private_key = wallet.private_key(path)
+                    assert expected_private_key.hex() == private_key.hex()
+
+                    xpub = wallet.xpub(path)
                     expected_xpub = bip32_vectors[seed][path]["xpub"]
                     assert xpub == expected_xpub
 
-
-class TestHDWalletPublicKey(object):
-    def test_bip32_vectors(self, bip32_vectors):
-        for seed in bip32_vectors:
+    def test_unchained_vectors(self, unchained_vectors):
+        for seed in unchained_vectors:
             wallet = HDWallet()
-            wallet.root_priv = bip32_vectors[seed]["m"]["xprv"]
-            for path in bip32_vectors[seed]:
+            wallet.root_xprv = unchained_vectors[seed]["m"]["xprv"]
+            for path in unchained_vectors[seed]:
                 if path != "m":
-                    pubkey = wallet.public_key(path)
-                    expected_pubkey = bip32_vectors[seed][path]["pubkey"]
-                    assert pubkey == expected_pubkey
 
+                    # The test vectors file doesn't have private keys,
+                    # just xprv, so we have do calculate the private
+                    # key from the xprv ourselves here in order to
+                    # compare
+                    xprv = unchained_vectors[seed][path]["xprv"]
+                    expected_private_key = HDPrivateKey.parse(xprv).private_key
+                    private_key = wallet.private_key(path)
+                    assert expected_private_key.hex() == private_key.hex()
 
-class TestHDWalletExtendedPrivateKey(object):
-    def test_bip32_vectors(self, bip32_vectors):
-        for seed in bip32_vectors:
-            wallet = HDWallet()
-            wallet.root_priv = bip32_vectors[seed]["m"]["xprv"]
-            for path in bip32_vectors[seed]:
-                if path != "m":
-                    xprv = wallet.extended_private_key(path)
-                    expected_xprv = bip32_vectors[seed][path]["xprv"]
-                    assert xprv == expected_xprv
+                    xpub = wallet.xpub(path)
+                    expected_xpub = unchained_vectors[seed][path]["xpub"]
+                    assert xpub == expected_xpub

@@ -3,8 +3,8 @@ import hermit.ui.state as state
 
 Bars = "#" * DeadTime + " " * DeadTime
 
-
 def bottom_toolbar():
+    """Renders the bottom toolbar."""
     debug_status = ""
     testnet_status = ""
     wallet_status = ""

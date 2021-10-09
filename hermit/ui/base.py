@@ -3,19 +3,18 @@ from functools import wraps
 
 from hermit.errors import HermitError
 
+#: Duration of idle time before the wallet will automatically lock
+#: itself.
 DeadTime = 60
 
-
-def clear_screen():
+def clear_screen() -> None:
+    """Clears the screen."""
     print(chr(27) + "[2J")
 
+def command(name:str, commands: Dict):
+    """Decorator for defining a new command.
 
-# is this even used?
-def reset_screen():
-    print(chr(27) + "c")
-
-
-def command(name, commands: Dict):
+    """
     def _command_decorator(f):
         nonlocal name
         if name is None:
@@ -25,13 +24,13 @@ def command(name, commands: Dict):
 
         @wraps(f)
         def wrapper(*args, **kwargs):
-            try:
+            # try:
                 return f(*args, **kwargs)
-            except TypeError as terr:
-                raise terr
-            except Exception as err:
-                print(err)
-                raise HermitError("Hmm. Something went wrong.")
+            # FIXME why is TypeError handled specially here?
+            # except TypeError as terr:
+            #     raise terr
+            # except Exception as err:
+            #     raise HermitError("Hmm. Something went wrong.")
 
         commands[name] = wrapper
 

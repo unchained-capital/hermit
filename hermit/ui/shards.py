@@ -2,8 +2,11 @@ from base64 import b64encode, b64decode
 
 from prompt_toolkit import print_formatted_text, HTML
 
+from ..io import (
+    read_data_from_animated_qrs, 
+    display_data_as_animated_qrs,
+)
 from .base import command, clear_screen
-from hermit.qrcode import reader, displayer
 import hermit.ui.state as state
 
 from typing import Dict
@@ -150,7 +153,7 @@ def import_shard_from_qr(name):
       shards> write
 
     """
-    qr_data = reader.read_qr_code()
+    qr_data = read_data_from_animated_qrs()
     shard_data = b64decode(qr_data)
     state.Wallet.shards.import_shard_qr(name, shard_data)
 
@@ -173,7 +176,7 @@ def export_shard_as_qr(name):
 
     """
     shard_data = b64encode(state.Wallet.shards.qr_shard(name)).decode("utf-8")
-    displayer.display_qr_code(shard_data)
+    display_data_as_animated_qrs(shard_data)
 
 
 @shard_command("copy-shard")

@@ -1,26 +1,24 @@
-from .base import QRCamera
+from .base import Camera
+from imageio import get_reader
 from PIL import Image
-import cv2
 
-class OpenCVCamera(QRCamera):
+class ImageIOCamera(Camera):
+
     def __init__(self):
         self.camera = None
 
     def open(self):
         if self.camera is None:
-            self.camera = cv2.VideoCapture(0)
+            self.camera = get_reader('<video0>')
 
     def get_image(self):
         image = None
         if self.camera is not None:
-            ret, frame = self.camera.read()
-            bgr = Image.fromarray(frame)
-            b,g,r = bgr.split()
-            image = Image.merge("RGB", (r,g,b))
+            frame = self.camera.get_next_data()
+            image = Image.fromarray(frame)
         return image
 
     def close(self):
         if self.camera is not None:
-            self.camera.release()
+            self.camera.close()
         self.camera = None
-

@@ -1,9 +1,13 @@
-from .base import QRDisplay
-
-import FBpyGIF.fb as fb
 from io import BytesIO
+from time import sleep
+from typing import Optional
+
+from qrcode import QRCode
 from PIL import Image
-import time
+import FBpyGIF.fb as fb
+
+from ..qr import qr_to_image
+from .base import Display
 
 def copy_image_from_fb(x, y, w, h):
     (mm,fbw,fbh,bpp) = fb.ready_fb()
@@ -50,16 +54,20 @@ def write_image_to_fb(x, y, image):
         fb.mmseekto(fb.vx+x, fb.vy+y+z)
         fb.mm.write(b.read(s))
 
+class FrameBufferDisplay(Display):
 
+    #: Override the default horizontal position for frame buffers.
+    DEFAULT_X_POSITION = -100
 
-class FrameBufferQRDisplay(QRDisplay):
-    def __init__(self, qr_config):
-        self.x_position = int(qr_config.get('x_position',-100))
-        self.y_position = int(qr_config.get('y_position', 100))
+    #
+    # Displaying QRs
+    #
+
+    def format_qr(self, qr: QRCode) -> bytes:
+        return qr_to_image(qr).convert("RGBA")
 
     def animate_qrs(self, qrs: list) -> None:
-        images = [qr.make_image(fill_color="black", back_color="white") for qr in qrs]
-        images = [image.convert('RGBA') for image in images]
+        images = [self.format_qr(qr) for qr in qrs]
 
         if len(images) == 0:
             return
@@ -71,11 +79,15 @@ class FrameBufferQRDisplay(QRDisplay):
             while not finished:
                 for image in images:
                     write_image_to_fb(self.x_position, self.y_position, image)
-                    time.sleep(0.2)
+                    sleep(self.qr_code_sequence_delay_seconds)
         finally:
             write_image_to_fb(self.x_position, self.y_position, saved)
 
-    def setup_camera_display(self):
+    #
+    # Camera management
+    #
+
+    def setup_camera_display(self, title:Optional[str]=None):
         self.saved = None
 
     def teardown_camera_display(self):

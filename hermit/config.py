@@ -1,24 +1,56 @@
-import yaml
-from os import path, environ
-from typing import Dict
+from yaml import safe_load
+from os import environ
+from os.path import exists
+from typing import Optional
 
+_global_config = None
+
+def get_config() -> "HermitConfig":
+    """Return a shared instance of :class:`HermitConfig`.
+
+    This is the usual way to get configuration values in Hermit code.
+
+    """
+    global _global_config
+
+    if _global_config is None:
+        _global_config = HermitConfig.load()
+
+    return _global_config
 
 class HermitConfig:
     """Object to hold Hermit configuration
 
-    Hermit reads its configuration from a YAML file on disk at
-    `/etc/hermit.yaml` (by default).
+    Hermit configuration is split into three sections:
 
-    The following settings are supported:
+    * `paths` -- paths for configuration, shard data, and plugins, see :attr:`DefaultPaths`.
+    * `commands` -- command-lines used to manipulate shard data, see :attr:`DefaultCommands`.
+    * `io` -- settings for input and output, see :attr:`DefaultIO`.
 
-    * `shards_file` -- path to store shards
-    * `plugin_dir` -- directory containing plugins
-    * `commands` -- a dictionary of command lines used to manipulate storage, see :attribute:`hermit.HermitConfig.DefaultCommands`.
+    This class is typically not instantiated directly.  Instead, the
+    :func:`get_config` method is used to always return the same global
+    configuration instance, e.g. ::
+
+      >>> from hermit import get_config
+      >>> print(get_config().paths["config_file"])
+      "/etc/hermit.yml"
 
     """
 
-    #: Default commands for persistence and backup of data.
+    #: Default paths used by Hermit.
     #:
+    #: The following paths are defined:
+    #:
+    #: * `config_file` -- path to the YAML file used for configuration
+    #: * `shards_file` -- path to the BSON file used to store shards
+    #: * `plugin_dir` -- path to a directory used to load runtime plugins
+    DefaultPaths = {
+        "config_file": "/etc/hermit.yaml",
+        "shards_file": "/tmp/shard_words.bson",
+        "plugin_dir": "/var/lib/hermit",
+    }
+
+    #: Default commands for persistence and backup of data.
     #:
     #: Each command will have the string `{0}` interpolated with the
     #: path to the file being processed.
@@ -37,72 +69,73 @@ class HermitConfig:
         "getPersistedShards": "zcat {0}.persisted > {0}",
     }
 
-    DefaultPaths = {
-        "config_file": "/etc/hermit.yaml",
-        "shards_file": "/tmp/shard_words.bson",
-        "plugin_dir": "/var/lib/hermit",
-    }
-
-
-    DefaultQRSystem = {
-        "type": "opencv",
+    #: Default settings for input camera & output display.
+    #:
+    #: The following settings are defined:
+    #:
+    #: * `display` -- display mode (`opencv`, `framebuffer`, or `ascii`)
+    #: * `camera` -- camera mode (`opencv` or `imageio`)
+    #: * `qr_code_sequence_delay` -- time (in milliseconds) between each successive QR code in a sequence
+    #: * `x_position` -- horizontal position of display on screen
+    #: * `y_position` -- vertical position of display on screen
+    #: * `height` -- width of display on screen
+    #: * `width` -- height of display on screen
+    #:
+    DefaultIO = {
         "display": "opencv",
         "camera": "opencv",
+        "qr_code_sequence_delay": 200,
         "x_position": 100,
         "y_position": 100,
+        "width": 300,
+        "height": 300,
     }
-
-    def __init__(self, config_file: str):
-
-        """
-        Initialize Hermit configuration
-
-        :param config_file: the path to the YAML configuration file
-        """
-
-        self.config_file = config_file
-        self.shards_file = self.DefaultPaths["shards_file"]
-        self.plugin_dir = self.DefaultPaths["plugin_dir"]
-        self.config: Dict = {}
-        self.commands: Dict = {}
-
-        if path.exists(config_file):
-            self.config = yaml.safe_load(open(config_file))
-
-        if "shards_file" in self.config:
-            self.shards_file = self.config["shards_file"]
-        if "plugin_dir" in self.config:
-            self.plugin_dir = self.config["plugin_dir"]
-        if "commands" in self.config:
-            self.commands = self.config["commands"]
-        if "qr_system" in self.config:
-            self.qr_system = self.config["qr_system"]
-        else:
-            self.qr_system = self.DefaultQRSystem
-
-        defaults = self.DefaultCommands.copy()
-
-        for key in defaults:
-            if key not in self.commands:
-                self.commands[key] = defaults[key]
-
-        for key in self.commands:
-            formatted_key = self.commands[key].format(self.shards_file)
-            self.commands[key] = formatted_key
-
 
     @classmethod
     def load(cls):
-        return HermitConfig(
-            environ.get("HERMIT_CONFIG", cls.DefaultPaths["config_file"])
-        )
+        """Return a properly initialized `HermitConfig` instance.
 
-_global_config = None
+        """
+        return HermitConfig(config_file=environ.get("HERMIT_CONFIG"))
 
-def get_config():
-    global _global_config
+    def __init__(self, config_file: Optional[str] = None):
+        """Initialize Hermit configuration.
 
-    if _global_config is None:
-        _global_config = HermitConfig.load()
+        :param config_file: the path to the YAML configuration file (defaults to `/etc/hermit.yml`).
 
-    return _global_config
+        If the `config_file` does not exist, it will be ignored.
+
+        """
+
+        self._load(config_file=config_file)
+        self._inject_defaults()
+        self._interpolate_commands()
+        self.paths = self.config["paths"]
+        self.commands = self.config["commands"]
+        self.io = self.config["io"]
+
+    def _load(self, config_file: Optional[str] = None) -> None:
+        if config_file is None:
+            config_file = self.DefaultPaths["config_file"]
+
+        if exists(config_file):
+            self.config = safe_load(open(config_file)) or {}
+        else:
+            self.config = {}
+
+    def _inject_defaults(self) -> None:
+        for section_key, defaults in [
+                ("paths", self.DefaultPaths), 
+                ("commands", self.DefaultCommands), 
+                ("io", self.DefaultIO),
+        ]:
+            if section_key not in self.config:
+                self.config[section_key] = {}
+            for config_key, default_value in defaults.items():
+                if config_key not in self.config[section_key]:
+                    self.config[section_key][config_key] = default_value
+
+    def _interpolate_commands(self) -> None:
+        for config_key in self.config["commands"]:
+            interpolated_value = self.config["commands"][config_key].format(self.config["paths"]["shards_file"])
+            self.config["commands"][config_key] = interpolated_value

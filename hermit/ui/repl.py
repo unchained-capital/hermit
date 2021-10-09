@@ -18,7 +18,8 @@ import hermit.ui.state as state
 Bindings = KeyBindings()
 
 
-def repl(commands: Dict, mode="", help_command=None):
+def repl(commands: Dict, mode: str="", help_command=None):
+    """Start a REPL with the given `commands`, `mode`, and `help_command`."""
     commandCompleter = WordCompleter(
         [c for c in commands], sentence=True  # allows hyphens
     )

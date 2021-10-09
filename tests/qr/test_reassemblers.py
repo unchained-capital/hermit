@@ -1,8 +1,7 @@
 import pytest
 import json
 
-import hermit
-from hermit.qrcode.parser import QRParser
+from hermit.qr import GenericReassembler
 
 @pytest.fixture()
 def bcur_6_part():
@@ -28,20 +27,20 @@ def test_qr_set(request,bcur_6_part, bcur_single, default_qr):
     return array[request.param]
 
 
-class TestQRParse(object):
-    def test_parse_all(self, test_qr_set):
-        parser = QRParser()
+class TestGenericReassembler(object):
 
-        assert parser.total is None
-        assert parser.type is None
+    def test_reassemble_all(self, test_qr_set):
+        reassembler = GenericReassembler()
+
+        assert reassembler.total is None
+        assert reassembler.type is None
 
         for qr in test_qr_set:
-            assert not parser.is_complete()
-            value = parser.parse(qr)
-            assert value is not None
-            assert parser.type is not None
-            assert parser.total is not None
+            assert not reassembler.is_complete()
+            assert reassembler.collect(qr) is True
+            assert reassembler.type is not None
+            assert reassembler.total is not None
 
-        assert parser.is_complete() is True
-        assert parser.decode() is not None
+        assert reassembler.is_complete() is True
+        assert reassembler.decode() is not None
 
