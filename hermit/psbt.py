@@ -1,16 +1,11 @@
 from collections import defaultdict
 
-import buidl
 from buidl import ltrim_path
 from buidl.psbt import PSBT, HDPublicKey
-from buidl.script import (
-    RedeemScript,
-    WitnessScript,
-)
 from .errors import InvalidSignatureRequest
 
 
-def describe_basic_inputs(psbt, hdpubkey_map):
+def describe_basic_inputs(psbt:PSBT, hdpubkey_map):
 
     # These will be used for all inputs and change outputs
     inputs_quorum_m, inputs_quorum_n = None, None
@@ -128,9 +123,9 @@ def describe_basic_inputs(psbt, hdpubkey_map):
 
 
 def describe_basic_outputs(
-    psbt,
-    expected_quorum_m,
-    expected_quorum_n,
+    psbt:PSBT,
+    expected_quorum_m:int,
+    expected_quorum_n:int,
     hdpubkey_map=None,
 ):
 
@@ -254,7 +249,7 @@ def describe_basic_outputs(
     }
 
 
-def describe_basic_p2sh_multisig_tx(psbt, xfp_for_signing=None, hdpubkey_map=None):
+def describe_basic_p2sh_multisig_tx(psbt:PSBT, xfp_for_signing=None, hdpubkey_map=None):
     """
     Describe a typical p2sh multisig transaction in a human-readable way for
     manual verification before signing.
@@ -345,7 +340,7 @@ def describe_basic_p2sh_multisig_tx(psbt, xfp_for_signing=None, hdpubkey_map=Non
     }
 
 
-def describe_basic_psbt(psbt, xfp_for_signing=None):
+def describe_basic_psbt(psbt:PSBT, xfp_for_signing=None):
     psbt.validate()
 
     tx_fee_sats = psbt.tx_obj.fee()
@@ -377,7 +372,7 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
         expected_quorum_n=inputs_described["inputs_quorum_n"],
     )
     is_batch_tx = outputs_described["is_batch_tx"]
-    total_output_sats = outputs_described["total_sats"]
+    # total_output_sats = outputs_described["total_sats"]
     spend_sats = outputs_described["spend_sats"]
     spend_addr = outputs_described["spend_addr"]
 

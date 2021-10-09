@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Tuple
 
 from buidl import PSBT
 from Crypto.Hash import SHA256
@@ -80,7 +80,7 @@ def validate_rsa_signature(message: bytes, signature: bytes) -> None:
 
     try:
         public_key = RSA.importKey(public_key_text)
-    except:
+    except Exception:
         raise InvalidCoordinatorSignature(
             "Coordinator signature is present but coordinator public key is invalid."
         )

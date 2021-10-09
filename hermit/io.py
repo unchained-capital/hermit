@@ -1,6 +1,4 @@
-from datetime import datetime
 from typing import Optional
-from time import sleep
 
 from prompt_toolkit import print_formatted_text
 from prompt_toolkit.shortcuts.progress_bar.base import ProgressBar, ProgressBarCounter
@@ -143,15 +141,9 @@ class IO:
         return self.reassembler.decode()
 
 
-class ReassemblerCounter(object):
+class ReassemblerCounter(ProgressBarCounter):
     def __init__(self, progress_bar, io):
-        self.start_time = datetime.now()
-        self.progress_bar = progress_bar
-        self.data = None
-        self.current = 0
-        self.label = ""
-        self.remove_when_done = True
-        self.done = False
+        ProgressBarCounter.__init__(self, progress_bar, remove_when_done=True)
         self.io = io
 
     def __next__(self):
@@ -173,27 +165,3 @@ class ReassemblerCounter(object):
     @property
     def total(self):
         return self.io.reassembler.total
-
-    @property
-    def percentage(self):
-        if self.total is None:
-            return 0
-        else:
-            return self.current * 100 / max(self.total, 1)
-
-    @property
-    def time_elapsed(self):
-        """
-        return how much time has been elapsed since the start.
-        """
-        return datetime.now() - self.start_time
-
-    @property
-    def time_left(self):
-        """
-        Timedelta representing the time left.
-        """
-        if self.total is None or not self.percentage:
-            return None
-        else:
-            return self.time_elapsed * (100 - self.percentage) / self.percentage

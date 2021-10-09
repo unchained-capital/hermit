@@ -4,7 +4,7 @@ from time import sleep
 from qrcode import QRCode
 from prompt_toolkit import print_formatted_text, ANSI
 from prompt_toolkit.shortcuts import clear
-from PIL import Image, ImageEnhance
+from PIL import ImageEnhance
 
 from .base import Display
 
@@ -93,9 +93,7 @@ class ASCIIDisplay(Display):
     def animate_qrs(self, qrs: list) -> None:
         ascii_images = [self.format_qr(qr) for qr in qrs]
 
-        total = len(ascii_images)
-        finished = False
-        while not finished:
+        while True:
             for index, image in enumerate(ascii_images):
                 clear()
                 print_formatted_text(ANSI(image))

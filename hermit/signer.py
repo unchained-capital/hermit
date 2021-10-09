@@ -2,7 +2,6 @@ from typing import Optional, List
 from prompt_toolkit import PromptSession, print_formatted_text, HTML
 
 from buidl import PSBT
-from buidl.bcur import BCURMulti
 
 from .errors import HermitError, InvalidPSBT
 from .io import (
