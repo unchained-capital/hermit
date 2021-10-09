@@ -165,3 +165,7 @@ class ReassemblerCounter(ProgressBarCounter):
     @property
     def total(self):
         return self.io.reassembler.total
+
+    @total.setter
+    def total(self, value):
+        pass

@@ -13,6 +13,7 @@ from .qr import (
     create_qr_sequence,
     qr_to_image,
     detect_qrs_in_image,
+    GenericReassembler,
 )
 from .io import (
     display_data_as_animated_qrs,
