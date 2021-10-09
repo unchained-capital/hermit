@@ -14,6 +14,7 @@ from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
 
 from buidl.hd import is_valid_bip32_path
+
 # from buidl.libsec_status import is_libsec_enabled
 
 WalletCommands: Dict = {}

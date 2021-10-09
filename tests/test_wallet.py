@@ -4,7 +4,6 @@ from buidl import HDPrivateKey
 
 from hermit.wallet import HDWallet
 from hermit.errors import HermitError
-import hermit
 
 
 class FakeShards:

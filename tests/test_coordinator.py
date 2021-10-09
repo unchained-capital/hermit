@@ -5,7 +5,6 @@ from hermit import InvalidCoordinatorSignature
 from hermit.coordinator import (
     validate_coordinator_signature_if_necessary,
     validate_rsa_signature,
-    extract_rsa_signature_params,
     create_rsa_signature,
     COORDINATOR_SIGNATURE_KEY,
 )

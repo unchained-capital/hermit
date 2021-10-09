@@ -134,7 +134,12 @@ class BCURSingleReassembler(Reassembler):
         return 1, 0, data
 
     def _decode(self) -> Optional[str]:
-        return b64decode(BCURSingle.parse(self.data[0]).text_b64).decode("utf8")
+        base64_text = BCURSingle.parse(self.data[0]).text_b64
+        plain_bytes = b64decode(base64_text)
+        try:
+            return plain_bytes.decode("utf8")
+        except UnicodeDecodeError:
+            return base64_text
 
 
 class BCURMultiReassembler(Reassembler):

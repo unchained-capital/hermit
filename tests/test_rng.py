@@ -3,7 +3,6 @@ from string import ascii_letters
 from random import shuffle
 from unittest.mock import patch
 
-import hermit
 from hermit.rng import (
     max_self_entropy,
     max_kolmogorov_entropy_estimate,

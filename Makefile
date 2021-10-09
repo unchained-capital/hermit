@@ -21,6 +21,7 @@ UNAME := $(shell uname)
 PIP        := $(VENV_DIR)/bin/pip
 PYTEST     := $(VENV_DIR)/bin/pytest
 BLACK      := $(VENV_DIR)/bin/black
+FLAKE8     := $(VENV_DIR)/bin/flake8
 MYPY       := $(VENV_DIR)/bin/mypy
 SPHINX_BUILD := $(VENV_DIR)/bin/sphinx-build
 
@@ -82,6 +83,7 @@ test:
 
 lint:
 	$(BLACK) --check hermit tests scripts *.py
+	$(FLAKE8) hermit tests scripts *.py
 	$(MYPY) -p hermit
 
 .PHONY: test docs

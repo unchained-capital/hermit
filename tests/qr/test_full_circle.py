@@ -1,5 +1,4 @@
 from base64 import b64encode
-import numpy as np
 from hermit.qr import (
     create_qr_sequence,
     GenericReassembler,

@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import Mock
 
 from hermit.shards import Shard

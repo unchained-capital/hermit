@@ -113,14 +113,15 @@ class TestSignerSignatureRequestHandling(object):
     # validate_signature_request
     #
 
-    def test_validate_signature_request(self):
+    def test_validate_signature_request_with_valid_PSBT(self):
         mock_validate = Mock()
         self.psbt.validate = mock_validate
+        self.psbt.extra_map = dict()
         mock_validate.return_value = True
         self.signer.psbt = self.psbt
         self.signer.validate_signature_request()
 
-    def test_validate_signature_request(self):
+    def test_validate_signature_request_with_invalid_PSBT(self):
         mock_validate = Mock()
         self.psbt.validate = mock_validate
         mock_validate.return_value = False

@@ -14,11 +14,13 @@ colorama==0.4.4
 coverage==6.0.1
 docutils==0.17.1
 FBpyGIF==1.0.5
+flake8==3.9.2
 idna==3.2
 imagesize==1.2.0
 imutils==0.5.1
 Jinja2==3.0.2
 MarkupSafe==2.0.1
+mccabe==0.6.1
 mnemonic==0.18
 more-itertools==8.10.0
 mypy==0.800
@@ -34,7 +36,9 @@ platformdirs==2.4.0
 pluggy==1.0.0
 prompt-toolkit==2.0.7
 py==1.10.0
+pycodestyle==2.7.0
 pycryptodome==3.11.0
+pyflakes==2.3.1
 Pygments==2.10.0
 pyparsing==2.4.7
 pytest==4.4.0

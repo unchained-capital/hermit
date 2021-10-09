@@ -1,6 +1,7 @@
 from prompt_toolkit import print_formatted_text
 
-from .base import HermitError, DeadTime, clear_screen
+from ..errors import HermitError
+from .base import DeadTime, clear_screen
 from .wallet import wallet_command
 from .shards import shard_command
 

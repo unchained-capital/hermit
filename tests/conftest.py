@@ -1,9 +1,9 @@
 import json
-from unittest.mock import patch, create_autospec
+from unittest.mock import create_autospec
 
 import pytest
 
-from hermit.shards import ShardSet
+from hermit.shards import ShardSet, Shard
 
 
 @pytest.fixture()
@@ -41,9 +41,8 @@ def opensource_wallet_words():
 
 @pytest.fixture()
 def fixture_opensource_shards(opensource_wallet_words):
-    mock_interface = create_autospec(WalletWordUserInterface)
-    mock_shard1 = create_autospec(WalletWordsShard)
-    mock_shard2 = create_autospec(WalletWordsShard)
+    mock_shard1 = create_autospec(Shard)
+    mock_shard2 = create_autospec(Shard)
     mock_shard1.name = "shard1"
     mock_shard2.name = "shard2"
     mock_shard1.number = 1

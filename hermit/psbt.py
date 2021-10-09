@@ -1,3 +1,4 @@
+from typing import List, Dict
 from collections import defaultdict
 
 from buidl import ltrim_path
@@ -5,7 +6,7 @@ from buidl.psbt import PSBT, HDPublicKey
 from .errors import InvalidSignatureRequest
 
 
-def describe_basic_inputs(psbt:PSBT, hdpubkey_map):
+def describe_basic_inputs(psbt: PSBT, hdpubkey_map):
 
     # These will be used for all inputs and change outputs
     inputs_quorum_m, inputs_quorum_n = None, None
@@ -123,14 +124,14 @@ def describe_basic_inputs(psbt:PSBT, hdpubkey_map):
 
 
 def describe_basic_outputs(
-    psbt:PSBT,
-    expected_quorum_m:int,
-    expected_quorum_n:int,
+    psbt: PSBT,
+    expected_quorum_m: int,
+    expected_quorum_n: int,
     hdpubkey_map=None,
 ):
 
     # intialize variable we'll loop through to set
-    outputs_desc = []
+    outputs_desc: List[Dict] = []
     spend_addr, spend_sats = "", 0
     change_addr, change_sats = "", 0
     total_sats = 0
@@ -249,7 +250,9 @@ def describe_basic_outputs(
     }
 
 
-def describe_basic_p2sh_multisig_tx(psbt:PSBT, xfp_for_signing=None, hdpubkey_map=None):
+def describe_basic_p2sh_multisig_tx(
+    psbt: PSBT, xfp_for_signing=None, hdpubkey_map=None
+):
     """
     Describe a typical p2sh multisig transaction in a human-readable way for
     manual verification before signing.
@@ -340,7 +343,7 @@ def describe_basic_p2sh_multisig_tx(psbt:PSBT, xfp_for_signing=None, hdpubkey_ma
     }
 
 
-def describe_basic_psbt(psbt:PSBT, xfp_for_signing=None):
+def describe_basic_psbt(psbt: PSBT, xfp_for_signing=None):
     psbt.validate()
 
     tx_fee_sats = psbt.tx_obj.fee()

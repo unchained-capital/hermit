@@ -2,7 +2,6 @@ from yaml import dump
 from io import BytesIO
 from unittest.mock import patch, Mock
 
-import hermit
 from hermit import get_config
 from hermit.config import HermitConfig
 
@@ -71,19 +70,6 @@ class TestHermitConfig(object):
     def test_init_with_existing_but_zero_byte_config_file(self, mock_open, mock_exists):
         mock_exists.return_value = True
         mock_open.return_value = BytesIO(b"")
-        config = HermitConfig(config_file="/tmp/hermit.yml")
-        assert config.paths == HermitConfig.DefaultPaths
-        assert config.commands == self.InterpolatedDefaultCommands
-        assert config.io == HermitConfig.DefaultIO
-        assert config.coordinator == HermitConfig.DefaultCoordinator
-        mock_exists.assert_called_once_with("/tmp/hermit.yml")
-
-    @patch("hermit.config.exists")
-    @patch("hermit.config.open")
-    def test_init_with_existing_but_empty_config_file(self, mock_open, mock_exists):
-        config = dict()
-        mock_exists.return_value = True
-        mock_open.return_value = BytesIO(bytes(dump(config), "utf8"))
         config = HermitConfig(config_file="/tmp/hermit.yml")
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
