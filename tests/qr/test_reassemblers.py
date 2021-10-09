@@ -3,11 +3,13 @@ import json
 
 from hermit.qr import GenericReassembler
 
+
 @pytest.fixture()
 def bcur_multi():
     with open("tests/fixtures/qrdata/bcur_6_part.json", "r") as f:
         vector = json.load(f)
     return vector
+
 
 @pytest.fixture()
 def bcur_singles():
@@ -15,30 +17,25 @@ def bcur_singles():
         vector = json.load(f)
     return vector
 
+
 @pytest.fixture()
 def single_qr():
     with open("tests/fixtures/qrdata/single_qr.json", "r") as f:
         vector = json.load(f)
     return vector
 
-class TestGenericReassembler(object):
 
+class TestGenericReassembler(object):
     def test_bcur_single(self, bcur_singles):
         for bcur_single in bcur_singles:
-            self.reassemble(
-                bcur_single["urls"], 
-                bcur_single["data"])
+            self.reassemble(bcur_single["urls"], bcur_single["data"])
 
     def test_bcur_single(self, bcur_multi):
-        self.reassemble(
-            bcur_multi["urls"], 
-            bcur_multi["data"])
+        self.reassemble(bcur_multi["urls"], bcur_multi["data"])
 
     def test_single_qr(self, single_qr):
         data = single_qr[0]
-        self.reassemble(
-            [data],
-            data)
+        self.reassemble([data], data)
 
     def reassemble(self, payloads, expected):
         reassembler = GenericReassembler()

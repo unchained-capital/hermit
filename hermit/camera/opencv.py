@@ -3,6 +3,7 @@ from .base import Camera
 from PIL import Image
 import cv2
 
+
 class OpenCVCamera(Camera):
     def __init__(self):
         self.camera = None
@@ -18,8 +19,8 @@ class OpenCVCamera(Camera):
         if self.camera is not None:
             ret, frame = self.camera.read()
             bgr = Image.fromarray(frame)
-            b,g,r = bgr.split()
-            image = Image.merge("RGB", (r,g,b))
+            b, g, r = bgr.split()
+            image = Image.merge("RGB", (r, g, b))
         return image
 
     def close(self):

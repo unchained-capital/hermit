@@ -1,5 +1,6 @@
-class Camera():
+class Camera:
     """Base class for camera."""
+
     def open(self):
         pass
 

@@ -76,7 +76,6 @@ class HDWallet(object):
         else:
             raise HermitError("Wallet words failed checksum.")
 
-
     #
     # Private Keys
     #
@@ -84,7 +83,7 @@ class HDWallet(object):
     def private_key(self, bip32_path: str, testnet: bool = False):
         self.unlock(testnet=testnet)
         return self.root_extended_private_key.traverse(bip32_path).private_key
-        
+
     #
     # Extended Public Keys
     #
@@ -103,9 +102,7 @@ class HDWallet(object):
 
         # Will use whatever network the xprv/trpv is saved as from the unlock method
         self.unlock(testnet=testnet)
-        hd_pubkey_obj = self.extended_public_key(
-            bip32_path=bip32_path, testnet=testnet
-        )
+        hd_pubkey_obj = self.extended_public_key(bip32_path=bip32_path, testnet=testnet)
 
         if use_slip132:
             if testnet is True:

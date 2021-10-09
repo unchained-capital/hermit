@@ -7,14 +7,15 @@ from hermit.errors import HermitError
 #: itself.
 DeadTime = 60
 
+
 def clear_screen() -> None:
     """Clears the screen."""
     print(chr(27) + "[2J")
 
-def command(name:str, commands: Dict):
-    """Decorator for defining a new command.
 
-    """
+def command(name: str, commands: Dict):
+    """Decorator for defining a new command."""
+
     def _command_decorator(f):
         nonlocal name
         if name is None:
@@ -25,12 +26,13 @@ def command(name:str, commands: Dict):
         @wraps(f)
         def wrapper(*args, **kwargs):
             # try:
-                return f(*args, **kwargs)
-            # FIXME why is TypeError handled specially here?
-            # except TypeError as terr:
-            #     raise terr
-            # except Exception as err:
-            #     raise HermitError("Hmm. Something went wrong.")
+            return f(*args, **kwargs)
+
+        # FIXME why is TypeError handled specially here?
+        # except TypeError as terr:
+        #     raise terr
+        # except Exception as err:
+        #     raise HermitError("Hmm. Something went wrong.")
 
         commands[name] = wrapper
 

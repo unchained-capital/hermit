@@ -5,6 +5,7 @@ from .config import get_config
 
 _PluginsLoaded = frozenset()
 
+
 def load_plugins():
     global _PluginsLoaded
     _plugin_dir = get_config().paths["plugin_dir"]
@@ -16,6 +17,7 @@ def load_plugins():
                 exec(open(join(_plugin_dir, basename), "r").read())
                 plugins_loaded.append(basename)
     _PluginsLoaded = frozenset(plugins_loaded)
+
 
 def plugins_loaded():
     return _PluginsLoaded

@@ -1,4 +1,4 @@
-#from prompt_toolkit.layout import ScrollablePane, HSplit, BufferControl, FormattedTextControl, Window, Container
+# from prompt_toolkit.layout import ScrollablePane, HSplit, BufferControl, FormattedTextControl, Window, Container
 
 from prompt_toolkit.widgets import Label, Button, Dialog, TextArea
 
@@ -6,7 +6,7 @@ from prompt_toolkit.application.current import get_app
 
 from prompt_toolkit.key_binding.key_bindings import KeyBindings, merge_key_bindings
 
-#from prompt_toolkit.key_binding.key_processor import KeyPressEvent
+# from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 from prompt_toolkit.key_binding.defaults import load_key_bindings
 
 from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
@@ -15,21 +15,25 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.layout import Layout
 
 from prompt_toolkit.key_binding.bindings.scroll import (
-    scroll_forward, scroll_backward,
-    scroll_half_page_up, scroll_half_page_down,
-    scroll_one_line_up, scroll_one_line_down,
+    scroll_forward,
+    scroll_backward,
+    scroll_half_page_up,
+    scroll_half_page_down,
+    scroll_one_line_up,
+    scroll_one_line_down,
 )
 from prompt_toolkit.styles import Style
 
-confirm_style = Style.from_dict({
-    'dialog':             'bg:#000000',
-    'dialog frame.label': 'bg:#000000 #ffffff',
-    'dialog.body':        'bg:#000000 #ffffff',
-    'dialog shadow':      'bg:#000000',
-    'text-area':          'bg:#888888 #ffffff',
-    'text-area.prompt':   'bg:#888888 #ffffff',
-
-})
+confirm_style = Style.from_dict(
+    {
+        "dialog": "bg:#000000",
+        "dialog frame.label": "bg:#000000 #ffffff",
+        "dialog.body": "bg:#000000 #ffffff",
+        "dialog shadow": "bg:#000000",
+        "text-area": "bg:#888888 #ffffff",
+        "text-area.prompt": "bg:#888888 #ffffff",
+    }
+)
 
 
 def confirm_transaction_dialog(title=None, transaction=None, style=None):
@@ -52,7 +56,7 @@ def confirm_transaction_dialog(title=None, transaction=None, style=None):
     title = title or "Sign this Transaction?"
 
     if transaction is None:
-        transaction = '\n'.join(f"This is line {i}" for i in range (100))
+        transaction = "\n".join(f"This is line {i}" for i in range(100))
 
     # Display the transaction description in a big, read only TextArea control.
     body = TextArea(
@@ -62,18 +66,21 @@ def confirm_transaction_dialog(title=None, transaction=None, style=None):
         scrollbar=True,
     )
 
-
     dialog = Dialog(
         title=title,
         body=body,
         buttons=[
             Button(
-                text='Yes', handler=yes_handler, width=8,
+                text="Yes",
+                handler=yes_handler,
+                width=8,
                 # left_symbol='[', right_symbol=']',
             ),
-            Label('    '),
+            Label("    "),
             Button(
-                text='No', handler=no_handler, width=8,
+                text="No",
+                handler=no_handler,
+                width=8,
                 # left_symbol='[', right_symbol=']',
             ),
         ],
@@ -104,5 +111,6 @@ def confirm_transaction_dialog(title=None, transaction=None, style=None):
         full_screen=True,
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print(confirm_transaction_dialog().run())

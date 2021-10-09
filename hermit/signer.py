@@ -13,6 +13,7 @@ from .wallet import HDWallet
 from .coordinator import validate_coordinator_signature_if_necessary
 from .psbt import describe_basic_psbt
 
+
 class Signer(object):
     """Signs BTC transactions.
 
@@ -42,7 +43,9 @@ class Signer(object):
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can
             # then unlock the wallet?
-            print_formatted_text("WARNING: wallet is LOCKED; you cannot sign without first unlocking.")
+            print_formatted_text(
+                "WARNING: wallet is LOCKED; you cannot sign without first unlocking."
+            )
 
         self.read_signature_request()
         self.parse_signature_request()
@@ -75,7 +78,7 @@ class Signer(object):
             # The PSBT was already passed in as an argument.
             return
         self.unsigned_psbt_b64 = read_data_from_animated_qrs()
-        
+
     def parse_signature_request(self) -> None:
         print_formatted_text(HTML("Parsing PSBT..."))
         if self.unsigned_psbt_b64 is None:
@@ -95,7 +98,6 @@ class Signer(object):
             raise InvalidPSBT("Invalid PSBT.")
 
         validate_coordinator_signature_if_necessary(self.psbt)
-
 
     #
     # Transaction Description
@@ -119,37 +121,43 @@ class Signer(object):
             f"{data['tx_summary_text']}",
         ]
 
-        lines.extend([
-            "",
-            f"TXID: {data['txid']}",
-            f"Fee in Sats: {data['tx_fee_sats']:,}",
-            f"Lock Time: {data['locktime']}",
-            f"Version: {data['version']}",
-            "",
-            "INPUTS:",
-        ])
+        lines.extend(
+            [
+                "",
+                f"TXID: {data['txid']}",
+                f"Fee in Sats: {data['tx_fee_sats']:,}",
+                f"Lock Time: {data['locktime']}",
+                f"Version: {data['version']}",
+                "",
+                "INPUTS:",
+            ]
+        )
 
         for idx, inp in enumerate(data["inputs_desc"]["inputs_desc"]):
-            lines.extend([
-                f"  Input {idx}:",
-                f"    Previous TX Hash: {inp['prev_txhash']}",
-                f"    Previous Output Index: {inp['prev_idx']}",
-                f"    Sats: {inp['sats']:,}",
-                #f"    bip32: {inp['bip32_derivs']}",
-                "",
-            ])
+            lines.extend(
+                [
+                    f"  Input {idx}:",
+                    f"    Previous TX Hash: {inp['prev_txhash']}",
+                    f"    Previous Output Index: {inp['prev_idx']}",
+                    f"    Sats: {inp['sats']:,}",
+                    # f"    bip32: {inp['bip32_derivs']}",
+                    "",
+                ]
+            )
 
             # TODO: more input stuff here
         lines.append("OUTPUTS:")
         for idx, output in enumerate(data["outputs_desc"]["outputs_desc"]):
-            lines.extend([
-                f"  Output {idx}:",
-                f"    Address: {output['addr']}",
-                f"    Sats: {output['sats']:,}",
-                #f"    bip32: {output['bip32_derivs']}",
-                f"    Is Change?: {output['is_change']}",
-                "",
-            ])
+            lines.extend(
+                [
+                    f"  Output {idx}:",
+                    f"    Address: {output['addr']}",
+                    f"    Sats: {output['sats']:,}",
+                    # f"    bip32: {output['bip32_derivs']}",
+                    f"    Is Change?: {output['is_change']}",
+                    "",
+                ]
+            )
             # TODO: more output stuff here
         return lines
 
@@ -174,7 +182,8 @@ class Signer(object):
         for xfp, bip32_paths_for_xfp in self.transaction_metadata["root_paths"].items():
             for bip32_path in bip32_paths_for_xfp:
                 child_private_keys_to_use.append(
-                    self.wallet.private_key(bip32_path, testnet=self.testnet))
+                    self.wallet.private_key(bip32_path, testnet=self.testnet)
+                )
 
         was_signed = self.psbt.sign_with_private_keys(
             private_keys=child_private_keys_to_use

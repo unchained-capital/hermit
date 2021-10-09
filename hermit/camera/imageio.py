@@ -2,14 +2,14 @@ from .base import Camera
 from imageio import get_reader
 from PIL import Image
 
-class ImageIOCamera(Camera):
 
+class ImageIOCamera(Camera):
     def __init__(self):
         self.camera = None
 
     def open(self):
         if self.camera is None:
-            self.camera = get_reader('<video0>')
+            self.camera = get_reader("<video0>")
 
     def get_image(self):
         image = None

@@ -1,9 +1,14 @@
 from base64 import b64encode
 import numpy as np
-from hermit.qr import create_qr_sequence, GenericReassembler, qr_to_image, detect_qrs_in_image
+from hermit.qr import (
+    create_qr_sequence,
+    GenericReassembler,
+    qr_to_image,
+    detect_qrs_in_image,
+)
+
 
 class TestQRFullCircle(object):
-
     def test_plain_text(self):
         data = "foobar"
         sequence = create_qr_sequence(data)

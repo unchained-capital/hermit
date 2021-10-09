@@ -5,11 +5,12 @@ from unittest.mock import patch
 
 import hermit
 from hermit.rng import (
-    max_self_entropy, 
-    max_kolmogorov_entropy_estimate, 
-    max_entropy_estimate, 
+    max_self_entropy,
+    max_kolmogorov_entropy_estimate,
+    max_entropy_estimate,
     enter_randomness,
 )
+
 
 def test_max_self_entropy():
     # An empty string should have zero self entropy.
@@ -29,7 +30,7 @@ def test_max_self_entropy():
     # entropy == to the original string.
     shuffled_alphabet_list = list(alphabet)
     shuffle(shuffled_alphabet_list)
-    shuffled_alphabet = ''.join(shuffled_alphabet_list)
+    shuffled_alphabet = "".join(shuffled_alphabet_list)
     shuffled_alphabet_entropy = max_self_entropy(shuffled_alphabet)
     assert shuffled_alphabet_entropy == alphabet_entropy
 
@@ -58,7 +59,7 @@ def test_max_kolmogorov_entropy_estimate():
     # interesting bigrams.
     shuffled_alphabet_list = list(alphabet)
     shuffle(shuffled_alphabet_list)
-    shuffled_alphabet = ''.join(shuffled_alphabet_list)
+    shuffled_alphabet = "".join(shuffled_alphabet_list)
     shuffled_alphabet_entropy = max_kolmogorov_entropy_estimate(shuffled_alphabet)
     assert shuffled_alphabet_entropy == alphabet_entropy
 
@@ -68,42 +69,44 @@ def test_max_kolmogorov_entropy_estimate():
     double_alphabet_entropy = max_kolmogorov_entropy_estimate(double_alphabet)
     assert alphabet_entropy < double_alphabet_entropy < 2 * alphabet_entropy
 
+
 @patch("hermit.rng.max_self_entropy")
 @patch("hermit.rng.max_kolmogorov_entropy_estimate")
 class TestMaxEntropyEstimate(object):
-
     def setup(self):
         self.input = "foobar"
-        
-    def test_self_entropy_exceeds_kolmogorov_entropy(self, mock_max_kolmogorov_entropy_estimate, mock_max_self_entropy):
+
+    def test_self_entropy_exceeds_kolmogorov_entropy(
+        self, mock_max_kolmogorov_entropy_estimate, mock_max_self_entropy
+    ):
         mock_max_kolmogorov_entropy_estimate.return_value = 10
         mock_max_self_entropy.return_value = 100
         assert max_entropy_estimate(self.input) == 10
         assert mock_max_kolmogorov_entropy_estimate.called_once_with(self.input)
         assert mock_max_self_entropy.called_once_with(self.input)
 
-    def test_kolmogorov_entropy_exceeds_self_entropy(self, mock_max_kolmogorov_entropy_estimate, mock_max_self_entropy):
+    def test_kolmogorov_entropy_exceeds_self_entropy(
+        self, mock_max_kolmogorov_entropy_estimate, mock_max_self_entropy
+    ):
         mock_max_kolmogorov_entropy_estimate.return_value = 100
         mock_max_self_entropy.return_value = 10
         assert max_entropy_estimate(self.input) == 10
         assert mock_max_kolmogorov_entropy_estimate.called_once_with(self.input)
         assert mock_max_self_entropy.called_once_with(self.input)
 
-    def test_kolmogorov_entropy_equals_self_entropy(self, mock_max_kolmogorov_entropy_estimate, mock_max_self_entropy):
+    def test_kolmogorov_entropy_equals_self_entropy(
+        self, mock_max_kolmogorov_entropy_estimate, mock_max_self_entropy
+    ):
         mock_max_kolmogorov_entropy_estimate.return_value = 10
         mock_max_self_entropy.return_value = 10
         assert max_entropy_estimate(self.input) == 10
         assert mock_max_kolmogorov_entropy_estimate.called_once_with(self.input)
         assert mock_max_self_entropy.called_once_with(self.input)
 
+
 @patch("hermit.rng.prompt")
 def test_enter_randomness(mock_prompt):
-    mock_prompt.side_effect = [
-        "foo\n",
-        "bar\n",
-        ascii_letters + "\n",
-        EOFError()
-    ]
+    mock_prompt.side_effect = ["foo\n", "bar\n", ascii_letters + "\n", EOFError()]
     data = enter_randomness(1)
     assert data == hashlib.sha256(("foobar" + ascii_letters).encode("utf8")).digest()
     prompt_calls = mock_prompt.call_args_list

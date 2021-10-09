@@ -22,16 +22,16 @@ if __name__ == "__main__":
         exit(1)
 
     private_key_path = argv[1]
-    
+
     unsigned_psbt_base64 = stdin.read().strip()
     if len(unsigned_psbt_base64) == 0:
         print("Input PSBT is required.")
         exit(2)
     psbt = PSBT.parse_base64(unsigned_psbt_base64)
 
-    message = unsigned_psbt_base64.encode('utf8')
+    message = unsigned_psbt_base64.encode("utf8")
     signature = create_rsa_signature(message, private_key_path)
-    
+
     psbt.extra_map[COORDINATOR_SIGNATURE_KEY] = signature
 
     print(psbt.serialize_base64())

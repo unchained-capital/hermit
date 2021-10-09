@@ -5,6 +5,7 @@ from typing import Optional
 
 _global_config = None
 
+
 def get_config() -> "HermitConfig":
     """Return a shared instance of :class:`HermitConfig`.
 
@@ -17,6 +18,7 @@ def get_config() -> "HermitConfig":
         _global_config = HermitConfig.load()
 
     return _global_config
+
 
 class HermitConfig:
     """Object to hold Hermit configuration
@@ -102,14 +104,12 @@ class HermitConfig:
     #:
     DefaultCoordinator = {
         "signature_required": False,
-        'public_key': None,
+        "public_key": None,
     }
 
     @classmethod
     def load(cls):
-        """Return a properly initialized `HermitConfig` instance.
-
-        """
+        """Return a properly initialized `HermitConfig` instance."""
         return HermitConfig(config_file=environ.get("HERMIT_CONFIG"))
 
     def __init__(self, config_file: Optional[str] = None):
@@ -140,10 +140,10 @@ class HermitConfig:
 
     def _inject_defaults(self) -> None:
         for section_key, defaults in [
-                ("paths", self.DefaultPaths), 
-                ("commands", self.DefaultCommands), 
-                ("io", self.DefaultIO),
-                ("coordinator", self.DefaultCoordinator),
+            ("paths", self.DefaultPaths),
+            ("commands", self.DefaultCommands),
+            ("io", self.DefaultIO),
+            ("coordinator", self.DefaultCoordinator),
         ]:
             if section_key not in self.config:
                 self.config[section_key] = {}
@@ -153,5 +153,7 @@ class HermitConfig:
 
     def _interpolate_commands(self) -> None:
         for config_key in self.config["commands"]:
-            interpolated_value = self.config["commands"][config_key].format(self.config["paths"]["shards_file"])
+            interpolated_value = self.config["commands"][config_key].format(
+                self.config["paths"]["shards_file"]
+            )
             self.config["commands"][config_key] = interpolated_value

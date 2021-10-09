@@ -2,17 +2,18 @@ from unittest.mock import patch, Mock
 from pytest import raises
 
 from hermit import (
-    Signer, 
-    HDWallet, 
+    Signer,
+    HDWallet,
     HermitError,
     InvalidPSBT,
 )
 
-class TestSignerSign(object):
 
+class TestSignerSign(object):
     def setup(self):
         self.wallet = HDWallet()
         self.signer = Signer(self.wallet)
+
 
 # @pytest.mark.integration
 # @patch("hermit.signer.display_data_as_animated_qrs")
@@ -50,30 +51,31 @@ class TestSignerSign(object):
 
 #         # assert captured.out == expected_display
 
-        
-class TestSignerSignatureRequestHandling(object):
 
+class TestSignerSignatureRequestHandling(object):
     def setup(self):
         self.wallet = HDWallet()
         self.signer = Signer(self.wallet)
         self.unsigned_psbt_b64 = Mock()
         self.psbt = Mock()
 
-
     #
     # read_signature_request
     #
 
-
     @patch("hermit.signer.read_data_from_animated_qrs")
-    def test_read_signature_request_with_unsigned_PSBT(self, mock_read_data_from_animated_qrs):
+    def test_read_signature_request_with_unsigned_PSBT(
+        self, mock_read_data_from_animated_qrs
+    ):
         signer = Signer(self.wallet, unsigned_psbt_b64=self.unsigned_psbt_b64)
         signer.read_signature_request()
         assert signer.unsigned_psbt_b64 == self.unsigned_psbt_b64
         mock_read_data_from_animated_qrs.assert_not_called()
 
     @patch("hermit.signer.read_data_from_animated_qrs")
-    def test_read_signature_request_without_unsigned_PSBT(self, mock_read_data_from_animated_qrs):
+    def test_read_signature_request_without_unsigned_PSBT(
+        self, mock_read_data_from_animated_qrs
+    ):
         mock_read_data_from_animated_qrs.return_value = self.unsigned_psbt_b64
         self.signer.read_signature_request()
         assert self.signer.unsigned_psbt_b64 == self.unsigned_psbt_b64
@@ -127,8 +129,8 @@ class TestSignerSignatureRequestHandling(object):
             self.signer.validate_signature_request()
         assert "Invalid PSBT" in str(error)
 
-class TestSignerTransactionDescription(object):
 
+class TestSignerTransactionDescription(object):
     def setup(self):
         self.wallet = HDWallet()
         self.xfp_hex = "deadbeefaa"
@@ -176,8 +178,8 @@ class TestSignerTransactionDescription(object):
         self.signer.generate_transaction_metadata()
         assert self.signer.transaction_metadata == self.metadata
         mock_describe_basic_psbt.assert_called_once_with(
-            self.psbt,
-            xfp_for_signing=self.xfp_hex)
+            self.psbt, xfp_for_signing=self.xfp_hex
+        )
 
     def test_transaction_description_lines(self):
         self.signer.transaction_metadata = self.metadata
@@ -210,8 +212,14 @@ class TestSignerTransactionDescription(object):
 
     @patch("hermit.signer.print_formatted_text")
     def test_print_transaction_description(self, mock_print_formatted_text):
-        with patch.object(self.signer, "transaction_description_lines") as mock_transaction_description_lines:
-            mock_transaction_description_lines.return_value = ["line1", "line2", "line3"]
+        with patch.object(
+            self.signer, "transaction_description_lines"
+        ) as mock_transaction_description_lines:
+            mock_transaction_description_lines.return_value = [
+                "line1",
+                "line2",
+                "line3",
+            ]
             self.signer.print_transaction_description()
             calls = mock_print_formatted_text.call_args_list
             assert len(calls) == 3
@@ -221,9 +229,9 @@ class TestSignerTransactionDescription(object):
             assert calls[0][0][0] == "line1"
             assert calls[1][0][0] == "line2"
             assert calls[2][0][0] == "line3"
-            
-class TestSignerApproveSignature(object):
 
+
+class TestSignerApproveSignature(object):
     def setup(self):
         self.wallet = HDWallet()
         self.signer = Signer(self.wallet)
@@ -275,8 +283,8 @@ class TestSignerApproveSignature(object):
         assert self.signer.approve_signature_request() is False
         self.assert_prompt_call(mock_input)
 
-class TestSignerCreateSignature(object):
 
+class TestSignerCreateSignature(object):
     def setup(self):
         self.wallet = HDWallet()
         self.testnet = Mock()
@@ -288,7 +296,8 @@ class TestSignerCreateSignature(object):
                 xfp1=["m/45'/0'/0'"],
                 xfp2=["m/45'/0'/0'"],
                 xfp3=["m/45'/0'/1'"],
-            ))
+            )
+        )
         self.mock_wallet_private_key = Mock()
         self.wallet.private_key = self.mock_wallet_private_key
         self.mock_private_keys = [Mock(), Mock(), Mock()]
@@ -299,7 +308,8 @@ class TestSignerCreateSignature(object):
 
     def teardown(self):
         self.mock_sign_with_private_keys.assert_called_once_with(
-            private_keys=self.mock_private_keys)
+            private_keys=self.mock_private_keys
+        )
 
         calls = self.mock_wallet_private_key.call_args_list
         assert len(calls) == 3
@@ -310,7 +320,6 @@ class TestSignerCreateSignature(object):
         assert calls[0][0][0] == "m/45'/0'/0'"
         assert calls[1][0][0] == "m/45'/0'/0'"
         assert calls[2][0][0] == "m/45'/0'/1'"
-
 
     #
     # Create signature
@@ -334,11 +343,13 @@ class TestSignerCreateSignature(object):
             self.signer.create_signature()
         assert "Failed to sign" in str(error)
 
-class TestSignerShowSignature(object):
 
+class TestSignerShowSignature(object):
     @patch("hermit.signer.print_formatted_text")
     @patch("hermit.signer.display_data_as_animated_qrs")
-    def test_show_signature(self, mock_display_data_as_animated_qrs, mock_print_formatted_text):
+    def test_show_signature(
+        self, mock_display_data_as_animated_qrs, mock_print_formatted_text
+    ):
         wallet = HDWallet()
         signer = Signer(wallet)
         signed_psbt_b64 = "foobar"
@@ -353,5 +364,5 @@ class TestSignerShowSignature(object):
 
         assert "Signed PSBT" in str(calls[0][0][0])
         assert signed_psbt_b64 in str(calls[1][0][0])
-        
+
         mock_display_data_as_animated_qrs.assert_called_once_with(signed_psbt_b64)

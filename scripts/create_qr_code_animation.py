@@ -2,8 +2,8 @@ from sys import stdin, argv
 from os.path import basename
 
 from hermit import (
-    get_config, 
-    qr_to_image, 
+    get_config,
+    qr_to_image,
     create_qr_sequence,
 )
 
@@ -33,7 +33,9 @@ if __name__ == "__main__":
     else:
         sequence = create_qr_sequence(data=data)
     images = [qr_to_image(image) for image in sequence]
-    print(f"Created {len(images)} image QR code sequence from {'base64' if is_base64 else 'plain'} input text.")
+    print(
+        f"Created {len(images)} image QR code sequence from {'base64' if is_base64 else 'plain'} input text."
+    )
 
     qr_code_sequence_delay_ms = get_config().io["qr_code_sequence_delay"]
 
@@ -43,4 +45,5 @@ if __name__ == "__main__":
         append_images=images[1:],
         optimize=False,
         duration=qr_code_sequence_delay_ms,
-        loop=0) # loop forever
+        loop=0,
+    )  # loop forever

@@ -9,10 +9,11 @@ import FBpyGIF.fb as fb
 from ..qr import qr_to_image
 from .base import Display
 
+
 def copy_image_from_fb(x, y, w, h):
-    (mm,fbw,fbh,bpp) = fb.ready_fb()
-    bytespp = bpp//8
-    s = w*bytespp
+    (mm, fbw, fbh, bpp) = fb.ready_fb()
+    bytespp = bpp // 8
+    s = w * bytespp
 
     # Allow negative x and y to place image from the right or bottom
     if x < 0:
@@ -21,22 +22,20 @@ def copy_image_from_fb(x, y, w, h):
     if y < 0:
         y = fbh + y - h
 
-
     b = BytesIO()
     for z in range(h):
-        fb.mmseekto(fb.vx+x, fb.vy+y+z)
+        fb.mmseekto(fb.vx + x, fb.vy + y + z)
         b.write(fb.mm.read(s))
 
-    return Image.frombytes('RGBA', (w,h), b.getvalue())
+    return Image.frombytes("RGBA", (w, h), b.getvalue())
 
 
 def write_image_to_fb(x, y, image):
     w = image.width
     h = image.height
 
-    (mm,fbw,fbh,bpp) = fb.ready_fb()
-    bytespp = bpp//8
-
+    (mm, fbw, fbh, bpp) = fb.ready_fb()
+    bytespp = bpp // 8
 
     # Allow negative x and y to place image from the right or bottom
     if x < 0:
@@ -45,14 +44,15 @@ def write_image_to_fb(x, y, image):
     if y < 0:
         y = fbh + y - h
 
-    bytespp = bpp//8
-    s = w*bytespp
+    bytespp = bpp // 8
+    s = w * bytespp
 
-    b = BytesIO(image.convert('RGBA').tobytes('raw', 'RGBA'))
+    b = BytesIO(image.convert("RGBA").tobytes("raw", "RGBA"))
 
     for z in range(h):
-        fb.mmseekto(fb.vx+x, fb.vy+y+z)
+        fb.mmseekto(fb.vx + x, fb.vy + y + z)
         fb.mm.write(b.read(s))
+
 
 class FrameBufferDisplay(Display):
 
@@ -72,7 +72,9 @@ class FrameBufferDisplay(Display):
         if len(images) == 0:
             return
 
-        saved = copy_image_from_fb(self.x_position, self.y_position, images[0].width, images[0].height)
+        saved = copy_image_from_fb(
+            self.x_position, self.y_position, images[0].width, images[0].height
+        )
 
         finished = False
         try:
@@ -87,7 +89,7 @@ class FrameBufferDisplay(Display):
     # Camera management
     #
 
-    def setup_camera_display(self, title:Optional[str]=None):
+    def setup_camera_display(self, title: Optional[str] = None):
         self.saved = None
 
     def teardown_camera_display(self):
@@ -97,10 +99,12 @@ class FrameBufferDisplay(Display):
 
     def display_camera_image(self, image):
         if self.saved is None:
-            self.saved = copy_image_from_fb(self.x_position, self.y_position, image.width, image.height )
+            self.saved = copy_image_from_fb(
+                self.x_position, self.y_position, image.width, image.height
+            )
 
-        r,g,b = image.split()
-        bgr = Image.merge("RGB", (b,g,r))
+        r, g, b = image.split()
+        bgr = Image.merge("RGB", (b, g, r))
 
         write_image_to_fb(self.x_position, self.y_position, bgr)
         return True

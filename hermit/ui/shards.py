@@ -3,7 +3,7 @@ from base64 import b64encode, b64decode
 from prompt_toolkit import print_formatted_text, HTML
 
 from ..io import (
-    read_data_from_animated_qrs, 
+    read_data_from_animated_qrs,
     display_data_as_animated_qrs,
 )
 from .base import command, clear_screen

@@ -9,6 +9,7 @@ from buidl.script import (
 )
 from .errors import InvalidSignatureRequest
 
+
 def describe_basic_inputs(psbt, hdpubkey_map):
 
     # These will be used for all inputs and change outputs
@@ -29,7 +30,7 @@ def describe_basic_inputs(psbt, hdpubkey_map):
             )
 
         # Be sure all xpubs are properly accounted for
-        if len(hdpubkey_map) <- len(psbt_in.named_pubs):
+        if len(hdpubkey_map) < -len(psbt_in.named_pubs):
             # TODO: doesn't handle case where the same xfp is >1 signers
             raise InvalidSignatureRequest(
                 f"{len(hdpubkey_map)} xpubs supplied != {len(psbt_in.named_pubs)} named_pubs in PSBT input."
@@ -37,11 +38,11 @@ def describe_basic_inputs(psbt, hdpubkey_map):
 
         if psbt_in.witness_script:
             input_quorum_m, input_quorum_n = psbt_in.witness_script.get_quorum()
-            addr = psbt_in.witness_script.address(network=psbt.network),
+            addr = (psbt_in.witness_script.address(network=psbt.network),)
 
         else:
             input_quorum_m, input_quorum_n = psbt_in.redeem_script.get_quorum()
-            addr = psbt_in.redeem_script.address(network=psbt.network),
+            addr = (psbt_in.redeem_script.address(network=psbt.network),)
 
         if inputs_quorum_m is None:
             inputs_quorum_m = input_quorum_m
@@ -112,7 +113,7 @@ def describe_basic_inputs(psbt, hdpubkey_map):
         }
         inputs_desc.append(input_desc)
 
-    #if not root_paths_for_signing:
+    # if not root_paths_for_signing:
     #    raise InvalidSignatureRequest(
     #        "No `root_paths_for_signing` with `hdpubkey_map` {hdpubkey_map} in PSBT:\n{self}"
     #    )
@@ -124,6 +125,7 @@ def describe_basic_inputs(psbt, hdpubkey_map):
         "root_paths_for_signing": root_paths_for_signing,
         "total_input_sats": total_input_sats,
     }
+
 
 def describe_basic_outputs(
     psbt,
@@ -252,7 +254,7 @@ def describe_basic_outputs(
     }
 
 
-def describe_basic_p2sh_multisig_tx(psbt,  xfp_for_signing=None, hdpubkey_map=None):
+def describe_basic_p2sh_multisig_tx(psbt, xfp_for_signing=None, hdpubkey_map=None):
     """
     Describe a typical p2sh multisig transaction in a human-readable way for
     manual verification before signing.
@@ -365,7 +367,7 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
 
     inputs_described = describe_basic_inputs(psbt, hdpubkey_map=hdpubkey_map)
     total_input_sats = inputs_described["total_input_sats"]
-    #total_input_sats = sum([x["sats"] for x in inputs_desc])
+    # total_input_sats = sum([x["sats"] for x in inputs_desc])
 
     outputs_described = describe_basic_outputs(
         psbt,
@@ -393,7 +395,6 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
     else:
         tx_summary_text = f"PSBT sends {spend_sats:,} sats to {spend_addr} with a fee of {tx_fee_sats:,} sats ({tx_fee_rounded}% of spend)"
 
-
     to_return = {
         # TX level:
         "txid": psbt.tx_obj.id(),
@@ -408,7 +409,6 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
         "output_change_sats": outputs_described["change_sats"],
         "change_sats": total_input_sats - tx_fee_sats - spend_sats,
         "spend_addr": spend_addr,
-
         # Input/output level
         "inputs_desc": inputs_described,
         "outputs_desc": outputs_described,

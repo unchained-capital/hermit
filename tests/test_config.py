@@ -6,6 +6,7 @@ import hermit
 from hermit import get_config
 from hermit.config import HermitConfig
 
+
 class TestHermitConfig(object):
 
     InterpolatedDefaultCommands = {
@@ -21,14 +22,15 @@ class TestHermitConfig(object):
 
     @patch("hermit.config.HermitConfig")
     @patch("hermit.config.environ.get")
-    def test_load_with_no_environment_variable(self, mock_environ_get, mock_HermitConfig):
+    def test_load_with_no_environment_variable(
+        self, mock_environ_get, mock_HermitConfig
+    ):
         mock_environ_get.return_value = None
         mock_config = Mock()
         mock_HermitConfig.return_value = mock_config
         assert HermitConfig.load() == mock_config
         mock_environ_get.assert_called_once_with("HERMIT_CONFIG")
         mock_HermitConfig.assert_called_once_with(config_file=None)
-
 
     @patch("hermit.config.HermitConfig")
     @patch("hermit.config.environ.get")
@@ -68,7 +70,7 @@ class TestHermitConfig(object):
     @patch("hermit.config.open")
     def test_init_with_existing_but_zero_byte_config_file(self, mock_open, mock_exists):
         mock_exists.return_value = True
-        mock_open.return_value = BytesIO(b'')
+        mock_open.return_value = BytesIO(b"")
         config = HermitConfig(config_file="/tmp/hermit.yml")
         assert config.paths == HermitConfig.DefaultPaths
         assert config.commands == self.InterpolatedDefaultCommands
@@ -101,7 +103,6 @@ class TestHermitConfig(object):
         assert config.io == HermitConfig.DefaultIO
         assert config.coordinator == HermitConfig.DefaultCoordinator
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
-
 
     @patch("hermit.config.exists")
     @patch("hermit.config.open")
@@ -129,10 +130,22 @@ class TestHermitConfig(object):
         assert config.paths["config_file"] == HermitConfig.DefaultPaths["config_file"]
         assert config.paths["plugin_dir"] == HermitConfig.DefaultPaths["plugin_dir"]
 
-        assert config.commands["persistShards"] == "cat /root/shards.bson | something_else | gzip -c - > /root/shards.bson.persisted"
-        assert config.commands["backupShards"] == "cp /root/shards.bson.persisted /root/shards.bson.backup"
-        assert config.commands["restoreBackup"] == "zcat /root/shards.bson.backup > /root/shards.bson"
-        assert config.commands["getPersistedShards"] == "zcat /root/shards.bson.persisted > /root/shards.bson"
+        assert (
+            config.commands["persistShards"]
+            == "cat /root/shards.bson | something_else | gzip -c - > /root/shards.bson.persisted"
+        )
+        assert (
+            config.commands["backupShards"]
+            == "cp /root/shards.bson.persisted /root/shards.bson.backup"
+        )
+        assert (
+            config.commands["restoreBackup"]
+            == "zcat /root/shards.bson.backup > /root/shards.bson"
+        )
+        assert (
+            config.commands["getPersistedShards"]
+            == "zcat /root/shards.bson.persisted > /root/shards.bson"
+        )
 
         assert config.io["display"] == HermitConfig.DefaultIO["display"]
         assert config.io["camera"] == HermitConfig.DefaultIO["camera"]
@@ -147,6 +160,7 @@ class TestHermitConfig(object):
 
         mock_exists.assert_called_once_with("/tmp/hermit.yml")
 
+
 def test_get_config():
     get_config().paths["test_path"] = "foobar"
-    assert get_config().paths["test_path"]== "foobar"
+    assert get_config().paths["test_path"] == "foobar"

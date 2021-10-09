@@ -5,7 +5,7 @@ from hermit.signer import Signer
 
 from ..errors import HermitError
 from ..io import (
-    read_data_from_animated_qrs, 
+    read_data_from_animated_qrs,
     display_data_as_animated_qrs,
 )
 from .base import command, clear_screen
@@ -23,6 +23,7 @@ def wallet_command(name):
     """Create a new wallet command."""
     return command(name, WalletCommands)
 
+
 @wallet_command("echo")
 def echo():
     """usage:  echo
@@ -33,15 +34,22 @@ def echo():
     data = read_data_from_animated_qrs()
     print_formatted_text(data)
 
-@wallet_command("qr")
-def qr(data=None):
-    """usage:  qr data
 
-    Display an animated QR code containing the given data.
-    """
-    if data is None:
-        raise HermitError("Data is required.")
-    display_data_as_animated_qrs(data=data)
+#
+# This command is useful when developing on Hermit but it's also
+# dangerous, so it's been commented out.
+#
+
+# @wallet_command("qr")
+# def qr(data=None):
+#     """usage:  qr data
+
+#     Display an animated QR code containing the given data.
+#     """
+#     if data is None:
+#         raise HermitError("Data is required.")
+#     display_data_as_animated_qrs(data=data)
+
 
 @wallet_command("sign")
 def sign(unsigned_psbt_b64=None):
@@ -70,6 +78,7 @@ def sign(unsigned_psbt_b64=None):
         unsigned_psbt_b64=unsigned_psbt_b64,
         testnet=state.Testnet,
     ).sign()
+
 
 @wallet_command("export-xpub")
 def display_xpub(path=None):
@@ -258,11 +267,6 @@ def wallet_help(
           Explicitly unlock the wallet
       <i>lock</i>
           Explictly lock the wallet
-  <b>TESTING</b>
-      <i>echo</i>
-          Print data read from the camera to the screen
-      <i>qr DATA</i>
-          Display the given DATA in an animated QR code sequence
   <b>MODES</b>
       <i>shards</i>
           Enter shards mode
@@ -279,6 +283,7 @@ def wallet_help(
         """
             )
         )
+
 
 def wallet_repl():
     """Start a REPL in wallet mode."""

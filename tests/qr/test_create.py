@@ -7,8 +7,8 @@ from qrcode import QRCode
 from hermit import qr_to_image, create_qr_sequence, HermitError
 from hermit.qr import create_qr
 
+
 class TestCreateQRSequence(object):
-    
     def setup(self):
         self.data = open("tests/fixtures/lorem.txt", "r").read()
         self.base64_data = b64encode(self.data.encode("utf8")).decode("utf8")
@@ -31,13 +31,12 @@ class TestCreateQRSequence(object):
             assert isinstance(qr, QRCode)
 
     def test_with_both(self):
-        sequence = create_qr_sequence(
-            data=self.data,
-            base64_data=self.base64_data)
+        sequence = create_qr_sequence(data=self.data, base64_data=self.base64_data)
         assert len(sequence) == 10
         for qr in sequence:
             assert isinstance(qr, QRCode)
-        
+
+
 def test_qr_to_image():
     qr = Mock()
     mock_make_image = Mock()
@@ -46,6 +45,7 @@ def test_qr_to_image():
     mock_make_image.return_value = mock_image
     assert qr_to_image(qr) == mock_image
     mock_make_image.assert_called_once_with(fill_color="black", back_color="white")
+
 
 def test_create_qr():
     data = "data"

@@ -11,7 +11,10 @@ VERSION = 12
 BOX_SIZE = 5
 BORDER = 4
 
-def create_qr_sequence(data:Optional[str]=None, base64_data:Optional[str]=None) -> [QRCode]:
+
+def create_qr_sequence(
+    data: Optional[str] = None, base64_data: Optional[str] = None
+) -> [QRCode]:
     """Returns a BCUR Multi QR code sequence for the given `data` (or `base64_data`).
 
     If `data` is given, it will be UTF8 & base64 encoded first.  If
@@ -27,16 +30,16 @@ def create_qr_sequence(data:Optional[str]=None, base64_data:Optional[str]=None) 
         else:
             base64_data = b64encode(data.encode("utf8")).decode("utf8")
     return [
-        create_qr(data)
-        for data
-        in BCURMulti(text_b64=base64_data).encode(animate=True)
+        create_qr(data) for data in BCURMulti(text_b64=base64_data).encode(animate=True)
     ]
+
 
 def qr_to_image(qr: QRCode):
     """Turn the given `QRCode` into an image object, of the type returned
-by `PIL.Image.open`."""
+    by `PIL.Image.open`."""
     # FIXME -- get colors from config?
     return qr.make_image(fill_color="black", back_color="white")
+
 
 def create_qr(data: str) -> QRCode:
     """Returns a `QRCode` object representing the given `data`.
@@ -51,7 +54,7 @@ def create_qr(data: str) -> QRCode:
         box_size=BOX_SIZE,
         border=BORDER,
     )
-    qr.add_data(bytes(data, 'utf-8'))
+    qr.add_data(bytes(data, "utf-8"))
 
     # otherwise gifs are of different sizes
     qr.make(fit=True)

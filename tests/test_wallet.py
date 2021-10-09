@@ -6,6 +6,7 @@ from hermit.wallet import HDWallet
 from hermit.errors import HermitError
 import hermit
 
+
 class FakeShards:
     def __init__(self, words):
         self.words = words
@@ -15,7 +16,6 @@ class FakeShards:
 
 
 class TestHDWalletLocking(object):
-
     def setup(self):
         self.wallet = HDWallet()
 
@@ -26,12 +26,16 @@ class TestHDWalletLocking(object):
         self.wallet.lock()
         assert not self.wallet.unlocked()
 
-    def test_locked_wallet_can_be_unlocked_if_seed_is_valid(self, opensource_wallet_words):
+    def test_locked_wallet_can_be_unlocked_if_seed_is_valid(
+        self, opensource_wallet_words
+    ):
         self.wallet.shards = FakeShards(opensource_wallet_words)
         self.wallet.unlock()
         assert self.wallet.unlocked()
 
-    def test_locked_wallet_can_be_unlocked_if_seed_is_valid_with_passphrase(self, trezor_bip39_vectors):
+    def test_locked_wallet_can_be_unlocked_if_seed_is_valid_with_passphrase(
+        self, trezor_bip39_vectors
+    ):
         for v in trezor_bip39_vectors["english"]:
             wallet = HDWallet()
             wallet.shards = FakeShards(v[1])
@@ -56,7 +60,6 @@ class TestHDWalletLocking(object):
 
 
 class TestHDWalletTraversal(object):
-
     def test_bip32_vectors(self, bip32_vectors):
         for seed in bip32_vectors:
             wallet = HDWallet()

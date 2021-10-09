@@ -16,15 +16,19 @@ from .qr import (
     GenericReassembler,
 )
 
+
 def display_data_as_animated_qrs(data: str) -> None:
     io = get_io()
     io.display_data_as_animated_qrs(data)
-    
+
+
 def read_data_from_animated_qrs() -> Optional[str]:
     io = get_io()
     return io.read_data_from_animated_qrs()
 
+
 _io = None
+
 
 def get_io() -> "IO":
     global _io
@@ -35,40 +39,52 @@ def get_io() -> "IO":
 
     return _io
 
-class IO():
 
+class IO:
     def __init__(self, io_config):
 
-        camera_mode = io_config.get('camera', 'opencv')
-        if camera_mode == 'opencv':
+        camera_mode = io_config.get("camera", "opencv")
+        if camera_mode == "opencv":
             from .camera.opencv import OpenCVCamera
+
             self.camera = OpenCVCamera()
-        elif camera_mode == 'imageio':
+        elif camera_mode == "imageio":
             from .camera.imageio import ImageIOCamera
+
             self.camera = ImageIOCamera()
         else:
-            raise HermitError(f"Invalid camera mode '{camera_mode}'.  Must be either 'opencv' or 'imageio'.")
+            raise HermitError(
+                f"Invalid camera mode '{camera_mode}'.  Must be either 'opencv' or 'imageio'."
+            )
 
-        display_mode = io_config.get('display', 'opencv')
-        if display_mode == 'opencv':
+        display_mode = io_config.get("display", "opencv")
+        if display_mode == "opencv":
             from .display.opencv import OpenCVDisplay
+
             self.display = OpenCVDisplay(io_config)
-        elif display_mode == 'framebuffer':
+        elif display_mode == "framebuffer":
             from .display.framebuffer import FrameBufferDisplay
+
             self.display = FrameBufferDisplay(io_config)
-        elif display_mode == 'ascii':
+        elif display_mode == "ascii":
             from .display.ascii import ASCIIDisplay
+
             self.display = ASCIIDisplay(io_config)
         else:
-            raise HermitError(f"Invalid display mode '{display_mode}'.  Must be one of 'opencv', 'framebuffer', or 'ascii'.")
+            raise HermitError(
+                f"Invalid display mode '{display_mode}'.  Must be one of 'opencv', 'framebuffer', or 'ascii'."
+            )
 
-    def display_data_as_animated_qrs(self, data:Optional[str]=None, base64_data:Optional[str]=None) -> None:
-        return self.display.animate_qrs(create_qr_sequence(data=data, base64_data=base64_data))
+    def display_data_as_animated_qrs(
+        self, data: Optional[str] = None, base64_data: Optional[str] = None
+    ) -> None:
+        return self.display.animate_qrs(
+            create_qr_sequence(data=data, base64_data=base64_data)
+        )
 
-    def read_data_from_animated_qrs(self, title:Optional[str]=None) -> Optional[str]:
+    def read_data_from_animated_qrs(self, title: Optional[str] = None) -> Optional[str]:
         if title is None:
             title = "Scanning QR Codes..."
-
 
         with ProgressBar(title=title) as progress_bar:
             try:
@@ -92,8 +108,8 @@ class IO():
                         if self.reassembler.collect(data_item):
                             c.advance()
 
-                    #await asyncio.sleep(0.05)
-                
+                    # await asyncio.sleep(0.05)
+
             except InvalidQRCodeSequence as e:
                 print_formatted_text(f"Invalid QR code sequence: {e}.")
                 return None
@@ -103,14 +119,14 @@ class IO():
 
         return self.reassembler.decode()
 
-class ReassemblerCounter(object):
 
+class ReassemblerCounter(object):
     def __init__(self, progress_bar, io):
         self.start_time = datetime.now()
         self.progress_bar = progress_bar
         self.data = None
         self.current = 0
-        self.label = ''
+        self.label = ""
         self.remove_when_done = True
         self.done = False
         self.io = io

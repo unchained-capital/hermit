@@ -7,7 +7,8 @@ from qrcode import QRCode
 from ..qr import qr_to_image
 from .base import Display
 
-def window_is_open(window_name:str, delay:Optional[int]=1) -> bool:
+
+def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
 
     #
     # waitKey returns -1 if *no* keys were pressed during the delay.
@@ -15,7 +16,7 @@ def window_is_open(window_name:str, delay:Optional[int]=1) -> bool:
     # that key.
     #
     # As written, this variable is a boolean.
-    # 
+    #
 
     no_keys_pressed_during_delay = cv2.waitKey(delay) == -1
 
@@ -26,10 +27,10 @@ def window_is_open(window_name:str, delay:Optional[int]=1) -> bool:
     #
     # On a Mac, where window properties are not supported, this comes
     # out to -1.
-    # 
+    #
 
     window_is_visible_value = cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE)
-    window_is_visible = (window_is_visible_value != 0)
+    window_is_visible = window_is_visible_value != 0
 
     #
     # We want both conditions
@@ -37,8 +38,8 @@ def window_is_open(window_name:str, delay:Optional[int]=1) -> bool:
 
     return no_keys_pressed_during_delay and window_is_visible
 
-class OpenCVDisplay(Display):
 
+class OpenCVDisplay(Display):
     def __init__(self, io_config):
         Display.__init__(self, io_config)
         self.qr_window_name = "displayqr"
@@ -49,7 +50,7 @@ class OpenCVDisplay(Display):
     #
 
     def format_qr(self, qr: QRCode) -> bytes:
-        return np.array(qr_to_image(qr).convert("RGB"))[:,:,::-1]
+        return np.array(qr_to_image(qr).convert("RGB"))[:, :, ::-1]
 
     def animate_qrs(self, qrs: list) -> None:
         # Build images to display before we show the window.
@@ -63,14 +64,18 @@ class OpenCVDisplay(Display):
             while not finished:
                 for index, image in enumerate(images):
                     cv2.imshow(self.qr_window_name, image)
-                    cv2.setWindowTitle(self.qr_window_name, f"QR Code {index+1} of {total}")
+                    cv2.setWindowTitle(
+                        self.qr_window_name, f"QR Code {index+1} of {total}"
+                    )
 
                     # We need to wait at least 1 tick to give OpenCV time to
                     # process the directions above.
                     cv2.waitKey(1)
 
                     # Wait for a keypress...
-                    if not window_is_open(self.qr_window_name, self.qr_code_sequence_delay_ms):
+                    if not window_is_open(
+                        self.qr_window_name, self.qr_code_sequence_delay_ms
+                    ):
                         finished = True
                         break
 
@@ -81,7 +86,7 @@ class OpenCVDisplay(Display):
     # Camera management
     #
 
-    def setup_camera_display(self, title:Optional[str]=None):
+    def setup_camera_display(self, title: Optional[str] = None):
         self.create_window(self.camera_window_name, title=title)
 
     def teardown_camera_display(self):
@@ -98,13 +103,20 @@ class OpenCVDisplay(Display):
     # Window management
     #
 
-    def create_window(self, window_name:str, preserve_ratio:bool=False, title:Optional[str]=None):
+    def create_window(
+        self,
+        window_name: str,
+        preserve_ratio: bool = False,
+        title: Optional[str] = None,
+    ):
         # The flags prevent the inclusion of a toolbar at the top or a
         # status bar at the bottom.
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL | cv2.WINDOW_GUI_NORMAL)
 
         if preserve_ratio:
-            cv2.setWindowProperty(window_name, cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
+            cv2.setWindowProperty(
+                window_name, cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO
+            )
 
         # Resize & move the window
         cv2.resizeWindow(window_name, self.width, self.height)

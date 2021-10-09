@@ -9,7 +9,6 @@ import shamir_mnemonic
 
 
 class TestShardSet(object):
-
     def setup(self):
         self.interface = Mock()
         self.config = HermitConfig()

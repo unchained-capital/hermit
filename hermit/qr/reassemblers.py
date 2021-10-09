@@ -6,6 +6,7 @@ from buidl.bcur import BCURMulti, BCURSingle
 
 from ..errors import InvalidQRCodeSequence
 
+
 class Reassembler:
     """Base class for QR code sequence reassemblers.
 
@@ -20,14 +21,14 @@ class Reassembler:
         self.data = None
 
     @classmethod
-    def match_data(cls, data:str):
+    def match_data(cls, data: str):
         """Tells whether or not the QR payload data matches the regular
         expression defining a particular type of QR encoding.
 
         """
         return cls.RE.match(data)
 
-    def collect(self, data:str) -> bool:
+    def collect(self, data: str) -> bool:
         """Collect the given data.
 
         Will validate the data looks like it's part of the sequence
@@ -64,10 +65,10 @@ class Reassembler:
 
         return self._decode()
 
-    def _get_total_index_segment(self, match, data:str) -> (int, int, str):
+    def _get_total_index_segment(self, match, data: str) -> (int, int, str):
         raise NotImpementedException
 
-    def _store_item(self, total:int, index:int, segment:str) -> bool:
+    def _store_item(self, total: int, index: int, segment: str) -> bool:
         """Given the data from the regex match, store information
         about the current data item
 
@@ -90,13 +91,14 @@ class Reassembler:
             self.data[index] = segment
             self.segments += 1
             return True
-            
+
         return False
 
-    def _decode(self, match, data:str) -> str:
+    def _decode(self, match, data: str) -> str:
         """Do whatever implementation specific task needed to decode
         the multi segment payload data."""
         raise NotImpementedException
+
 
 class SingleQRCodeReassembler(Reassembler):
     """Reassembles data from a single QR code.
@@ -109,50 +111,57 @@ class SingleQRCodeReassembler(Reassembler):
     RE = re.compile("^.*$", re.MULTILINE)
     TYPE = "QR"
 
-    def _get_total_index_segment(self, match, data:str) -> (int, int, str):
-        return 1,0,data
+    def _get_total_index_segment(self, match, data: str) -> (int, int, str):
+        return 1, 0, data
 
     def _decode(self) -> str:
         return self.data[0]
 
+
 class BCURSingleReassembler(Reassembler):
     """Reassembles data from BCUR single QR codes."""
+
     RE = re.compile("^ur:bytes/[^/]+/[^/]+$", re.IGNORECASE)
     TYPE = "BCUR"
 
     def _get_total_index_segment(self, match, data) -> (int, int, str):
-        return 1,0,data
+        return 1, 0, data
 
     def _decode(self) -> str:
-        return b64decode(BCURSingle.parse(self.data[0]).text_b64).decode('utf8')
+        return b64decode(BCURSingle.parse(self.data[0]).text_b64).decode("utf8")
+
 
 class BCURMultiReassembler(Reassembler):
     """Reassembles data from BCUR QR code sequences."""
+
     RE = re.compile("^ur:bytes/([0-9]+)of([0-9]+)/[^/]+/[^/]+$", re.IGNORECASE)
     TYPE = "BCUR*"
 
     def _get_total_index_segment(self, match, data) -> (int, int, str):
-        return int(match[2]), int(match[1])-1, data
+        return int(match[2]), int(match[1]) - 1, data
 
     def _decode(self) -> str:
         # FIXME something strange happening here...
         base64_text = BCURMulti.parse(self.data).text_b64
         plain_bytes = b64decode(base64_text)
         try:
-            return plain_bytes.decode('utf8')
+            return plain_bytes.decode("utf8")
         except UnicodeDecodeError:
             return base64_text
 
+
 class SpecterDesktopReassembler(Reassembler):
     """Reassembles data from Specter Desktop QR code sequences."""
+
     RE = re.compile("^p([0-9]+)of([0-9]+) (.+)$")
     TYPE = "Specter"
 
     def _get_total_index_segment(self, match, data) -> (int, int, str):
-        return int(match[2]), int(match[1])-1, data
+        return int(match[2]), int(match[1]) - 1, data
 
     def _decode(self) -> str:
         return "".join(self.data)
+
 
 class GenericReassembler:
     """Reassembles data split into a sequence of QR codes.
@@ -167,15 +176,13 @@ class GenericReassembler:
 
     #: Classes defining QR code sequence types this reassembler
     #: understands.
-    #: 
+    #:
     #: See the corresponding class for more information.
     REASSEMBLERS = [
         BCURSingleReassembler,
         BCURMultiReassembler,
-
-        SpecterDesktopReassembler, # Used for both psbts and accountmaps
-
-        SingleQRCodeReassembler, # This should always be at the end, because it always matches.
+        SpecterDesktopReassembler,  # Used for both psbts and accountmaps
+        SingleQRCodeReassembler,  # This should always be at the end, because it always matches.
     ]
 
     def __init__(self):
@@ -189,7 +196,7 @@ class GenericReassembler:
     def type(self):
         return self.reassembler and self.reassembler.TYPE
 
-    def collect(self, data:str) -> bool:
+    def collect(self, data: str) -> bool:
         if self.reassembler is None:
             for cls in self.REASSEMBLERS:
                 if cls.match_data(data):

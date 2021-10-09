@@ -20,7 +20,7 @@ UNAME := $(shell uname)
 
 PIP        := $(VENV_DIR)/bin/pip
 PYTEST     := $(VENV_DIR)/bin/pytest
-FLAKE8     := $(VENV_DIR)/bin/flake8
+BLACK      := $(VENV_DIR)/bin/black
 MYPY       := $(VENV_DIR)/bin/mypy
 SPHINX_BUILD := $(VENV_DIR)/bin/sphinx-build
 
@@ -81,7 +81,7 @@ test:
 	$(PYTEST) --cov=hermit --cov-config=tests/.coveragerc --ignore=vendor
 
 lint:
-	-$(FLAKE8) hermit --exclude=__init__.py
-	-$(MYPY) hermit/
+	$(BLACK) --check hermit tests scripts
+	$(MYPY) hermit/
 
 .PHONY: test docs
