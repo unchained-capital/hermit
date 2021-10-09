@@ -1,4 +1,7 @@
+from typing import Optional
 from os import environ
+
+from prompt_toolkit import PromptSession
 
 from hermit.wallet import HDWallet
 
@@ -26,4 +29,4 @@ Testnet = "TESTNET" in environ
 #: The current wallet instance.
 Wallet = HDWallet()
 
-Session = None
+Session: Optional[PromptSession] = None

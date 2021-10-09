@@ -1,3 +1,4 @@
+from typing import Optional
 from buidl.hd import (
     HDPrivateKey,
     HDPublicKey,
@@ -15,30 +16,30 @@ class HDWallet(object):
     """
 
     def __init__(self) -> None:
-        self._root_xprv = None
-        self._root_extended_private_key = None
+        self._root_xprv: Optional[str] = None
+        self._root_extended_private_key: Optional[HDPrivateKey] = None
         self.xfp_hex = None  # root fingerprint in hex
         self.shards = ShardSet()
         self.language = "english"
         # quorum m of all the public key records make up the account map (output descriptor) to use for validating a change/receive address:
-        self.pubkey_records = []
+        # self.pubkey_records = []
         self.quorum_m = 0
-        self.hdpubkey_map = {}
+        # self.hdpubkey_map = {}
 
     #
     # Root xprv & private key
     #
 
     @property
-    def root_xprv(self):
+    def root_xprv(self) -> Optional[str]:
         return self._root_xprv
 
     @property
     def root_extended_private_key(self):
         return self._root_extended_private_key
 
-    @root_xprv.setter
-    def root_xprv(self, xprv):
+    @root_xprv.setter  # type: ignore
+    def root_xprv(self, xprv: str) -> None:
         if xprv is None:
             self._root_xprv = None
             self._root_extended_private_key = None
@@ -54,7 +55,7 @@ class HDWallet(object):
         return self.root_xprv is not None
 
     def lock(self) -> None:
-        self.root_xprv = None
+        self.root_xprv = None  # type: ignore
 
     def unlock(self, passphrase: str = "", testnet: bool = False) -> None:
         if self.root_xprv is not None:
@@ -69,7 +70,7 @@ class HDWallet(object):
             hd_obj = HDPrivateKey.from_seed(seed)
             # Note that xprv conveys network info (xprv vs tprv) and this is only reset on locking/unlocking the wallet
             # TODO: a more elegant way to persist this data?
-            self.root_xprv = hd_obj.xprv()
+            self.root_xprv = hd_obj.xprv()  # type: ignore
             self.xfp_hex = (
                 hd_obj.fingerprint().hex()
             )  # later needed to identify us as cosigner
@@ -88,7 +89,9 @@ class HDWallet(object):
     # Extended Public Keys
     #
 
-    def extended_public_key(self, bip32_path: str, testnet: bool = False) -> str:
+    def extended_public_key(
+        self, bip32_path: str, testnet: bool = False
+    ) -> HDPublicKey:
         # Will use whatever network the xprv/trpv is saved as from the unlock method
         self.unlock(testnet=testnet)
         return self.root_extended_private_key.traverse(path=bip32_path).pub
@@ -109,7 +112,7 @@ class HDWallet(object):
                 p2wsh_version_byte = "02575483"
             else:
                 p2wsh_version_byte = "02aa7ed3"
-            version = bytes.fromhex(p2wsh_version_byte)
+            version: Optional[bytes] = bytes.fromhex(p2wsh_version_byte)
         else:
             # This will automatically determine if we are xpub or tpub
             version = None

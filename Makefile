@@ -82,6 +82,6 @@ test:
 
 lint:
 	$(BLACK) --check hermit tests scripts
-	$(MYPY) hermit/
+	$(MYPY) -p hermit
 
 .PHONY: test docs

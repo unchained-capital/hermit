@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from prompt_toolkit import PromptSession, print_formatted_text, HTML
 
 from buidl import PSBT
@@ -31,8 +31,8 @@ class Signer(object):
         self.session = session
         self.unsigned_psbt_b64: Optional[str] = unsigned_psbt_b64
         self.testnet = testnet
-        self.psbt = None
-        self.signed_psbt_b64 = None
+        self.psbt: Optional[PSBT] = None
+        self.signed_psbt_b64: Optional[str] = None
 
     def sign(self) -> None:
         """Initiate signing.
@@ -94,7 +94,7 @@ class Signer(object):
 
     def validate_signature_request(self) -> None:
         print_formatted_text(HTML("Validating PSBT..."))
-        if self.psbt.validate() is not True:
+        if self.psbt is None or self.psbt.validate() is not True:
             raise InvalidPSBT("Invalid PSBT.")
 
         validate_coordinator_signature_if_necessary(self.psbt)
@@ -114,7 +114,7 @@ class Signer(object):
         for line in self.transaction_description_lines():
             print_formatted_text(line)
 
-    def transaction_description_lines(self) -> [str]:
+    def transaction_description_lines(self) -> List[str]:
         data = self.transaction_metadata
 
         lines = [
@@ -185,16 +185,20 @@ class Signer(object):
                     self.wallet.private_key(bip32_path, testnet=self.testnet)
                 )
 
-        was_signed = self.psbt.sign_with_private_keys(
+        was_signed = self.psbt is not None and self.psbt.sign_with_private_keys(
             private_keys=child_private_keys_to_use
         )
         if was_signed is False:
             raise HermitError("Failed to sign transaction")
 
-        self.signed_psbt_b64 = self.psbt.serialize_base64()
+        if self.psbt is not None:
+            self.signed_psbt_b64 = self.psbt.serialize_base64()
 
     def show_signature(self) -> None:
         # TODO: is there a smaller signatures only format for less bandwidth?
+        if self.signed_psbt_b64 is None:
+            return
+
         print_formatted_text(HTML("<i>Signed PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
 

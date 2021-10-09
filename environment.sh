@@ -45,7 +45,7 @@ if [ -z $(echo "$PYTHONPATH" | grep "$LIB_DIR") ]; then
 else
     echo "[pythonpath] $LIB_DIR already on PYTHONPATH (${PYTHONPATH})"
 fi
-export MYPYPATH=":$(python -m site | grep virtual | sed -e "s/^ *'//g" -e "s/',/\//g")"
+#export MYPYPATH=":$(python -m site | grep virtual | sed -e "s/^ *'//g" -e "s/',/\//g")"
 
 #
 # PATH

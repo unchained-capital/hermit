@@ -1,5 +1,6 @@
 from base64 import b64encode
-from typing import Optional
+from typing import Optional, List
+
 from qrcode import QRCode
 from qrcode.constants import ERROR_CORRECT_L
 from buidl.bcur import BCURMulti
@@ -14,7 +15,7 @@ BORDER = 4
 
 def create_qr_sequence(
     data: Optional[str] = None, base64_data: Optional[str] = None
-) -> [QRCode]:
+) -> List[QRCode]:
     """Returns a BCUR Multi QR code sequence for the given `data` (or `base64_data`).
 
     If `data` is given, it will be UTF8 & base64 encoded first.  If

@@ -25,7 +25,7 @@ class ShardWordUserInterface(object):
         prompt(HTML("Hit <b>ENTER</b> to continue...\n"))
         shortcuts.clear()
 
-    def get_password(self, name: str) -> bytes:
+    def get_password(self, name: str) -> Optional[bytes]:
         print_formatted_text(HTML("\nEnter password for shard {}".format(name)))
         pass_msg = "password> "
         password = prompt(pass_msg, is_password=True).strip().encode("ascii")
@@ -36,7 +36,7 @@ class ShardWordUserInterface(object):
 
         return password
 
-    def confirm_password(self) -> bytes:
+    def confirm_password(self) -> Optional[bytes]:
         password = prompt("new password> ", is_password=True).strip().encode("ascii")
         confirm = prompt("     confirm> ", is_password=True).strip().encode("ascii")
 
@@ -48,22 +48,22 @@ class ShardWordUserInterface(object):
 
         raise HermitError("Passwords do not match.")
 
-    def get_change_password(self, name: str) -> Tuple[bytes, bytes]:
+    def get_change_password(self, name: str) -> Tuple[Optional[bytes], Optional[bytes]]:
         # promt_toolkit's 'is_password' option
         # replaces input with '*' characters
         # while getpass echos nothing.
 
         print_formatted_text("\nChange password for shard {}".format(name))
-        old_password: bytes = (
+        old_password: Optional[bytes] = (
             prompt("old password> ", is_password=True).strip().encode("ascii")
         )
         new_password = self.confirm_password()
 
         # Empty string means do not encrypt
-        if len(old_password) == 0:
+        if old_password is not None and len(old_password) == 0:
             old_password = None
 
-        if len(new_password) == 0:
+        if new_password is not None and len(new_password) == 0:
             new_password = None
 
         return (old_password, new_password)

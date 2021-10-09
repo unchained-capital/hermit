@@ -63,7 +63,7 @@ class FrameBufferDisplay(Display):
     # Displaying QRs
     #
 
-    def format_qr(self, qr: QRCode) -> bytes:
+    def format_qr(self, qr: QRCode):
         return qr_to_image(qr).convert("RGBA")
 
     def animate_qrs(self, qrs: list) -> None:

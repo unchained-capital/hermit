@@ -1,5 +1,5 @@
 from base64 import b64decode
-from typing import Optional
+from typing import Optional, Tuple
 import re
 
 from buidl.bcur import BCURMulti, BCURSingle
@@ -14,6 +14,8 @@ class Reassembler:
     may arive out of sequence.
 
     """
+
+    RE = re.compile("^.*$", re.MULTILINE)
 
     def __init__(self):
         self.total_items = None
@@ -56,7 +58,7 @@ class Reassembler:
     def total(self) -> int:
         return self.total_items
 
-    def decode(self) -> str:
+    def decode(self) -> Optional[str]:
         """Assumbles all of the QR data segments into a the final
         payload."""
 
@@ -65,8 +67,10 @@ class Reassembler:
 
         return self._decode()
 
-    def _get_total_index_segment(self, match, data: str) -> (int, int, str):
-        raise NotImpementedException
+    def _get_total_index_segment(self, match, data: str) -> Tuple[int, int, str]:
+        raise NotImplementedError(
+            f"Implement the `_get_total_index_segment` method in {type(self).__name__}"
+        )
 
     def _store_item(self, total: int, index: int, segment: str) -> bool:
         """Given the data from the regex match, store information
@@ -94,10 +98,12 @@ class Reassembler:
 
         return False
 
-    def _decode(self, match, data: str) -> str:
+    def _decode(self) -> Optional[str]:
         """Do whatever implementation specific task needed to decode
         the multi segment payload data."""
-        raise NotImpementedException
+        raise NotImplementedError(
+            f"Implement the `_decode` method in {type(self).__name__}"
+        )
 
 
 class SingleQRCodeReassembler(Reassembler):
@@ -111,10 +117,10 @@ class SingleQRCodeReassembler(Reassembler):
     RE = re.compile("^.*$", re.MULTILINE)
     TYPE = "QR"
 
-    def _get_total_index_segment(self, match, data: str) -> (int, int, str):
+    def _get_total_index_segment(self, match, data: str) -> Tuple[int, int, str]:
         return 1, 0, data
 
-    def _decode(self) -> str:
+    def _decode(self) -> Optional[str]:
         return self.data[0]
 
 
@@ -124,10 +130,10 @@ class BCURSingleReassembler(Reassembler):
     RE = re.compile("^ur:bytes/[^/]+/[^/]+$", re.IGNORECASE)
     TYPE = "BCUR"
 
-    def _get_total_index_segment(self, match, data) -> (int, int, str):
+    def _get_total_index_segment(self, match, data) -> Tuple[int, int, str]:
         return 1, 0, data
 
-    def _decode(self) -> str:
+    def _decode(self) -> Optional[str]:
         return b64decode(BCURSingle.parse(self.data[0]).text_b64).decode("utf8")
 
 
@@ -137,10 +143,10 @@ class BCURMultiReassembler(Reassembler):
     RE = re.compile("^ur:bytes/([0-9]+)of([0-9]+)/[^/]+/[^/]+$", re.IGNORECASE)
     TYPE = "BCUR*"
 
-    def _get_total_index_segment(self, match, data) -> (int, int, str):
+    def _get_total_index_segment(self, match, data) -> Tuple[int, int, str]:
         return int(match[2]), int(match[1]) - 1, data
 
-    def _decode(self) -> str:
+    def _decode(self) -> Optional[str]:
         # FIXME something strange happening here...
         base64_text = BCURMulti.parse(self.data).text_b64
         plain_bytes = b64decode(base64_text)
@@ -156,10 +162,10 @@ class SpecterDesktopReassembler(Reassembler):
     RE = re.compile("^p([0-9]+)of([0-9]+) (.+)$")
     TYPE = "Specter"
 
-    def _get_total_index_segment(self, match, data) -> (int, int, str):
+    def _get_total_index_segment(self, match, data) -> Tuple[int, int, str]:
         return int(match[2]), int(match[1]) - 1, data
 
-    def _decode(self) -> str:
+    def _decode(self) -> Optional[str]:
         return "".join(self.data)
 
 
@@ -210,7 +216,7 @@ class GenericReassembler:
     def is_complete(self):
         return self.reassembler is not None and self.reassembler.is_complete()
 
-    def decode(self):
+    def decode(self) -> Optional[str]:
         if self.reassembler is None:
             return None
         else:

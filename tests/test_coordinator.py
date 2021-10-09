@@ -28,14 +28,14 @@ class TestValidateCoordinatorSignatureIfNecessary(object):
     def test_signature_absent_and_not_required(self, mock_get_config):
         mock_get_config.return_value = self.config
         self.coordinator_config["signature_required"] = False
-        assert validate_coordinator_signature_if_necessary(self.psbt) is True
+        validate_coordinator_signature_if_necessary(self.psbt)
         mock_get_config.assert_called_once_with()
 
     def test_when_signature_absent_and_required(self, mock_get_config):
         mock_get_config.return_value = self.config
         self.coordinator_config["signature_required"] = True
         with raises(InvalidCoordinatorSignature) as e:
-            validate_coordinator_signature_if_necessary(self.psbt) is False
+            validate_coordinator_signature_if_necessary(self.psbt)
         assert "signature is missing" in str(e)
         mock_get_config.assert_called_once_with()
 
@@ -54,9 +54,7 @@ class TestValidateCoordinatorSignatureIfNecessary(object):
 
         mock_extract_rsa_signature_params.return_value = (self.message, self.signature)
 
-        mock_validate_rsa_signature.return_value = True
-
-        assert validate_coordinator_signature_if_necessary(self.psbt) is True
+        validate_coordinator_signature_if_necessary(self.psbt)
         mock_get_config.assert_called_once_with()
         mock_extract_rsa_signature_params.assert_called_once_with(self.psbt)
         mock_validate_rsa_signature.assert_called_once_with(
@@ -78,9 +76,7 @@ class TestValidateCoordinatorSignatureIfNecessary(object):
 
         mock_extract_rsa_signature_params.return_value = (self.message, self.signature)
 
-        mock_validate_rsa_signature.return_value = True
-
-        assert validate_coordinator_signature_if_necessary(self.psbt) is True
+        validate_coordinator_signature_if_necessary(self.psbt)
         mock_get_config.assert_called_once_with()
         mock_extract_rsa_signature_params.assert_called_once_with(self.psbt)
         mock_validate_rsa_signature.assert_called_once_with(
@@ -102,9 +98,14 @@ class TestValidateCoordinatorSignatureIfNecessary(object):
 
         mock_extract_rsa_signature_params.return_value = (self.message, self.signature)
 
-        mock_validate_rsa_signature.return_value = False
+        mock_validate_rsa_signature.side_effect = InvalidCoordinatorSignature(
+            "Invalid signature."
+        )
 
-        assert validate_coordinator_signature_if_necessary(self.psbt) is False
+        with raises(InvalidCoordinatorSignature) as e:
+            validate_coordinator_signature_if_necessary(self.psbt)
+
+        assert "Invalid signature" in str(e)
         mock_get_config.assert_called_once_with()
         mock_extract_rsa_signature_params.assert_called_once_with(self.psbt)
         mock_validate_rsa_signature.assert_called_once_with(
@@ -126,9 +127,14 @@ class TestValidateCoordinatorSignatureIfNecessary(object):
 
         mock_extract_rsa_signature_params.return_value = (self.message, self.signature)
 
-        mock_validate_rsa_signature.return_value = False
+        mock_validate_rsa_signature.side_effect = InvalidCoordinatorSignature(
+            "Invalid signature."
+        )
 
-        assert validate_coordinator_signature_if_necessary(self.psbt) is False
+        with raises(InvalidCoordinatorSignature) as e:
+            validate_coordinator_signature_if_necessary(self.psbt)
+
+        assert "Invalid signature" in str(e)
         mock_get_config.assert_called_once_with()
         mock_extract_rsa_signature_params.assert_called_once_with(self.psbt)
         mock_validate_rsa_signature.assert_called_once_with(
@@ -148,7 +154,7 @@ def test_create_rsa_sigature(mock_get_config):
     coordinator_config = dict(public_key=public_key)
     config.coordinator = coordinator_config
     mock_get_config.return_value = config
-    assert validate_rsa_signature(message, signature) is True
+    validate_rsa_signature(message, signature)
     mock_get_config.assert_called_once_with()
 
 
@@ -165,9 +171,25 @@ class TestValidateRSASignature(object):
         self.coordinator_config = dict(public_key=self.public_key)
         self.config.coordinator = self.coordinator_config
 
+    def test_when_no_coordinator_public_key_is_configured(self, mock_config):
+        del self.coordinator_config["public_key"]
+        mock_config.return_value = self.config
+        with raises(InvalidCoordinatorSignature) as e:
+            validate_rsa_signature(self.message, self.signature)
+        assert "no public key is configured" in str(e)
+        mock_config.assert_called_once_with()
+
+    def test_when_invalid_coordinator_public_key_is_configured(self, mock_config):
+        self.coordinator_config["public_key"] = "foobar"
+        mock_config.return_value = self.config
+        with raises(InvalidCoordinatorSignature) as e:
+            validate_rsa_signature(self.message, self.signature)
+        assert "public key is invalid" in str(e)
+        mock_config.assert_called_once_with()
+
     def test_when_signature_is_valid(self, mock_config):
         mock_config.return_value = self.config
-        assert validate_rsa_signature(self.message, self.signature) is True
+        validate_rsa_signature(self.message, self.signature)
         mock_config.assert_called_once_with()
 
     def test_when_signature_is_invalid(self, mock_config):

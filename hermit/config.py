@@ -1,7 +1,7 @@
 from yaml import safe_load
 from os import environ
 from os.path import exists
-from typing import Optional
+from typing import Optional, Dict, Any
 
 _global_config = None
 
@@ -47,7 +47,7 @@ class HermitConfig:
     #: * `config_file` -- path to the YAML file used for configuration
     #: * `shards_file` -- path to the BSON file used to store shards
     #: * `plugin_dir` -- path to a directory used to load runtime plugins
-    DefaultPaths = {
+    DefaultPaths: Dict[str, str] = {
         "config_file": "/etc/hermit.yaml",
         "shards_file": "/tmp/shard_words.bson",
         "plugin_dir": "/var/lib/hermit",
@@ -65,7 +65,7 @@ class HermitConfig:
     #: * `backupShards` -- copy from file system to backup storage
     #: * `restoreBackup` -- copy from backup storage to file system
     #:
-    DefaultCommands = {
+    DefaultCommands: Dict[str, str] = {
         "persistShards": "cat {0} | gzip -c - > {0}.persisted",
         "backupShards": "cp {0}.persisted {0}.backup",
         "restoreBackup": "zcat {0}.backup > {0}",
@@ -84,7 +84,7 @@ class HermitConfig:
     #: * `height` -- width of display on screen
     #: * `width` -- height of display on screen
     #:
-    DefaultIO = {
+    DefaultIO: Dict[str, Any] = {
         "display": "opencv",
         "camera": "opencv",
         "qr_code_sequence_delay": 200,
@@ -102,7 +102,7 @@ class HermitConfig:
     #: * `public_key` -- an RSA public key (in hex) corresponding to
     #     the private key used to sign by the coordinator
     #:
-    DefaultCoordinator = {
+    DefaultCoordinator: Dict[str, Any] = {
         "signature_required": False,
         "public_key": None,
     }

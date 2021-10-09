@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from buidl import PSBT
 from Crypto.Hash import SHA256
@@ -12,16 +12,16 @@ from .errors import InvalidCoordinatorSignature
 COORDINATOR_SIGNATURE_KEY = "coordinator_sig".encode("utf8")
 
 
-def validate_coordinator_signature_if_necessary(original_psbt: PSBT) -> Optional[bool]:
+def validate_coordinator_signature_if_necessary(original_psbt: PSBT) -> None:
     signature_required = get_config().coordinator["signature_required"]
     if COORDINATOR_SIGNATURE_KEY not in original_psbt.extra_map:
         if signature_required:
             raise InvalidCoordinatorSignature("Coordinator signature is missing.")
         else:
-            return True
+            return
 
     unsigned_psbt_base64_bytes, sig_bytes = extract_rsa_signature_params(original_psbt)
-    return validate_rsa_signature(unsigned_psbt_base64_bytes, sig_bytes)
+    validate_rsa_signature(unsigned_psbt_base64_bytes, sig_bytes)
 
 
 def create_rsa_signature(message: bytes, private_key_path: str) -> bytes:
@@ -35,25 +35,28 @@ def create_rsa_signature(message: bytes, private_key_path: str) -> bytes:
     return signature
 
 
-def validate_rsa_signature(message: bytes, signature: bytes) -> Optional[bool]:
-    public_key_text = get_config().coordinator["public_key"]
+def validate_rsa_signature(message: bytes, signature: bytes) -> None:
+    public_key_text = get_config().coordinator.get("public_key")
     if public_key_text is None:
         raise InvalidCoordinatorSignature(
             "Coordinator signature is present but no public key is configured."
         )
 
-    public_key = RSA.importKey(public_key_text)
+    try:
+        public_key = RSA.importKey(public_key_text)
+    except:
+        raise InvalidCoordinatorSignature(
+            "Coordinator signature is present but coordinator public key is invalid."
+        )
 
     digest = SHA256.new()
     digest.update(message)
     verifier = PKCS1_v1_5.new(public_key)
-    verified = verifier.verify(digest, signature)
-    if not verified:
+    if not verifier.verify(digest, signature):  # type: ignore
         raise InvalidCoordinatorSignature("Coordinator signature is invalid.")
-    return True
 
 
-def extract_rsa_signature_params(original_psbt: PSBT) -> (bytes, bytes):
+def extract_rsa_signature_params(original_psbt: PSBT) -> Tuple[bytes, bytes]:
     sig_bytes = original_psbt.extra_map[COORDINATOR_SIGNATURE_KEY]
 
     # FIXME how do we make a copy of a PSBT object?

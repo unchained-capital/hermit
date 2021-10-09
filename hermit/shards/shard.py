@@ -156,9 +156,9 @@ class Shard(object):
             self.name, identifier, group_index + 1, member_identifier + 1
         )
 
-    def _get_password(self) -> bytes:
+    def _get_password(self) -> Optional[bytes]:
         """Prompt the user for this shard's password"""
         return self.interface.get_password(self.to_str())
 
-    def _get_change_password(self) -> Tuple[bytes, bytes]:
+    def _get_change_password(self) -> Tuple[Optional[bytes], Optional[bytes]]:
         return self.interface.get_change_password(self.to_str())

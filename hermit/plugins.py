@@ -3,7 +3,7 @@ from os.path import exists, join
 
 from .config import get_config
 
-_PluginsLoaded = frozenset()
+_PluginsLoaded: frozenset = frozenset()
 
 
 def load_plugins():
