@@ -43,11 +43,11 @@ def test_max_self_entropy():
 def test_max_kolmogorov_entropy_estimate():
     # An empty string has some size after compression.
     empty_string_entropy = max_kolmogorov_entropy_estimate("")
-    assert empty_string_entropy == 64
+    assert empty_string_entropy == 64.0
 
     # A repeated character string has some size after compression.
     single_character_entropy = max_kolmogorov_entropy_estimate("a" * 256)
-    assert single_character_entropy == 96
+    assert single_character_entropy == 96.0
 
     # A string of N unique characters has size > N after compression.
     alphabet = ascii_letters[:]

@@ -5,37 +5,86 @@ Hermit
 [![Codecov](https://img.shields.io/codecov/c/github/unchained-capital/hermit.svg)](https://codecov.io/gh/unchained-capital/hermit/)
 
 Hermit is a sharded,
-[HD](https://en.bitcoin.it/wiki/Deterministic_wallet) command-line
-wallet designed for cryptocurrency owners who demand the highest
-possible form of security.
+[HD](https://en.bitcoin.it/wiki/Deterministic_wallet) command-line,
+PSBT-compatible bitcoin wallet designed for indviduals and businesses
+who demand the highest possible security.
 
-Hermit implements the
-[SLIP-0039](https://github.com/satoshilabs/slips/blob/master/slip-0039.md)
-standard for hierarchical Shamir sharding.
+Hermit is a dedicated **keystore**.  It is designed to operate in
+tandem with a **coordinator**: an online wallet which can talk to a
+blockchain.  The coordinator is responsible for generating all
+transactions, transaction signature requests, and for receiving
+transaction signatures from Hermit as well as constructing
+fully-signed transactions and broadcasting them to the blockchain.
 
-Hermit is designed to operate in tandem with an online wallet which
-can talk to a blockchain.  All communication between the user, Hermit,
-and the online wallet is done via QR codes, cameras, screen, and
-keyboard.
+Hermit focuses on securely accepting signature requests from the
+coordinator and generating signatures.
 
-This means that a Hermit installation does not require WiFi,
-Bluetooth, or any other form of wired or wireless communication.
-Hermit can operate in a completely air-gapped environment.
+Coordinators currently compatible with Hermit:
 
-Read on or watch these videos to learn more about Hermit:
+* [Caravan](https://unchained-capital.github.io/caravan/#/)
+* [Specter Desktop](https://specter.solutions/)
+* [Sparrow](https://sparrowwallet.com/)
+* [Fully Noded](https://fullynoded.app/)
 
-* [Creating a shard family](https://www.youtube.com/watch?v=tOc0GBjIK8Y&feature=youtu.be)
-* [Exporting/importing shards](https://www.youtube.com/watch?v=usBk-X3a4Qo&feature=youtu.be)
-* [Export a public key](https://www.youtube.com/watch?v=ut9ALBqjZbg&feature=youtu.be)
-* [Sign a bitcoin transaction](https://www.youtube.com/watch?v=NYjJa0fUxQE&feature=youtu.be)
+Hermit's security features includes:
 
+  * All communication between the user, Hermit, and the coordinator is
+    done via QR codes, cameras, screen, and keyboard.  This means a
+    Hermit installation does not require WiFi, Bluetooth, or any other
+    form of wired or wireless communication. Hermit can operate in a
+    completely air-gapped environment.
 
+  * Private key data is sharded using SLIP-0039.  Each shard is
+    encrypted with a separate password.  Hermit starts out in a
+    "locked" state and multiple individuals can be made to be required
+    to "unlock" a Hermit private key by employing multiple
+    password-encrypted shards.
+
+  * Hermit comes with a full management system for shards, allowing
+    them to be re-encrypted, copied, deleted, and redealt.  This makes
+    Hermit easier to use for organizations with turnover among their
+    signing staff.
+
+  * By default, Hermit uses the local filesystem for all storage of
+    shard data.  This can be customized through configuration to use a
+    TPM or other hardware secure element for shard storage.
+
+  * Hermit will automatically lock itself after a short time of being
+    unlocked with no user input.  Hermit can also be instantly locked
+    in an emergency.
+
+  * Signature requests from the coordinator can be signed with an RSA
+    private key (held by the coordinator) and verified against the
+    corresponding RSA public key (held in Hermit's configuration).
+    This ensures that Hermit will only accept signature requests from
+    a pre-configured coordinator.
+
+  * Hermit is a command-line wallet but uses the operating systems'
+    windowing system to display QR code animations and camera
+    previews.  Hermit can be configured to instead operate using ASCII
+    or with direct access to a framebuffer.  This allows installing
+    Hermit on limited hardware without its own graphical system.
+
+Hermit was designed for institutions who need to protect and use
+bitcoin private keys.  Individuals holding bitcoin are probably better
+served using hardware wallets and multisig.
+
+Hermit is compatible with the following standards:
+
+* [SLIP-0039](https://github.com/satoshilabs/slips/blob/master/slip-0039.md)
+  standard for hierarchical Shamir sharding of private key data
+
+* [PSBT](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki)
+  standard data format for bitcoin transactions
+
+* [BCUR](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)
+  standard for transporting data through QR code URIs
 
 Quickstart
 ----------
 
 ```
-$ pip install hermit                          # may need 'sudo' for this command
+$ pip3 install hermit                         # may need 'sudo' for this command
 ...
 $ hermit                                      # launch hermit
 ...
@@ -53,10 +102,10 @@ shards> list-shards                           # see newly created shards
 ...
 shards> write                                 # save newly created shards to disk
 shards> quit                                  # back to wallet mode
-wallet> export-xpub m/45'/0'/0'               # export an extended public key
+wallet> display-xpub m/45'/0'/0'              # display an extended public key
 ...
-wallet> sign-bitcoin                          # sign a bitcoin transaction
-                                              # see examples/signature_requests/bitcoin_testnet.png
+wallet> sign                                  # sign a bitcoin transaction
+                                              # see tests/fixtures/signature_requests/2-of-2.p2sh.testnet.gif
 
 ...
 ```
@@ -71,22 +120,13 @@ Hermit follows the following design principles:
   * Unidirectional information transfer -- information should only move in one direction
   * Always-on sharding & encryption -- keys should always be sharded and each shard encrypted
   * Open-source everything -- complete control over your software and hardware gives you the best security
-  * Flexibility for human security -- you can customize the sharding configuration to suit your organization
-
-### Audience
-
-Hermit is a difficult to use but highly-secure wallet.
-
-Hermit is **not recommended** for non-technical individuals with a
-small amount of cryptocurrency.
-
-Hermit is designed for computer-savvy people and organizations to
-self-custody significant amounts of cryptocurrency.
+  * Flexibility for human security -- you can customize Hermit's configuration & installation to suit your organization
+  * Standards-compliant -- Hermit follows and sets best practices for high-security bitcoin wallets
 
 ### Sharding
 
-Hermit is different than other wallets you may have used because it
-always shards your key.
+Hermit is different than other wallets/keystores you may have used
+(such as hardware wallets) because it always shards your key.
 
 Sharding is done using
 [SLIP-39](https://github.com/satoshilabs/slips/blob/master/slip-0039.md)
@@ -102,20 +142,20 @@ This structure creates a lot of flexibility for different scenarios.
 Hermit extends the current SLIP-39 proposal by encrypting each shard
 with a password.
 
-Shards in Hermit are generally encrypted by a password.  Each shard has
-its own password, allowing for teams to operate a key together, each
-team member operating a given shard (in some group). However, if the
-user explicitly supplies an empty string as the password when either
-creating a shard, or changing the password on the shard, the resulting
-shard will be unencrypted. While this makes the transport of the shard
-less safe, it does make it possible to export the shards to technologies
-that support only unencrypted SLIP-39 implementations.
+Each shard has its own password, allowing for teams to operate a key
+together, each team member operating a given shard (in some
+group). However, if the user explicitly supplies an empty string as
+the password when either creating a shard, or changing the password on
+the shard, the resulting shard will be unencrypted. While this makes
+the transport of the shard less safe, it does make it possible to
+export the shards to technologies that support only unencrypted
+SLIP-39 implementations.
 
 #### Compatibility with other wallets
 
 If you are using a non-sharded wallet such as a hardware wallet
-(Trezor, Ledger, &c.) or Electrum, you can import your key from your
-BIP39 "seed phrase" and Hermit will shard it for you.
+(Trezor, Ledger, Coldcard, Electrum, &c.), you can import your key
+from your BIP39 "seed phrase" and Hermit will shard it for you.
 
 You may also input a new key using whatever source of randomness you
 like.
@@ -173,23 +213,22 @@ Hermit is a modal application with two modes:
 * `wallet` mode is where you will spend most of your time, signing transactions and exporting public keys
 * `shards` mode is accessed when you need to import keys or shards, export shards, or otherwise change something about how your key is unlocked
 
-### Bitcoin Only
+### Data Format
 
-As a sharded, HD wallet, Hermit is a tool that can be used with any
-cryptocurrency that operates with the BIP32 standard.
-
-But Hermit also ships with a `sign-bitcoin` command that will sign
-Bitcoin (BTC) transactions.
+Hermit uses animated QR codes for input/output of arbitrary sized data
+(mostly PSBTs).  Data is split up and resassembled using the
+[BCUR](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)
+standard.
 
 Usage
 -----
 
 ### Installation
 
-Installing Hermit can be done via `pip`:
+Installing Hermit can be done via `pip3`:
 
 ```
-$ pip install hermit
+$ pip3 install hermit
 ```
 
 If you want to develop against Hermit, see the "Developers" section
@@ -225,10 +264,11 @@ wallet> shards
 
 Two `shard` mode commands will let you import a key:
 
-* `build-family-from-phrase` -- enter a BIP39 phrase.  This is useful if you are importing a key from a hardware wallet such as Trezor or Ledger or from another software wallet such as Electrum.
+* `build-family-from-phrase` -- enter a BIP39 phrase.  This is useful if you are importing a key from a hardware wallet such as Trezor, Ledger, Coldcard or from another software wallet such as Electrum.
 * `build-family-from-random` -- enter random characters.   This is useful if you want to generate your own entropy (from, say, rolling dice)
 
-Whichever you choose, you will be prompted to enter a shard configuration.
+Whichever you choose, you will be prompted to enter a shard
+configuration.
 
 Creating a secure shard set from a key requires additional randomness
 beyond the seed of the key.  So even if you choose to
@@ -237,7 +277,7 @@ characters.  Ensure you are prepared to do so using a good source of
 randomness (such as rolling dice).
 
 
-### Exporting Public Keys
+### Displaying Wallet Data
 
 Hermit can export public keys (or extended public keys) from the key
 it protects.  These are useful for other applications which want to
@@ -246,8 +286,8 @@ private contents.
 
 Two `wallet` mode commands are useful for this:
 
-* `export-xpub` -- exports an extended public key
-* `export-pub` -- exports a  public key
+* `display-xpub` -- exports an extended public key
+* `display-pub` -- exports a  public key
 
 Each of these commands expects a BIP32 path as an argument and each
 will display its data as a QR code.
@@ -256,11 +296,11 @@ will display its data as a QR code.
 
 The whole point of Hermit is to ultimately sign transactions.
 Transaction signature requests must be created by an external
-application.  You can also use a test signature request available at
-[examples/signature_requests/bitcoin.png](examples/signature_requests/bitcoin.png).
+application (but see the example requests in
+[tests/fixtures/signature_requests](tests/fixtures/signature_requests)).
 
 Once you have a signature request, and you're in `wallet` mode, you
-can run `sign-bitcoin` to start signing a Bitcoin transaction.
+can run `sign` to start signing a Bitcoin transaction.
 
 ### Configuration
 
@@ -282,7 +322,7 @@ Developers
 Developers will want to clone a copy of the Hermit source code:
 
 ```
-$ git clone --recursive https://github.com/unchained-capital/hermit
+$ git clone https://github.com/unchained-capital/hermit
 $ cd hermit
 $ make
 ```
@@ -291,16 +331,18 @@ $ make
 `source environment.sh`.  This applies to all the commands below in
 this section.
 
-### Testing
-
-Hermit ships with a full [pytest] suite.  Run it as follows:
+Hermit ships with a full test suite
+([pytest](https://docs.pytest.org/en/latest/)).  Run it as follows:
 
 ```
-$ make clean
-$ make venv
-$ source environment.sh
-$ make dependencies
 $ make test
+```
+
+The code can also be run through a linter
+([black](https://black.readthedocs.io/en/stable/)) & type-checker
+([mypy](http://mypy-lang.org/)).
+
+```
 $ make lint
 ```
 
@@ -310,24 +352,7 @@ Hermit has been tested on the following platforms:
 * Linux Ubuntu 18.04
 * Linux Slax 9.6.4
 
-There is also a full-flow example script provided at
-(tests/test_script.md)[tests/test_script.md] that you can follow to
-see and test all functionality.
-
-
-### Developers
-
-#### Integrating
-
-Hermit needs an external, online wallet application in order to work.
-This application uses output descriptors/PSBT, which is now the standard for Coordinators.
-You can Coordinate this using:
-* Specter-Desktop
-* Sparrow
-* Fully Noded
-* More coming soon
-
-#### Contributing to Hermit
+### Contributing to Hermit
 
 Unchained Capital welcomes bug reports, new features, and better
 documentation for Hermit.  To contribute, create a pull request (PR)
@@ -341,19 +366,3 @@ $ source environment.sh
 $ make test
 $ make lint
 ```
-
-(Linting is done with [flake8], [mypy], and [black].)
-
-[pytest]: https://docs.pytest.org/en/latest/
-[flake8]: http://flake8.pycqa.org/en/latest/
-[mypy]: http://mypy-lang.org/
-[black]: https://black.readthedocs.io/en/stable/
-[bip32]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
-
-## Key rotation
-
-Each individual share should be managed by a team. Each team has multiple
-copies of the passphrase to decrypt the share. The share only exists on the
-Hermit device, and it's encrypted. Rotating out a member is achieved by using
-one of the other team members to decrypt the share and then re-encrypting the
-share with a new passphrase, thus excluding the previous user.

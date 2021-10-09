@@ -1,15 +1,20 @@
 from yaml import safe_load
 from os import environ
 from os.path import exists
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Union
 
 _global_config = None
 
 
 def get_config() -> "HermitConfig":
-    """Return a shared instance of :class:`HermitConfig`.
+    """Return a globally shared and already loaded instance of :class:`HermitConfig`.
 
-    This is the usual way to get configuration values in Hermit code.
+    This is the usual way to get configuration values in Hermit
+    code. ::
+
+      >>> from hermit import get_config
+      >>> print(get_config().paths["config_file"])
+      "/etc/hermit.yml"
 
     """
     global _global_config
@@ -23,7 +28,7 @@ def get_config() -> "HermitConfig":
 class HermitConfig:
     """Object to hold Hermit configuration
 
-    Hermit configuration is split into three sections:
+    Hermit configuration is split into four sections:
 
     * `paths` -- paths for configuration, shard data, and plugins, see :attr:`DefaultPaths`.
     * `commands` -- command-lines used to manipulate shard data, see :attr:`DefaultCommands`.
@@ -31,12 +36,7 @@ class HermitConfig:
     * `coordinator` -- settings for the coordinator, see :attr:`DefaultCoordinator`.
 
     This class is typically not instantiated directly.  Instead, the
-    :func:`get_config` method is used to always return the same global
-    configuration instance, e.g. ::
-
-      >>> from hermit import get_config
-      >>> print(get_config().paths["config_file"])
-      "/etc/hermit.yml"
+    :func:`get_config` method is used.
 
     """
 
@@ -84,7 +84,7 @@ class HermitConfig:
     #: * `height` -- width of display on screen
     #: * `width` -- height of display on screen
     #:
-    DefaultIO: Dict[str, Any] = {
+    DefaultIO: Dict[str, Union[str, int]] = {
         "display": "opencv",
         "camera": "opencv",
         "qr_code_sequence_delay": 200,
@@ -96,13 +96,15 @@ class HermitConfig:
 
     #: Default settings for the coordinator being used with Hermit.
     #:
+    #: The following settings are defined:
+    #:
     #: * `signature_required` -- whether a signature from the
-    #     coordinator is required to sign
+    #:    coordinator is required to sign
     #:
     #: * `public_key` -- an RSA public key (in hex) corresponding to
-    #     the private key used to sign by the coordinator
+    #:    the private key used to sign by the coordinator
     #:
-    DefaultCoordinator: Dict[str, Any] = {
+    DefaultCoordinator: Dict[str, Union[str, bool, None]] = {
         "signature_required": False,
         "public_key": None,
     }
@@ -147,7 +149,7 @@ class HermitConfig:
         ]:
             if section_key not in self.config:
                 self.config[section_key] = {}
-            for config_key, default_value in defaults.items():
+            for config_key, default_value in defaults.items():  # type: ignore
                 if config_key not in self.config[section_key]:
                     self.config[section_key][config_key] = default_value
 

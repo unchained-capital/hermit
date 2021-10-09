@@ -18,6 +18,11 @@ from .io import (
     display_data_as_animated_qrs,
     read_data_from_animated_qrs,
 )
+from .rng import (
+    max_self_entropy,
+    max_kolmogorov_entropy_estimate,
+    max_entropy_estimate,
+)
 from .plugins import (
     load_plugins,
     plugins_loaded,

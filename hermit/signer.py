@@ -17,7 +17,32 @@ from .psbt import describe_basic_psbt
 class Signer(object):
     """Signs BTC transactions.
 
-    Takes a valid PSBT.
+    Accepts transactions in PSBT format read in through the camera or
+    passed in on instantiation.  PSBT data must be encoded as Base64
+    text.
+
+    Performs the following validations:
+
+    * The PSBT is syntactically valid.
+
+    * If the transaction is spending multisig inputs:
+
+      * all inputs must all be have the same M-of-N configuration.
+
+      * if the transaction is creating multisig outputs in the same
+        wallet, the outputs must have the same M-of-N configuration.
+
+    * The PSBT must have an `hd_pubs` dictionary mapping XFPs to the
+      BIP32 path(s) of the corresponding xpub to use when signing for
+      seed identified by that XFP.
+
+    If operating Hermit with a coordinator, the coordinator can
+    additionally inject an RSA signature into the PSBT's `extra_map`
+    dict (for the
+    :attr:`~hermit.coordinator.COORDINATOR_SIGNATURE_KEY`).  This
+    signature will be verified against an RSA public key in Hermit's
+    configuration (see :attr:`~HermitConfig.DefaultCoordinator`).
+
     """
 
     def __init__(

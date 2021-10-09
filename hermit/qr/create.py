@@ -24,6 +24,12 @@ def create_qr_sequence(
     If both `data` and `base64_data` are given, then `base64_data`
     will be used.
 
+    Example usage: ::
+
+      >>> from hermit import create_qr_sequence
+      >>> sequence = create_qr_sequence(data="foo bar")
+      >>> sequence = create_qr_sequence(base64_data="cHNidP8BA...IBkAACAAQAAAAAAAAAA")
+
     """
     if base64_data is None:
         if data is None:
@@ -35,18 +41,16 @@ def create_qr_sequence(
     ]
 
 
-def qr_to_image(qr: QRCode):
-    """Turn the given `QRCode` into an image object, of the type returned
-    by `PIL.Image.open`."""
-    # FIXME -- get colors from config?
-    return qr.make_image(fill_color="black", back_color="white")
-
-
 def create_qr(data: str) -> QRCode:
     """Returns a `QRCode` object representing the given `data`.
 
     In order to be displayed, this `QRCode` object will need to be
     further transformed, depending on the display mode.
+
+    Example usage: ::
+
+      >>> from hermit import create_qr
+      >>> qr = create_qr("foo bar")
 
     """
     qr = QRCode(
@@ -60,3 +64,19 @@ def create_qr(data: str) -> QRCode:
     # otherwise gifs are of different sizes
     qr.make(fit=True)
     return qr
+
+
+def qr_to_image(qr: QRCode):
+    """Turn the given `QRCode` into an image object, of the type returned
+    by `PIL.Image.open`.
+
+    Example usage: ::
+
+      >>> from hermit import create_qr, qr_to_image
+      >>> qr = create_qr("foo bar")
+      >>> image = qr_to_image(qr)
+      >>> image.save("/tmp/qr.jpg")
+
+    """
+    # FIXME -- get colors from config?
+    return qr.make_image(fill_color="black", back_color="white")

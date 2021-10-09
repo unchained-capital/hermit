@@ -1,71 +1,54 @@
 Hermit
 ======
 
-Subpackages
------------
-
-.. toctree::
-
-    hermit.qrcode
-    hermit.shards
-    hermit.ui
-    hermit.wordlists
-
 Submodules
 ----------
 
-hermit.config module
---------------------
+hermit.config
+-------------
 
 .. automodule:: hermit.config
-    :members:
+    :members: get_config, HermitConfig
     :undoc-members:
     :show-inheritance:
 
-hermit.errors module
---------------------
+hermit.coordinator
+------------------
+
+.. automodule:: hermit.coordinator
+    :members: validate_coordinator_signature_if_necessary, COORDINATOR_SIGNATURE_KEY
+    :undoc-members:
+    :show-inheritance:
+
+hermit.errors
+-------------
 
 .. automodule:: hermit.errors
     :members:
     :undoc-members:
     :show-inheritance:
 
-hermit.rng module
------------------
+hermit.io
+---------
+
+.. automodule:: hermit.io
+    :members: display_data_as_animated_qrs, read_data_from_animated_qrs
+    :undoc-members:
+    :show-inheritance:
+
+hermit.qr
+---------
+
+.. automodule:: hermit.qr
+    :members: create_qr, create_qr_sequence, qr_to_image, detect_qrs_in_image, GenericReassembler
+    :undoc-members:
+    :show-inheritance:
+
+
+hermit.rng
+----------
 
 .. automodule:: hermit.rng
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-hermit.shamir\_share module
----------------------------
-
-.. automodule:: hermit.shamir_share
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-hermit.signer module
--------------------------
-
-.. automodule:: hermit.signer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-hermit.wallet module
---------------------
-
-.. automodule:: hermit.wallet
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: hermit
-    :members:
+    :members: max_entropy_estimate, max_self_entropy, max_kolmogorov_entropy_estimate
     :undoc-members:
     :show-inheritance:

@@ -11,6 +11,12 @@ def max_entropy_estimate(input: str) -> float:
     Works conservatively, by choosing the minimum of the self-entropy
     and Kolmogorov entropy.
 
+    Example usage: ::
+
+      >>> from hermit import max_entropy_estimate
+      >>> max_entropy_estimate("abcd")
+      8.0
+
     """
     return min(max_self_entropy(input), max_kolmogorov_entropy_estimate(input))
 
@@ -18,15 +24,20 @@ def max_entropy_estimate(input: str) -> float:
 def max_self_entropy(input: str) -> float:
     """Measure the maximum self-entropy of a given string (in bits).
 
-    Models the string as produced by a Markov process which means the
-    self-entropy has the following properties:
+    Models the string as produced by a `Markov process
+    <https://en.wikipedia.org/wiki/Entropy_(information_theory)#Data_as_a_Markov_process>`_
+    which means the self-entropy has the following properties:
 
     1) it is proportional to the length of the string
     2) it is independent of the order of the characters in the string
-    3) because of (2), it is an upper bound on entropy
 
-    See
-    https://en.wikipedia.org/wiki/Entropy_(information_theory)#Data_as_a_Markov_process
+    Because of (2), it is an upper bound on entropy.
+
+    Example usage: ::
+
+      >>> from hermit import max_self_entropy
+      >>> max_self_entropy("abcd")
+      8.0
 
     """
     inputBytes = input.encode("utf8")
@@ -60,9 +71,15 @@ def max_kolmogorov_entropy_estimate(input: str) -> float:
     This is an upper bound because there certainly exist other
     algorithms which could better compress the given string.
 
+    Example usage: ::
+
+      >>> from hermit import max_kolmogorov_entropy_estimate
+      >>> max_kolmogorov_entropy_estimate("abcd")
+      96.0
+
     """
     # Multiply by 8 to turn number of bytes into bits.
-    return 8 * len(zlib.compress(input.encode("utf8"), 9))
+    return float(8 * len(zlib.compress(input.encode("utf8"), 9)))
 
 
 def enter_randomness(chunks: int) -> bytes:

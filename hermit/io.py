@@ -18,11 +18,33 @@ from .qr import (
 
 
 def display_data_as_animated_qrs(data: str) -> None:
+    """Display the given data as an animated QR code sequence.
+
+    Uses the currently configured display mode.
+
+    Example usage: ::
+
+       >>> from hermit import display_data_as_animated_qrs
+       >>> display_data_as_animated_qrs("abcd")
+
+    """
     io = get_io()
     io.display_data_as_animated_qrs(data)
 
 
 def read_data_from_animated_qrs() -> Optional[str]:
+    """Read data from an animated QR code sequence.
+
+    Uses the currently configured camera & display modes.
+
+    Example usage: ::
+
+       >>> from hermit import display_data_as_animated_qrs
+       >>> data = read_data_from_animated_qrs()
+       >>> print(data)
+       "..."
+
+    """
     io = get_io()
     return io.read_data_from_animated_qrs()
 
@@ -31,6 +53,7 @@ _io = None
 
 
 def get_io() -> "IO":
+    """Return a globally shared and already loaded instance of :class:`IO`."""
     global _io
 
     if _io is None:
