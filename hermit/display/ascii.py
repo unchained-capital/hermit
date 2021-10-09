@@ -82,7 +82,7 @@ class ASCIIDisplay(Display):
         Display.__init__(self, io_config)
 
         # FIXME This is undocumented in config.py
-        self.height_scale = float(io_config.get('height_scale', 0.45))
+        self.height_scale = float(io_config.get('height_scale', 0.55))
 
     #
     # Displaying QRs
@@ -102,6 +102,10 @@ class ASCIIDisplay(Display):
             for index, image in enumerate(ascii_images):
                 clear()
                 print_formatted_text(ANSI(image))
+                print_formatted_text(ANSI(""))
+                print_formatted_text(ANSI("Hit CTRL-C once finished"))
+                print_formatted_text(ANSI(""))
+
                 sleep(self.qr_code_sequence_delay_seconds)
 
     #
@@ -112,9 +116,13 @@ class ASCIIDisplay(Display):
         ascii = self.render(image, width=self.width, height_scale=self.height_scale)
         clear()
         print_formatted_text(ANSI(ascii))
+        print_formatted_text(ANSI(""))
+        print_formatted_text(ANSI("Hit CTRL-C to cancel"))
+        print_formatted_text(ANSI(""))
+
         return True
 
-    def render(self, image, width=120, height_scale=0.55, colorize=True):
+    def render(self, image, width=80, height_scale=0.55, colorize=True):
         org_width, orig_height = image.size
         aspect_ratio = orig_height / org_width
         new_height = aspect_ratio * width * height_scale
