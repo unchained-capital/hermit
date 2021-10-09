@@ -1,12 +1,13 @@
-import buidl
-from buidl import ltrim_path
-from buidl.psbt import PSBT, SuspiciousTransaction, HDPublicKey
 from collections import defaultdict
 
+import buidl
+from buidl import ltrim_path
+from buidl.psbt import PSBT, HDPublicKey
 from buidl.script import (
     RedeemScript,
     WitnessScript,
 )
+from .errors import InvalidSignatureRequest
 
 def describe_basic_inputs(psbt, hdpubkey_map):
 
@@ -23,14 +24,14 @@ def describe_basic_inputs(psbt, hdpubkey_map):
 
         if not psbt_in.redeem_script and not psbt_in.witness_script:
             # TODO: add support for legacy TXs?
-            raise SuspiciousTransaction(
+            raise InvalidSignatureRequest(
                 f"Input #{index} does not contain a redeem or a witness script. "
             )
 
         # Be sure all xpubs are properly accounted for
         if len(hdpubkey_map) <- len(psbt_in.named_pubs):
             # TODO: doesn't handle case where the same xfp is >1 signers
-            raise SuspiciousTransaction(
+            raise InvalidSignatureRequest(
                 f"{len(hdpubkey_map)} xpubs supplied != {len(psbt_in.named_pubs)} named_pubs in PSBT input."
             )
 
@@ -46,19 +47,19 @@ def describe_basic_inputs(psbt, hdpubkey_map):
             inputs_quorum_m = input_quorum_m
         else:
             if inputs_quorum_m != input_quorum_m:
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Previous input(s) set a quorum threshold of {inputs_quorum_m}, but this transaction is {input_quorum_m}"
                 )
 
         if inputs_quorum_n is None:
             inputs_quorum_n = input_quorum_n
             if inputs_quorum_n != len(hdpubkey_map):
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Transaction has {len(hdpubkey_map)} pubkeys but we are expecting {input_quorum_n}"
                 )
         else:
             if inputs_quorum_n != input_quorum_n:
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Previous input(s) set a max quorum of threshold of {inputs_quorum_n}, but this transaction is {input_quorum_n}"
                 )
 
@@ -70,13 +71,13 @@ def describe_basic_inputs(psbt, hdpubkey_map):
             try:
                 hdpub = hdpubkey_map[xfp]
             except KeyError:
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Root fingerprint {xfp} for input #{index} not in the hdpubkey_map you supplied"
                 )
 
             trimmed_path = ltrim_path(named_pub.root_path, depth=hdpub.depth)
             if hdpub.traverse(trimmed_path).sec() != named_pub.sec():
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"xpub {hdpub} with path {named_pub.root_path} does not appear to be part of input # {index}"
                 )
 
@@ -112,7 +113,7 @@ def describe_basic_inputs(psbt, hdpubkey_map):
         inputs_desc.append(input_desc)
 
     #if not root_paths_for_signing:
-    #    raise SuspiciousTransaction(
+    #    raise InvalidSignatureRequest(
     #        "No `root_paths_for_signing` with `hdpubkey_map` {hdpubkey_map} in PSBT:\n{self}"
     #    )
 
@@ -161,23 +162,23 @@ def describe_basic_outputs(
                 output_quorum_m, output_quorum_n = psbt_out.redeem_script.get_quorum()
             else:
                 # TODO: add support for legacy TXs?
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"output #{index} does not contain a redeem or a witness script. "
                 )
 
             if expected_quorum_m != output_quorum_m:
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Previous output(s) set a max quorum of threshold of {expected_quorum_m}, but this transaction is {output_quorum_m}"
                 )
             if expected_quorum_n != output_quorum_n:
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Previous input(s) set a max cosigners of {expected_quorum_n}, but this transaction is {output_quorum_n}"
                 )
 
             # Be sure all xpubs are properly acocunted for
             if output_quorum_n != len(psbt_out.named_pubs):
                 # TODO: doesn't handle case where the same xfp is >1 signers (surprisngly complex)
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"{len(hdpubkey_map)} xpubs supplied != {len(psbt_out.named_pubs)} named_pubs in PSBT change output."
                     "You may be able to get this wallet to cosign a sweep transaction (1-output) instead."
                 )
@@ -190,14 +191,14 @@ def describe_basic_outputs(
                 try:
                     hdpub = hdpubkey_map[xfp]
                 except KeyError:
-                    raise SuspiciousTransaction(
+                    raise InvalidSignatureRequest(
                         f"Root fingerprint {xfp} for output #{index} not in the hdpubkey_map you supplied"
                         "Do a sweep transaction (1-output) if you want this wallet to cosign."
                     )
 
                 trimmed_path = ltrim_path(named_pub.root_path, depth=hdpub.depth)
                 if hdpub.traverse(trimmed_path).sec() != named_pub.sec():
-                    raise SuspiciousTransaction(
+                    raise InvalidSignatureRequest(
                         f"xpub {hdpub} with path {named_pub.root_path} does not appear to be part of output # {index}"
                         "You may be able to get this wallet to cosign a sweep transaction (1-output) instead."
                     )
@@ -218,7 +219,7 @@ def describe_basic_outputs(
             # Confirm there aren't >1 change ouputs
             # (this is technically allowed but too sketchy to support)
             if change_sats or change_addr:
-                raise SuspiciousTransaction(
+                raise InvalidSignatureRequest(
                     f"Cannot have >1 change output.\n{outputs_desc}"
                 )
             change_addr = output_desc["addr"]
@@ -261,7 +262,7 @@ def describe_basic_p2sh_multisig_tx(psbt,  xfp_for_signing=None, hdpubkey_map=No
     * All outputs are either spend or proven to be change.
     For UX reasons, there can not be >1 change address.
 
-    A SuspiciousTransaction Exception does not strictly mean there is a problem with the transaction, it is likely just too complex for simple summary.
+    An InvalidSignatureRequest Exception does not strictly mean there is a problem with the transaction, it is likely just too complex for simple summary.
 
     Due to the nature of how PSBT works, if your PSBT is slimmed down (doesn't contain xpubs AND prev TX hexes), you must supply a `hdpubkey_map` for ALL n xpubs:
       {
@@ -280,7 +281,7 @@ def describe_basic_p2sh_multisig_tx(psbt,  xfp_for_signing=None, hdpubkey_map=No
     tx_fee_sats = psbt.tx_obj.fee()
 
     if not psbt.hd_pubs:
-        raise ValueError(
+        raise InvalidSignatureRequest(
             "Cannot describe multisig PSBT without `hd_pubs` nor `hdpubkey_map`"
         )
 
@@ -348,7 +349,7 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
     tx_fee_sats = psbt.tx_obj.fee()
 
     if not psbt.hd_pubs:
-        raise ValueError(
+        raise InvalidSignatureRequest(
             "Cannot describe multisig PSBT without `hd_pubs` nor `hdpubkey_map`"
         )
 
@@ -421,7 +422,7 @@ def describe_basic_psbt(psbt, xfp_for_signing=None):
                 f"The xfp supplied ({xfp_for_signing}) does not correspond to the transaction inputs, which are {inputs_described['inputs_quorum_m']} of the following:",
                 ", ".join(sorted(list(hdpubkey_map.keys()))),
             ]
-            raise Exception("\n".join(err))
+            raise InvalidSignatureRequest("\n".join(err))
 
         to_return["root_paths"] = inputs_described["root_paths_for_signing"]
 

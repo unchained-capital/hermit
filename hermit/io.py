@@ -1,8 +1,9 @@
-from base64 import b64decode
+from datetime import datetime
 from typing import Optional
+from time import sleep
 
 from prompt_toolkit import print_formatted_text
-from prompt_toolkit.shortcuts import ProgressBar
+from prompt_toolkit.shortcuts.progress_bar.base import ProgressBar, ProgressBarCounter
 
 from .errors import (
     HermitError,
@@ -61,22 +62,24 @@ class IO():
         else:
             raise HermitError(f"Invalid display mode '{display_mode}'.  Must be one of 'opencv', 'framebuffer', or 'ascii'.")
 
-    def display_data_as_animated_qrs(self, data:Optional[str]=None, base64_data:Optional[bytes]=None) -> None:
+    def display_data_as_animated_qrs(self, data:Optional[str]=None, base64_data:Optional[str]=None) -> None:
         return self.display.animate_qrs(create_qr_sequence(data=data, base64_data=base64_data))
 
     def read_data_from_animated_qrs(self, title:Optional[str]=None) -> Optional[str]:
         if title is None:
-            title = "Scan QR Codes"
+            title = "Scanning QR Codes..."
 
-        self.camera.open()
-        self.display.setup_camera_display(title)
-        self.reassembler = GenericReassembler()
-
-        data = FakeIterable(self)
 
         with ProgressBar(title=title) as progress_bar:
             try:
-                while not self.reassembler.is_complete():
+                self.camera.open()
+                self.display.setup_camera_display(title)
+                self.reassembler = GenericReassembler()
+
+                counter = ReassemblerCounter(progress_bar, self)
+                progress_bar.counters.append(counter)
+
+                for c in counter:
                     image = self.camera.get_image()
                     mirror, data = detect_qrs_in_image(image, box_width=20)
 
@@ -86,40 +89,72 @@ class IO():
                     # Iterate through the identified QR codes and let the
                     # reassembler collect them.
                     for data_item in data:
-                        total, segments = self.reassembler.collect(data_item)
-                        if segments == 1:
-                            progress_bar(
-                                data, 
-                                label="Scanning",
-                                remove_when_done=True)
-                                total=total)
+                        if self.reassembler.collect(data_item):
+                            c.advance()
 
                     #await asyncio.sleep(0.05)
-
-                base64_payload = self.reassembler.decode()
-
+                
             except InvalidQRCodeSequence as e:
                 print_formatted_text(f"Invalid QR code sequence: {e}.")
                 return None
-
             finally:
-                # Clean up window stuff.
                 self.display.teardown_camera_display()
                 self.camera.close()
 
-        return b64decode(base64_payload)
+        return self.reassembler.decode()
 
-class FakeIterable(object):
+class ReassemblerCounter(object):
 
-    def __init__(self, reassembler):
-        self.reassembler
+    def __init__(self, progress_bar, io):
+        self.start_time = datetime.now()
+        self.progress_bar = progress_bar
+        self.data = None
+        self.current = 0
+        self.label = ''
+        self.remove_when_done = True
+        self.done = False
+        self.io = io
 
     def __next__(self):
-        if self.reassembler.is_complete():
+        if self.io.reassembler.is_complete():
+            self.done = True
+            if self in self.progress_bar.counters:
+                self.progress_bar.counters.remove(self)
             raise StopIteration
         else:
-            yield self.context
+            return self
 
-        
+    def __iter__(self):
+        return self
 
-    
+    def advance(self):
+        self.current += 1
+        self.progress_bar.invalidate()
+
+    @property
+    def total(self):
+        return self.io.reassembler.total
+
+    @property
+    def percentage(self):
+        if self.total is None:
+            return 0
+        else:
+            return self.current * 100 / max(self.total, 1)
+
+    @property
+    def time_elapsed(self):
+        """
+        return how much time has been elapsed since the start.
+        """
+        return datetime.now() - self.start_time
+
+    @property
+    def time_left(self):
+        """
+        Timedelta representing the time left.
+        """
+        if self.total is None or not self.percentage:
+            return None
+        else:
+            return self.time_elapsed * (100 - self.percentage) / self.percentage

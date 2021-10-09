@@ -5,7 +5,7 @@ from hermit import (
     Signer, 
     HDWallet, 
     HermitError,
-    InvalidSignatureRequest,
+    InvalidPSBT,
 )
 
 class TestSignerSign(object):
@@ -86,7 +86,7 @@ class TestSignerSignatureRequestHandling(object):
     def test_parse_signature_request_without_unsigned_PSBT(self):
         with raises(HermitError) as error:
             self.signer.parse_signature_request()
-        assert "No signature request" in str(error)
+        assert "No PSBT" in str(error)
 
     @patch("hermit.signer.PSBT.parse_base64")
     def test_parse_signature_request_with_valid_PSBT(self, mock_parse_base64):
@@ -100,9 +100,9 @@ class TestSignerSignatureRequestHandling(object):
     def test_parse_signature_request_with_invalid_PSBT(self, mock_parse_base64):
         self.signer.unsigned_psbt_b64 = self.unsigned_psbt_b64
         mock_parse_base64.side_effect = RuntimeError("foobar")
-        with raises(InvalidSignatureRequest) as error:
+        with raises(InvalidPSBT) as error:
             self.signer.parse_signature_request()
-        assert "Invalid signature request" in str(error)
+        assert "Invalid PSBT" in str(error)
         assert "RuntimeError" in str(error)
         assert "foobar" in str(error)
         mock_parse_base64.assert_called_once_with(self.unsigned_psbt_b64)
@@ -123,9 +123,9 @@ class TestSignerSignatureRequestHandling(object):
         self.psbt.validate = mock_validate
         mock_validate.return_value = False
         self.signer.psbt = self.psbt
-        with raises(InvalidSignatureRequest) as error:
+        with raises(InvalidPSBT) as error:
             self.signer.validate_signature_request()
-        assert "Invalid signature request" in str(error)
+        assert "Invalid PSBT" in str(error)
 
 class TestSignerTransactionDescription(object):
 

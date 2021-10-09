@@ -4,7 +4,7 @@ from prompt_toolkit import PromptSession, print_formatted_text, HTML
 from buidl import PSBT
 from buidl.bcur import BCURMulti
 
-from .errors import HermitError, InvalidSignatureRequest
+from .errors import HermitError, InvalidPSBT
 from .io import (
     display_data_as_animated_qrs,
     read_data_from_animated_qrs,
@@ -41,10 +41,7 @@ class Signer(object):
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can
             # then unlock the wallet?
-            print_formatted_text("WARNING: wallet is LOCKED.")
-            print_formatted_text(
-                "You can inspect an unsigned PSBT, but you cannot sign it without first unlocking the wallet."
-            )
+            print_formatted_text("WARNING: wallet is LOCKED; you cannot sign without first unlocking.")
 
         self.read_signature_request()
         self.parse_signature_request()
@@ -79,26 +76,30 @@ class Signer(object):
         self.unsigned_psbt_b64 = read_data_from_animated_qrs()
         
     def parse_signature_request(self) -> None:
+        print_formatted_text(HTML("Parsing PSBT..."))
         if self.unsigned_psbt_b64 is None:
-            raise HermitError("No signature request PSBT provided.")
+            raise HermitError("No PSBT provided.")
 
         try:
             self.psbt = PSBT.parse_base64(
                 self.unsigned_psbt_b64,
             )
         except Exception as e:
-            err_msg = "Invalid signature request PSBT: {} ({}).".format(e, type(e).__name__)
-            raise InvalidSignatureRequest(err_msg)
+            err_msg = "Invalid PSBT: {} ({}).".format(e, type(e).__name__)
+            raise InvalidPSBT(err_msg)
 
     def validate_signature_request(self) -> None:
+        print_formatted_text(HTML("Validating PSBT..."))
         if self.psbt.validate() is not True:
-            raise InvalidSignatureRequest("Signature request PSBT is invalid.")
+            raise InvalidPSBT("Invalid PSBT.")
+        # FIXME -- further validatiaon here
 
     #
     # Transaction Description
     #
 
     def generate_transaction_metadata(self) -> None:
+        print_formatted_text(HTML("Describing signature request..."))
         self.transaction_metadata = describe_basic_psbt(
             self.psbt,
             xfp_for_signing=self.wallet.xfp_hex,

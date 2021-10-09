@@ -7,7 +7,11 @@ class InvalidQRCodeSequence(HermitError):
     pass
 
 
+class InvalidPSBT(HermitError):
+    """Raised to indicate a PSBT was invalid."""
+    pass
+
 class InvalidSignatureRequest(HermitError):
-    """Raised to indicate a signature request PSBT was invalid."""
+    """Raised to indicate a signature request was invalid."""
     pass
 

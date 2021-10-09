@@ -41,7 +41,7 @@ def qr(data=None):
     """
     if data is None:
         raise HermitError("Data is required.")
-    display_data_as_animated_qrs(data)
+    display_data_as_animated_qrs(data=data)
 
 @wallet_command("sign")
 def sign(unsigned_psbt_b64=None):

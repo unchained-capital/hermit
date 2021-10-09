@@ -2,6 +2,7 @@ import os.path
 from .errors import (
     HermitError,
     InvalidQRCodeSequence,
+    InvalidPSBT,
     InvalidSignatureRequest,
 )
 from .config import get_config

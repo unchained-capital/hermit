@@ -1,3 +1,4 @@
+from base64 import b64decode
 from typing import Optional
 import re
 
@@ -26,7 +27,7 @@ class Reassembler:
         """
         return cls.RE.match(data)
 
-    def collect(self, data:str) -> (Optional[int], Optional[int]):
+    def collect(self, data:str) -> bool:
         """Collect the given data.
 
         Will validate the data looks like it's part of the sequence
@@ -66,7 +67,7 @@ class Reassembler:
     def _get_total_index_segment(self, match, data:str) -> (int, int, str):
         raise NotImpementedException
 
-    def _store_item(self, total:int, index:int, segment:str) -> (Optional[int], Optional[int]):
+    def _store_item(self, total:int, index:int, segment:str) -> bool:
         """Given the data from the regex match, store information
         about the current data item
 
@@ -88,9 +89,9 @@ class Reassembler:
         if self.data[index] is None:
             self.data[index] = segment
             self.segments += 1
-            return (self.total, self.segments)
+            return True
             
-        return (None, None)
+        return False
 
     def _decode(self, match, data:str) -> str:
         """Do whatever implementation specific task needed to decode
@@ -105,7 +106,7 @@ class SingleQRCodeReassembler(Reassembler):
 
     """
 
-    RE = re.compile("^.*$")
+    RE = re.compile("^.*$", re.MULTILINE)
     TYPE = "QR"
 
     def _get_total_index_segment(self, match, data:str) -> (int, int, str):
@@ -123,7 +124,7 @@ class BCURSingleReassembler(Reassembler):
         return 1,0,data
 
     def _decode(self) -> str:
-        return BCURSingle.parse(self.data[0]).text_b64
+        return b64decode(BCURSingle.parse(self.data[0]).text_b64).decode('utf8')
 
 class BCURMultiReassembler(Reassembler):
     """Reassembles data from BCUR QR code sequences."""
@@ -134,7 +135,13 @@ class BCURMultiReassembler(Reassembler):
         return int(match[2]), int(match[1])-1, data
 
     def _decode(self) -> str:
-        return BCURMulti.parse(self.data).text_b64
+        # FIXME something strange happening here...
+        base64_text = BCURMulti.parse(self.data).text_b64
+        plain_bytes = b64decode(base64_text)
+        try:
+            return plain_bytes.decode('utf8')
+        except UnicodeDecodeError:
+            return base64_text
 
 class SpecterDesktopReassembler(Reassembler):
     """Reassembles data from Specter Desktop QR code sequences."""
@@ -182,7 +189,7 @@ class GenericReassembler:
     def type(self):
         return self.reassembler and self.reassembler.TYPE
 
-    def collect(self, data:str) -> (Optional[int], Optional[int]):
+    def collect(self, data:str) -> bool:
         if self.reassembler is None:
             for cls in self.REASSEMBLERS:
                 if cls.match_data(data):

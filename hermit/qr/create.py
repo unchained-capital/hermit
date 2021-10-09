@@ -11,20 +11,21 @@ VERSION = 12
 BOX_SIZE = 5
 BORDER = 4
 
-def create_qr_sequence(data:Optional[str]=None, base64_data:Optional[bytes]=None) -> [QRCode]:
+def create_qr_sequence(data:Optional[str]=None, base64_data:Optional[str]=None) -> [QRCode]:
     """Returns a BCUR Multi QR code sequence for the given `data` (or `base64_data`).
 
     If `data` is given, it will be UTF8 & base64 encoded first.  If
-    `base64_data` is given, it will be used directly.
+    `base64_data` is given, it will UTF8 encoded and used directly.
 
-    If both `data` and `base64_data` are given, then `base64_data` will be used.
+    If both `data` and `base64_data` are given, then `base64_data`
+    will be used.
 
     """
     if base64_data is None:
         if data is None:
             raise HermitError("Must provide some `data` to create a QR code sequence.")
         else:
-            base64_data = b64encode(data.encode("utf8"))
+            base64_data = b64encode(data.encode("utf8")).decode("utf8")
     return [
         create_qr(data)
         for data

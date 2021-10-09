@@ -15,7 +15,7 @@ if __name__ == "__main__":
         exit(1)
 
     output_path = argv[1]
-    data = stdin.read()
+    data = stdin.read().strip()
     if len(data) == 0:
         print("Input data is required.")
         exit(2)

@@ -11,7 +11,7 @@ class TestCreateQRSequence(object):
     
     def setup(self):
         self.data = open("tests/fixtures/lorem.txt", "r").read()
-        self.base64_data = b64encode(self.data.encode("utf8"))
+        self.base64_data = b64encode(self.data.encode("utf8")).decode("utf8")
 
     def test_with_no_arguments(self):
         with raises(HermitError) as e:
@@ -48,4 +48,6 @@ def test_qr_to_image():
     mock_make_image.assert_called_once_with(fill_color="black", back_color="white")
 
 def test_create_qr():
-    assert isinstance(create_qr("data"), QRCode)
+    data = "data"
+    qr = create_qr(data)
+    assert isinstance(qr, QRCode)
