@@ -81,7 +81,7 @@ test:
 	$(PYTEST) --cov=hermit --cov-config=tests/.coveragerc --ignore=vendor
 
 lint:
-	$(BLACK) --check hermit tests scripts
+	$(BLACK) --check hermit tests scripts *.py
 	$(MYPY) -p hermit
 
 .PHONY: test docs

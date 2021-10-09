@@ -1,4 +1,4 @@
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx_autodoc_typehints',
+    "sphinx.ext.autodoc",
+    "sphinx_autodoc_typehints",
 ]
