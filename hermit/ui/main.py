@@ -1,5 +1,4 @@
-# from prompt_toolkit.eventloop.defaults import use_asyncio_event_loop
-
+from prompt_toolkit.eventloop.defaults import use_asyncio_event_loop
 from ..plugins import load_plugins
 from .wallet import clear_screen, wallet_repl
 from .relocker import asyncio, relock_wallet_if_timed_out
@@ -26,7 +25,7 @@ def main():
     clear_screen()
     load_plugins()
     print(Banner.format(__version__))
-    # use_asyncio_event_loop()
+    use_asyncio_event_loop()
     loop = asyncio.get_event_loop()
     loop.create_task(relock_wallet_if_timed_out())  # deadman_task
     loop.run_until_complete(wallet_repl())
