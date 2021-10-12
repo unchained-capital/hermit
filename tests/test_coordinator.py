@@ -1,11 +1,14 @@
 from unittest.mock import Mock, patch
 from pytest import raises
+from buidl.psbt import PSBT
 
 from hermit import InvalidCoordinatorSignature
 from hermit.coordinator import (
     validate_coordinator_signature_if_necessary,
     validate_rsa_signature,
     create_rsa_signature,
+    add_rsa_signature,
+    extract_rsa_signature_params,
     COORDINATOR_SIGNATURE_KEY,
 )
 
@@ -197,3 +200,44 @@ class TestValidateRSASignature(object):
             validate_rsa_signature(self.message + b"hello", self.signature)
         mock_config.assert_called_once_with()
         assert "signature is invalid" in str(e)
+
+
+@patch("hermit.coordinator.get_config")
+class TestPSBTSignatureBasics(object):
+    def setup(self):
+        self.public_key = open("tests/fixtures/coordinator.pub", "r").read()
+        self.private_key_path = "tests/fixtures/coordinator.pem"
+
+        self.original_psbt_base64 = open("tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r").read()
+
+        self.psbt = PSBT.parse_base64(self.original_psbt_base64)
+        self.psbt_base64 = self.psbt.serialize_base64()
+        self.signature = create_rsa_signature(
+            bytes(self.psbt_base64, "utf8"),
+            self.private_key_path
+        )
+
+        self.config = Mock()
+        self.coordinator_config = dict(public_key=self.public_key)
+        self.config.coordinator = self.coordinator_config
+
+    def test_psbt_serialization_stable(self, mock_config):
+        mock_config.return_value = self.config
+
+        p2 = PSBT.parse_base64(self.psbt_base64)
+        assert p2.serialize_base64() == self.psbt.serialize_base64()
+
+    def test_psbt_signature(self, mock_config):
+        mock_config.return_value = self.config
+
+        add_rsa_signature(self.psbt, self.private_key_path)
+
+        assert self.psbt.extra_map[COORDINATOR_SIGNATURE_KEY] == self.signature
+
+    def test_validate_psbt_signature(self, mock_config):
+        mock_config.return_value = self.config
+
+        add_rsa_signature(self.psbt, self.private_key_path)
+
+        unsigned_psbt_base64_bytes, sig_bytes = extract_rsa_signature_params(self.psbt)
+        validate_rsa_signature(unsigned_psbt_base64_bytes, sig_bytes)

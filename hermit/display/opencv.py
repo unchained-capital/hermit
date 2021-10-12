@@ -9,6 +9,13 @@ from .base import Display
 
 
 def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
+    # If we want the deadman counter to continue to count down while the
+    # window is displayed, we need to run some kind of 'sleep' inside the
+    # asycio environment. For now, this is commented out as it tends to
+    # make scanning a large barcode even more frustrating because the
+    # wallet could autolock in the process of scanning.
+
+    # asyncio.run(asyncio.sleep(1/1000.0))
 
     #
     # waitKey returns -1 if *no* keys were pressed during the delay.
@@ -35,7 +42,6 @@ def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
     #
     # We want both conditions
     #
-
     return no_keys_pressed_during_delay and window_is_visible
 
 
