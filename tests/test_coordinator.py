@@ -211,7 +211,9 @@ class TestPSBTSignatureBasics(object):
         self.public_key = open("tests/fixtures/coordinator.pub", "r").read()
         self.private_key_path = "tests/fixtures/coordinator.pem"
 
-        self.original_psbt_base64 = open("tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r").read()
+        self.original_psbt_base64 = open(
+            "tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r"
+        ).read()
 
         self.psbt = PSBT.parse_base64(self.original_psbt_base64)
         self.psbt_base64 = self.psbt.serialize_base64()
@@ -230,8 +232,7 @@ class TestPSBTSignatureBasics(object):
         mock_config.return_value = self.config
 
         signature = create_rsa_signature(
-            bytes(self.psbt_base64, "utf-8"),
-            self.private_key_path
+            bytes(self.psbt_base64, "utf-8"), self.private_key_path
         )
         add_rsa_signature(self.psbt, self.private_key_path)
 
@@ -254,9 +255,11 @@ class TestPSBTSignatureSecP256K1Basics(object):
 
         # Privkey stored in wif format in the fixtures folder
         self.private_key_path = "tests/fixtures/coordinator.privkey"
-        #self.private_key = PrivateKey.parse(open(self.private_key_path, "r").read().strip())
+        # self.private_key = PrivateKey.parse(open(self.private_key_path, "r").read().strip())
 
-        self.original_psbt_base64 = open("tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r").read()
+        self.original_psbt_base64 = open(
+            "tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r"
+        ).read()
 
         self.psbt = PSBT.parse_base64(self.original_psbt_base64)
         self.psbt_base64 = self.psbt.serialize_base64()
@@ -275,8 +278,7 @@ class TestPSBTSignatureSecP256K1Basics(object):
         mock_config.return_value = self.config
 
         signature = create_secp256k1_signature(
-            bytes(self.psbt_base64, "utf-8"),
-            self.private_key_path
+            bytes(self.psbt_base64, "utf-8"), self.private_key_path
         )
 
         add_secp256k1_signature(self.psbt, self.private_key_path)

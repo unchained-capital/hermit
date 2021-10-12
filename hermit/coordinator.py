@@ -46,17 +46,18 @@ def validate_coordinator_signature_if_necessary(original_psbt: PSBT) -> None:
 
 
 def create_secp256k1_signature(message: bytes, private_key_path: str) -> bytes:
-    """ Create a secp256k1 signature.
+    """Create a secp256k1 signature.
 
     This function is not called within usual Hermit operation. It is useful
     for scripts and tests.
     """
     with open(private_key_path, mode="r") as private_key_file:
-        private_key = PrivateKey.parse( private_key_file.read().strip() )
+        private_key = PrivateKey.parse(private_key_file.read().strip())
 
     signature = private_key.sign_message(message)
     return signature.der()
-    
+
+
 def create_rsa_signature(message: bytes, private_key_path: str) -> bytes:
     """Create an RSA signature.
 

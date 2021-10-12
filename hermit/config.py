@@ -164,6 +164,6 @@ class HermitConfig:
 
     def _interpolate_paths(self) -> None:
         self.config["paths"] = {
-            key : os.path.expandvars(os.path.expanduser(value))
-            for key, value in self.config['paths'].items()
+            key: os.path.expandvars(os.path.expanduser(value))
+            for key, value in self.config["paths"].items()
         }
