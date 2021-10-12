@@ -19,7 +19,7 @@ Banner = r"""
 You are in WALLET mode.  Type 'help' for help.               (v{})
 """
 
-
+    
 def main():
     """Start the Hermit REPL user interface."""
     clear_screen()
@@ -28,4 +28,4 @@ def main():
     use_asyncio_event_loop()
     loop = asyncio.get_event_loop()
     loop.create_task(relock_wallet_if_timed_out())  # deadman_task
-    loop.run_until_complete(wallet_repl())
+    wallet_repl()

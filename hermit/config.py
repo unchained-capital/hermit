@@ -1,4 +1,5 @@
 from yaml import safe_load
+import os
 from os import environ
 from os.path import exists
 from typing import Optional, Dict, Union
@@ -125,6 +126,7 @@ class HermitConfig:
 
         self._load(config_file=config_file)
         self._inject_defaults()
+        self._interpolate_paths()
         self._interpolate_commands()
         self.paths = self.config["paths"]
         self.commands = self.config["commands"]
@@ -159,3 +161,9 @@ class HermitConfig:
                 self.config["paths"]["shards_file"]
             )
             self.config["commands"][config_key] = interpolated_value
+
+    def _interpolate_paths(self) -> None:
+        self.config["paths"] = {
+            key : os.path.expandvars(os.path.expanduser(value))
+            for key, value in self.config['paths'].items()
+        }

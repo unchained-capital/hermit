@@ -1,5 +1,6 @@
 from typing import Dict
 from functools import wraps
+from hermit.errors import HermitError
 
 # from hermit.errors import HermitError
 
@@ -25,14 +26,7 @@ def command(name: str, commands: Dict):
 
         @wraps(f)
         def wrapper(*args, **kwargs):
-            # try:
             return f(*args, **kwargs)
-
-        # FIXME why is TypeError handled specially here?
-        # except TypeError as terr:
-        #     raise terr
-        # except Exception as err:
-        #     raise HermitError("Hmm. Something went wrong.")
 
         commands[name] = wrapper
 
