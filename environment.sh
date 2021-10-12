@@ -54,7 +54,7 @@ fi
 
 if [ -z $(echo "$PATH" | grep "$BIN_DIR") ]; then
     echo "[path]       Adding $BIN_DIR to PATH (${PATH})"
-    export PATH="${PATH}:${BIN_DIR}"
+    export PATH="${BIN_DIR}:${PATH}"
 else
     echo "[path]       $BIN_DIR already on PATH (${PATH})"
 fi
