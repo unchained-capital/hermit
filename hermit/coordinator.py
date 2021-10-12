@@ -117,11 +117,10 @@ def extract_rsa_signature_params(original_psbt: PSBT) -> Tuple[bytes, bytes]:
 
 def add_rsa_signature(original_psbt: PSBT, private_key_path: str) -> PSBT:
     """Add a signature to a PSBT.
-    
     """
 
     psbt_base64 = original_psbt.serialize_base64()
-    
+
     sig_bytes = create_rsa_signature(
         bytes(psbt_base64, "utf-8"),
         private_key_path,
@@ -129,4 +128,3 @@ def add_rsa_signature(original_psbt: PSBT, private_key_path: str) -> PSBT:
 
     original_psbt.extra_map[COORDINATOR_SIGNATURE_KEY] = sig_bytes
     return original_psbt
-    

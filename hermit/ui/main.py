@@ -19,7 +19,7 @@ Banner = r"""
 You are in WALLET mode.  Type 'help' for help.               (v{})
 """
 
-    
+
 def main():
     """Start the Hermit REPL user interface."""
     clear_screen()

@@ -1,6 +1,5 @@
 from typing import Dict
 from functools import wraps
-from hermit.errors import HermitError
 
 # from hermit.errors import HermitError
 

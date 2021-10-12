@@ -9,7 +9,6 @@ from hermit.coordinator import (
     create_rsa_signature,
     add_rsa_signature,
     extract_rsa_signature_params,
-    validate_rsa_signature,
     COORDINATOR_SIGNATURE_KEY,
 )
 
@@ -201,6 +200,7 @@ class TestValidateRSASignature(object):
             validate_rsa_signature(self.message + b"hello", self.signature)
         mock_config.assert_called_once_with()
         assert "signature is invalid" in str(e)
+
 
 @patch("hermit.coordinator.get_config")
 class TestPSBTSignatureBasics(object):

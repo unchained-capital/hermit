@@ -6,16 +6,13 @@ from qrcode import QRCode
 
 from ..qr import qr_to_image
 from .base import Display
-import asyncio
 
 
 def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
-
-
     # If we want the deadman counter to continue to count down while the
     # window is displayed, we need to run some kind of 'sleep' inside the
-    # asycio environment. For now, this is commented out as it tends to 
-    # make scanning a large barcode even more frustrating because the 
+    # asycio environment. For now, this is commented out as it tends to
+    # make scanning a large barcode even more frustrating because the
     # wallet could autolock in the process of scanning.
 
     # asyncio.run(asyncio.sleep(1/1000.0))
@@ -29,7 +26,7 @@ def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
     #
 
     no_keys_pressed_during_delay = cv2.waitKey(delay) == -1
-    
+
     #
     # On systems which support window properties (e.g. Qt backends
     # such as Linux) this is 0 or 1 (actually floats of those for some
@@ -45,9 +42,6 @@ def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
     #
     # We want both conditions
     #
-
-
-        
     return no_keys_pressed_during_delay and window_is_visible
 
 
