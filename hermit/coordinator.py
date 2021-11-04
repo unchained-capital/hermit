@@ -116,8 +116,7 @@ def extract_rsa_signature_params(original_psbt: PSBT) -> Tuple[bytes, bytes]:
 
 
 def add_rsa_signature(original_psbt: PSBT, private_key_path: str) -> PSBT:
-    """Add a signature to a PSBT.
-    """
+    """Add a signature to a PSBT."""
 
     psbt_base64 = original_psbt.serialize_base64()
 

@@ -3,11 +3,9 @@ import hermit.ui.state as state
 
 
 bar_len = DeadTime // 4
-chars = ['#', '=', '-', '.' ]
-Bars = [
-    chars[0] * (bar_len -1) + char + " " * bar_len
-    for char in chars
-]
+chars = ["#", "=", "-", "."]
+Bars = [chars[0] * (bar_len - 1) + char + " " * bar_len for char in chars]
+
 
 def bottom_toolbar():
     """Renders the bottom toolbar."""
@@ -23,7 +21,7 @@ def bottom_toolbar():
 
     b = DeadTime - state.Timeout
     if state.Wallet.unlocked():
-        bar = Bars[b % 4][b//4 : b//4 + bar_len]
+        bar = Bars[b % 4][b // 4 : b // 4 + bar_len]
         wallet_status = "wallet UNLOCKED " + bar
     else:
         wallet_status = "wallet locked"

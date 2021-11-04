@@ -208,13 +208,14 @@ class TestPSBTSignatureBasics(object):
         self.public_key = open("tests/fixtures/coordinator.pub", "r").read()
         self.private_key_path = "tests/fixtures/coordinator.pem"
 
-        self.original_psbt_base64 = open("tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r").read()
+        self.original_psbt_base64 = open(
+            "tests/fixtures/signature_requests/2-of-2.p2sh.testnet.psbt", "r"
+        ).read()
 
         self.psbt = PSBT.parse_base64(self.original_psbt_base64)
         self.psbt_base64 = self.psbt.serialize_base64()
         self.signature = create_rsa_signature(
-            bytes(self.psbt_base64, "utf8"),
-            self.private_key_path
+            bytes(self.psbt_base64, "utf8"), self.private_key_path
         )
 
         self.config = Mock()
