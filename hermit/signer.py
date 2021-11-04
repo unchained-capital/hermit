@@ -11,6 +11,7 @@ from .io import (
 from .wallet import HDWallet
 from .coordinator import validate_coordinator_signature_if_necessary
 
+
 class Signer(object):
     """Signs BTC transactions.
 
@@ -127,7 +128,7 @@ class Signer(object):
 
     def generate_transaction_metadata(self) -> None:
         print_formatted_text(HTML("Describing signature request..."))
-        self.transaction_metadata = self.psbt.describe_basic_multisig(
+        self.transaction_metadata = self.psbt.describe_basic_multisig(  # type: ignore
             # xfp_for_signing=self.wallet.xfp_hex,
         )
 

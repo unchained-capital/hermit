@@ -145,42 +145,40 @@ class TestSignerTransactionDescription(object):
             tx_fee_sats=100,
             locktime=0,
             version=1,
-            inputs_desc=dict(
-                inputs_desc=[
-                    dict(
-                        idx=0,
-                        prev_txhash="input_prev_hash",
-                        prev_idx=2,
-                        sats=10000,
-                    ),
-                ],
-            ),
-            outputs_desc=dict(
-                outputs_desc=[
-                    dict(
-                        idx=0,
-                        addr="output address",
-                        sats=5000,
-                        is_change=False,
-                    ),
-                    dict(
-                        idx=1,
-                        addr="change address",
-                        sats=4900,
-                        is_change=True,
-                    ),
-                ],
-            ),
+            inputs_desc=[
+                dict(
+                    idx=0,
+                    prev_txhash="input_prev_hash",
+                    prev_idx=2,
+                    sats=10000,
+                ),
+            ],
+            outputs_desc=[
+                dict(
+                    idx=0,
+                    addr="output address",
+                    sats=5000,
+                    is_change=False,
+                ),
+                dict(
+                    idx=1,
+                    addr="change address",
+                    sats=4900,
+                    is_change=True,
+                ),
+            ],
         )
 
-    @patch("hermit.signer.describe_basic_psbt")
-    def test_generate_transaction_metadata(self, mock_describe_basic_psbt):
-        mock_describe_basic_psbt.return_value = self.metadata
-        self.signer.generate_transaction_metadata()
-        assert self.signer.transaction_metadata == self.metadata
-        mock_describe_basic_psbt.assert_called_once_with(
-            self.psbt, xfp_for_signing=self.xfp_hex
-        )
+    def test_generate_transaction_metadata(self):
+        with patch.object(
+            self.signer.psbt, "describe_basic_multisig"
+        ) as mock_describe_basic_multisig:
+            mock_describe_basic_multisig.return_value = self.metadata
+            self.signer.generate_transaction_metadata()
+            assert self.signer.transaction_metadata == self.metadata
+            mock_describe_basic_multisig.assert_called_once_with(
+                # xfp_for_signing=self.xfp_hex
+            )
 
     def test_transaction_description_lines(self):
         self.signer.transaction_metadata = self.metadata
