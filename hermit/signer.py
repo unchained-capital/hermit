@@ -10,8 +10,6 @@ from .io import (
 )
 from .wallet import HDWallet
 from .coordinator import validate_coordinator_signature_if_necessary
-from .psbt import describe_basic_psbt
-
 
 class Signer(object):
     """Signs BTC transactions.
@@ -129,9 +127,8 @@ class Signer(object):
 
     def generate_transaction_metadata(self) -> None:
         print_formatted_text(HTML("Describing signature request..."))
-        self.transaction_metadata = describe_basic_psbt(
-            self.psbt,
-            xfp_for_signing=self.wallet.xfp_hex,
+        self.transaction_metadata = self.psbt.describe_basic_multisig(
+            # xfp_for_signing=self.wallet.xfp_hex,
         )
 
     def print_transaction_description(self):
@@ -157,7 +154,7 @@ class Signer(object):
             ]
         )
 
-        for idx, inp in enumerate(data["inputs_desc"]["inputs_desc"]):
+        for idx, inp in enumerate(data["inputs_desc"]):
             lines.extend(
                 [
                     f"  Input {idx}:",
@@ -171,7 +168,7 @@ class Signer(object):
 
             # TODO: more input stuff here
         lines.append("OUTPUTS:")
-        for idx, output in enumerate(data["outputs_desc"]["outputs_desc"]):
+        for idx, output in enumerate(data["outputs_desc"]):
             lines.extend(
                 [
                     f"  Output {idx}:",
