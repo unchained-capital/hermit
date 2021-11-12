@@ -85,15 +85,19 @@ def sign(unsigned_psbt_b64=None):
 def display_xpub(path=None):
     """usage:  display-xpub [BIP32_PATH]
 
-    Displays the extended public key (xpub) at a given BIP32 path.
+    Displays the extended public key (xpub) at a given BIP32 path
+    (defaults to `m/48'/0'/0'/2'` on mainnet and `m/48'/1'/0'/2'` on
+    testnet).
 
     Note: Displaying an xpub requires unlocking the wallet.
 
     Examples:
 
-      wallet> display-xpub m/48'/0'/0'/2'
+      wallet> display-xpub
+      wallet> display-xpub m/45/0'/0'
 
     """
+
     if path is None:
         # Use default paths if none are supplied
         if state.Testnet:
@@ -105,16 +109,12 @@ def display_xpub(path=None):
     if not is_valid_bip32_path(path):
         raise HermitError("Invalid BIP32 path.")
 
-    xpub = state.Wallet.extended_public_key(
-        bip32_path=path, testnet=state.Testnet, use_slip132=True
-    )
+    xpub = state.Wallet.xpub(bip32_path=path, testnet=state.Testnet, use_slip132=True)
     xfp_hex = state.Wallet.xfp_hex
     title = f"Extended Public Key Info for Seed ID {xfp_hex}"
-    xpub_info_text = f"[{xfp_hex}/{path[2:]}]{xpub}"
-    # TODO: offer to save this json file somewhere?
-    # xpub_info_json = json.dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
-    print_formatted_text(f"\n{title}:\n{xpub_info_text}")
-    display_data_as_animated_qrs(data=xpub_info_text)
+    xpub_descriptor = f"[{xfp_hex}/{path[2:]}]{xpub}"
+    print_formatted_text(f"\n{title}:\n{xpub_descriptor}")
+    display_data_as_animated_qrs(data=xpub_descriptor)
 
 
 # @wallet_command("set-account-map")
