@@ -15,7 +15,9 @@ from .qr import (
 )
 
 
-def display_data_as_animated_qrs(data: str) -> None:
+def display_data_as_animated_qrs(
+    data: Optional[str] = None, base64_data: Optional[str] = None
+) -> None:
     """Display the given data as an animated QR code sequence.
 
     Uses the currently configured display mode.
@@ -23,11 +25,12 @@ def display_data_as_animated_qrs(data: str) -> None:
     Example usage: ::
 
        >>> from hermit import display_data_as_animated_qrs
-       >>> display_data_as_animated_qrs("abcd")
+       >>> display_data_as_animated_qrs(data="Hello there")
+       >>> display_data_as_animated_qrs(base64_data="cHNidP8BA...IBkAACAAQAAAAAAAAAA=")
 
     """
     io = get_io()
-    io.display_data_as_animated_qrs(data)
+    io.display_data_as_animated_qrs(data=data, base64_data=base64_data)
 
 
 def read_data_from_animated_qrs() -> Optional[str]:

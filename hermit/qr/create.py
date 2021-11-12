@@ -28,7 +28,7 @@ def create_qr_sequence(
 
       >>> from hermit import create_qr_sequence
       >>> sequence = create_qr_sequence(data="foo bar")
-      >>> sequence = create_qr_sequence(base64_data="cHNidP8BA...IBkAACAAQAAAAAAAAAA")
+      >>> sequence = create_qr_sequence(base64_data="cHNidP8BA...IBkAACAAQAAAAAAAAAA=")
 
     """
     if base64_data is None:
@@ -37,7 +37,7 @@ def create_qr_sequence(
         else:
             base64_data = b64encode(data.encode("utf8")).decode("utf8")
     return [
-        create_qr(data) for data in BCURMulti(text_b64=base64_data).encode(animate=True)
+        create_qr(ur) for ur in BCURMulti(text_b64=base64_data).encode(animate=True)
     ]
 
 

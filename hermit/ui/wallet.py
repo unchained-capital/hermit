@@ -114,7 +114,7 @@ def display_xpub(path=None):
     # TODO: offer to save this json file somewhere?
     # xpub_info_json = json.dumps({"xfp": xfp_hex, "xpub": xpub, "path": path})
     print_formatted_text(f"\n{title}:\n{xpub_info_text}")
-    display_data_as_animated_qrs(xpub_info_text)
+    display_data_as_animated_qrs(data=xpub_info_text)
 
 
 # @wallet_command("set-account-map")

@@ -224,4 +224,4 @@ class Signer(object):
         print_formatted_text(HTML("<i>Signed PSBT:</i> "))
         print_formatted_text(HTML(f"{self.signed_psbt_b64}"))
 
-        display_data_as_animated_qrs(self.signed_psbt_b64)
+        display_data_as_animated_qrs(base64_data=self.signed_psbt_b64)

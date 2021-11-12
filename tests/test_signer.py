@@ -364,4 +364,6 @@ class TestSignerShowSignature(object):
         assert "Signed PSBT" in str(calls[0][0][0])
         assert signed_psbt_b64 in str(calls[1][0][0])
 
-        mock_display_data_as_animated_qrs.assert_called_once_with(signed_psbt_b64)
+        mock_display_data_as_animated_qrs.assert_called_once_with(
+            base64_data=signed_psbt_b64
+        )
