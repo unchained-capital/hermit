@@ -81,7 +81,7 @@ def sign(unsigned_psbt_b64=None):
     ).sign()
 
 
-@wallet_command("export-xpub")
+@wallet_command("display-xpub")
 def display_xpub(path=None):
     """usage:  display-xpub [BIP32_PATH]
 
@@ -91,7 +91,7 @@ def display_xpub(path=None):
 
     Examples:
 
-      wallet> export-xpub m/48'/0'/0'/2'
+      wallet> display-xpub m/48'/0'/0'/2'
 
     """
     if path is None:
@@ -255,15 +255,11 @@ def wallet_help(
   The following commands are supported (try running `help COMMAND` to
   learn more about each command):
 
-  <b>SIGNING</b>
+  <b>WALLET</b>
       <i>sign</i>
           Produce a signature for a Bitcoin transaction
-  <b>KEYS</b>
       <i>display-xpub [BIP32_PATH]</i>
           Display the extended public key at the given BIP32 path
-      <i>display-pub [BIP32_PATH]</i>
-          Display the public key at the given BIP32 path
-  <b>WALLET</b>
       <i>unlock</i>
           Explicitly unlock the wallet
       <i>lock</i>
