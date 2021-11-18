@@ -62,14 +62,15 @@ def build_family_from_random():
     state.Wallet.shards.create_random_share()
 
 
-@shard_command("build-family-from-wallet")
-def build_family_from_wallet():
-    """usage:  build-family-from-wallet
+@shard_command("build-family-from-family")
+def build_family_from_family():
+    """usage:  build-family-from-family
 
-    Build a new shard family from the current wallet.
+    Rebuild a shard family from an existing family.
 
-    Hermit will prompt you to unlock the wallet then for a shard
-    configuration and random data to use in building the shards.
+    Hermit will prompt you to unlock a particular shard family, ask
+    you to provide configuration for a new family, and random data to
+    use in building the new shards.
 
     Once the shards have been built, Hermit will ask you to name each
     one and encrypt it with a password.
@@ -365,8 +366,8 @@ def shard_help(
            Create a shard family from a BIP39 mnemonic phrase
       <i>build-family-from-random</i>
            Create a shard family from random data
-      <i>build-family-from-wallet</i>
-           Create a shard family from the current wallet
+      <i>build-family-from-family</i>
+           Create a shard family from an existing family
   <b>SHARDS</b>
       <i>list-shards</i>
           List all existing shards
