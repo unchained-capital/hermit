@@ -109,7 +109,7 @@ def display_xpub(path=None):
     if not is_valid_bip32_path(path):
         raise HermitError("Invalid BIP32 path.")
 
-    xpub = state.Wallet.xpub(bip32_path=path, testnet=state.Testnet, use_slip132=True)
+    xpub = state.Wallet.xpub(bip32_path=path, testnet=False, use_slip132=False)
     xfp_hex = state.Wallet.xfp_hex
     title = f"Extended Public Key Info for Seed ID {xfp_hex}"
     xpub_descriptor = f"[{xfp_hex}/{path[2:]}]{xpub}"
