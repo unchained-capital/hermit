@@ -1,6 +1,6 @@
 ansicolors==1.1.8
 bson==0.5.8
-buidl==0.2.28
+buidl==0.2.31
 imutils==0.5.1
 mnemonic==0.18
 opencv-python==4.5.1.48
