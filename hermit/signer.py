@@ -1,6 +1,7 @@
+from decimal import Decimal
 from typing import Optional, List
-from prompt_toolkit import PromptSession, print_formatted_text, HTML
 
+from prompt_toolkit import PromptSession, print_formatted_text, HTML
 from buidl import PSBT
 
 from .errors import HermitError, InvalidPSBT
@@ -10,6 +11,57 @@ from .io import (
 )
 from .wallet import HDWallet
 from .coordinator import validate_coordinator_signature_if_necessary
+
+_satoshis_per_bitcoin = Decimal(int(pow(10, 8)))
+
+
+def _sats_to_btc(sats):
+    return Decimal(sats) / _satoshis_per_bitcoin
+
+
+def _format_btc(btc):
+    return f"{btc} BTC"
+
+
+def _format_btc_aligned(*values):
+    if len(values) == 0:
+        return []
+
+    lefts = []
+    rights = []
+    strings = [str(value) for value in values]
+    for string in strings:
+        length = len(string)
+        try:
+            left = string.index(".")
+            if left == length:
+                # 'M.'
+                right = 0
+            elif left == 0:
+                # '.N'
+                right = length - 1
+            else:
+                # 'M.N'
+                right = length - left - 1
+        except ValueError:
+            # M
+            left = len(string)
+            right = 0
+        lefts.append(left)
+        rights.append(right)
+
+    max_left = max(lefts)
+    max_right = max(rights)
+
+    aligned_strings = []
+    for index, string in enumerate(strings):
+        length = len(string)
+        left = lefts[index]
+        right = rights[index]
+        left_pad = (max_left - left) * " "
+        right_pad = (max_right - right) * " "
+        aligned_strings.append(left_pad + string + right_pad + " BTC")
+    return aligned_strings
 
 
 class Signer(object):
@@ -138,48 +190,68 @@ class Signer(object):
     def transaction_description_lines(self) -> List[str]:
         data = self.transaction_metadata
 
-        lines = [
-            f"{data['tx_summary_text']}",
-        ]
+        lines = []
 
         lines.extend(
             [
                 "",
                 f"TXID: {data['txid']}",
-                f"Fee in Sats: {data['tx_fee_sats']:,}",
                 f"Lock Time: {data['locktime']}",
                 f"Version: {data['version']}",
                 "",
-                "INPUTS:",
+                f"INPUTS ({len(data['inputs_desc'])}):",
             ]
         )
 
+        total_input_sats = 0
         for idx, inp in enumerate(data["inputs_desc"]):
             lines.extend(
                 [
                     f"  Input {idx}:",
-                    f"    Previous TX Hash: {inp['prev_txhash']}",
-                    f"    Previous Output Index: {inp['prev_idx']}",
-                    f"    Sats: {inp['sats']:,}",
-                    # f"    bip32: {inp['bip32_derivs']}",
+                    f"    Prev. TXID:  {inp['prev_txhash']}",
+                    f"    Prev. Index: {inp['prev_idx']}",
+                    f"    Amount:      {_format_btc(_sats_to_btc(inp['sats']))}",
                     "",
                 ]
             )
+            total_input_sats += inp["sats"]
 
-            # TODO: more input stuff here
-        lines.append("OUTPUTS:")
+        lines.extend(
+            [
+                f"OUTPUTS ({len(data['outputs_desc'])}):",
+            ]
+        )
+
+        total_output_sats = 0
         for idx, output in enumerate(data["outputs_desc"]):
             lines.extend(
                 [
                     f"  Output {idx}:",
                     f"    Address: {output['addr']}",
-                    f"    Sats: {output['sats']:,}",
-                    # f"    bip32: {output['bip32_derivs']}",
-                    f"    Is Change?: {output['is_change']}",
+                    f"    Amount:  {_format_btc(_sats_to_btc(output['sats']))}",
+                    f"    Change?: {'Yes' if output['is_change'] else 'No'}",
                     "",
                 ]
             )
-            # TODO: more output stuff here
+            total_output_sats += output["sats"]
+
+        total_input_btc = _sats_to_btc(total_input_sats)
+        total_output_btc = _sats_to_btc(total_output_sats)
+        fee_btc = _sats_to_btc(data["tx_fee_sats"])
+
+        total_input_btc, total_output_btc, fee_btc = _format_btc_aligned(
+            total_input_btc, total_output_btc, fee_btc
+        )
+
+        lines.extend(
+            [
+                f"Total Input Amount:  {total_input_btc}",
+                f"Total Output Amount: {total_output_btc}",
+                f"Fee:                 {fee_btc}",
+                "",
+            ]
+        )
+
         return lines
 
     #
