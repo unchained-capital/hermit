@@ -108,9 +108,8 @@ class Signer(object):
             raise HermitError("No PSBT provided.")
 
         try:
-            self.psbt = PSBT.parse_base64(
-                self.unsigned_psbt_b64,
-            )
+            network = "testnet" if self.testnet else "mainnet"
+            self.psbt = PSBT.parse_base64(self.unsigned_psbt_b64, network=network)
         except Exception as e:
             err_msg = "Invalid PSBT: {} ({}).".format(e, type(e).__name__)
             raise InvalidPSBT(err_msg)

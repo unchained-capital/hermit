@@ -91,15 +91,17 @@ class TestSignerSignatureRequestHandling(object):
         assert "No PSBT" in str(error)
 
     @patch("hermit.signer.PSBT.parse_base64")
-    def test_parse_signature_request_with_valid_PSBT(self, mock_parse_base64):
+    def test_mainnet_parse_signature_request_with_valid_PSBT(self, mock_parse_base64):
         self.signer.unsigned_psbt_b64 = self.unsigned_psbt_b64
         mock_parse_base64.return_value = self.psbt
         self.signer.parse_signature_request()
         assert self.signer.psbt == self.psbt
-        mock_parse_base64.assert_called_once_with(self.unsigned_psbt_b64)
+        mock_parse_base64.assert_called_once_with(
+            self.unsigned_psbt_b64, network="mainnet"
+        )
 
     @patch("hermit.signer.PSBT.parse_base64")
-    def test_parse_signature_request_with_invalid_PSBT(self, mock_parse_base64):
+    def test_mainnet_parse_signature_request_with_invalid_PSBT(self, mock_parse_base64):
         self.signer.unsigned_psbt_b64 = self.unsigned_psbt_b64
         mock_parse_base64.side_effect = RuntimeError("foobar")
         with raises(InvalidPSBT) as error:
@@ -107,7 +109,34 @@ class TestSignerSignatureRequestHandling(object):
         assert "Invalid PSBT" in str(error)
         assert "RuntimeError" in str(error)
         assert "foobar" in str(error)
-        mock_parse_base64.assert_called_once_with(self.unsigned_psbt_b64)
+        mock_parse_base64.assert_called_once_with(
+            self.unsigned_psbt_b64, network="mainnet"
+        )
+
+    @patch("hermit.signer.PSBT.parse_base64")
+    def test_testnet_parse_signature_request_with_valid_PSBT(self, mock_parse_base64):
+        self.signer.testnet = True
+        self.signer.unsigned_psbt_b64 = self.unsigned_psbt_b64
+        mock_parse_base64.return_value = self.psbt
+        self.signer.parse_signature_request()
+        assert self.signer.psbt == self.psbt
+        mock_parse_base64.assert_called_once_with(
+            self.unsigned_psbt_b64, network="testnet"
+        )
+
+    @patch("hermit.signer.PSBT.parse_base64")
+    def test_testnet_parse_signature_request_with_invalid_PSBT(self, mock_parse_base64):
+        self.signer.testnet = True
+        self.signer.unsigned_psbt_b64 = self.unsigned_psbt_b64
+        mock_parse_base64.side_effect = RuntimeError("foobar")
+        with raises(InvalidPSBT) as error:
+            self.signer.parse_signature_request()
+        assert "Invalid PSBT" in str(error)
+        assert "RuntimeError" in str(error)
+        assert "foobar" in str(error)
+        mock_parse_base64.assert_called_once_with(
+            self.unsigned_psbt_b64, network="testnet"
+        )
 
     #
     # validate_signature_request
