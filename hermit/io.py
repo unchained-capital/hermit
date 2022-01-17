@@ -107,6 +107,8 @@ class IO:
         )
 
     def read_data_from_animated_qrs(self, title: Optional[str] = None) -> Optional[str]:
+        from .ui.repl import check_timer
+
         if title is None:
             title = "Scanning QR Codes..."
 
@@ -129,6 +131,7 @@ class IO:
                     # Iterate through the identified QR codes and let the
                     # reassembler collect them.
                     for data_item in data:
+                        check_timer()
                         if self.reassembler.collect(data_item):
                             c.advance()
 

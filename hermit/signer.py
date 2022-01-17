@@ -115,6 +115,7 @@ class Signer(object):
         Will wait for a signature request, handle validation,
         confirmation, generation, and display of a signature.
         """
+
         if not self.wallet.unlocked():
             # TODO: add UX flow where the user inspects the TX and can
             # then unlock the wallet?
@@ -129,11 +130,7 @@ class Signer(object):
         self.generate_transaction_metadata()
         self.print_transaction_description()
 
-        if not self.wallet.unlocked():
-            print_formatted_text(
-                "Wallet is LOCKED, aborting without attempting to sign."
-            )
-            return
+        self.wallet.unlock()
 
         if not self.approve_signature_request():
             print_formatted_text(

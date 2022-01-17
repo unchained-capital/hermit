@@ -62,15 +62,14 @@ def sign(unsigned_psbt_b64=None):
 
     Can also pass in the base64-encoded PSBT as a command-line argument.
 
-    Either way, the details of the signature request will be displayed
-    on screen and you will be prompted whether or not you want to sign
-    the transaction.
+    The details of the signature request will be displayed on screen and
+    you will be prompted whether or not you want to sign the transaction.
 
     If you agree, Hermit will display the signature.
 
     Note: Creating a signature requires unlocking the wallet.  If you
     attempt to sign without first unlocking the wallet, Hermit will
-    display the signature request and then abort.
+    later ask you to unlock the wallet.
 
     """
     Signer(
