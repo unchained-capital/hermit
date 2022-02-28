@@ -15,6 +15,186 @@ from .coordinator import validate_coordinator_signature_if_necessary
 _satoshis_per_bitcoin = Decimal(int(pow(10, 8)))
 
 
+from . config import get_config
+
+transaction_display_mode = get_config().coordinator['transaction_display']
+TOPROW = '╔═╗'
+MIDDLE = '║ ║'
+SECTION= '╠═╣'
+SUBSECT= '╟─╢'
+BOTTOM = '╚═╝'
+
+def format_top(label, width):
+    label = label.strip().upper()
+    n = width - 6 - len(label)
+    return TOPROW[0] + TOPROW[1] * 2 + " " + label.strip() + " " + TOPROW[1] * n + TOPROW[2]
+
+def format_section(label,width):
+    label = label.strip().upper()
+    n = width - 6 - len(label)
+    return SECTION[0] + SECTION[1] * 2 + " " + label.strip() + " " + SECTION[1] * n + SECTION[2]
+
+
+def format_subsection(width):
+    return SUBSECT[0] + SUBSECT[1] * (width-2) + SUBSECT[2]
+
+
+def format_bottom(width):
+    return BOTTOM[0] + BOTTOM[1] * (width-2) + BOTTOM[2]
+
+def format_line(line, width):
+    n = width - len(line) - 2
+    return MIDDLE[0] + line + MIDDLE[1] * n + MIDDLE[2]
+
+def format_bitcoin(btc):
+    """Returns a 21 character string that shows the btc value with 8 places after the
+    decimal aligned for amounts up to the maximum number of bitcoin.
+    """
+    return f"{btc:17.8f} BTC"
+
+TX_DETAILS_WIDTH = 80
+def format_tx_details(txid, version, lock_time):
+    txid_line = f"TXID: {txid}"
+    version_lock_line = f"Version: {version}  Lock Time: {lock_time}"
+    pad = 78 - max(len(txid_line), len(version_lock_line))
+
+
+    yield format_top('details', TX_DETAILS_WIDTH)
+    yield format_line( ' '* pad + txid_line, TX_DETAILS_WIDTH)
+    yield format_line( ' '* pad + version_lock_line, TX_DETAILS_WIDTH)
+
+def format_input(index, prev_txid, prev_index, amount):
+    prev = f"{prev_txid}:{prev_index}"
+    idx = f"{index}:"
+
+    yield format_line( idx + prev.rjust(78-len(idx)), TX_DETAILS_WIDTH)
+    yield format_line( " "*11 + format_bitcoin(amount), TX_DETAILS_WIDTH)
+
+
+def format_inputs(inputs):
+    yield format_section('inputs', TX_DETAILS_WIDTH)
+    for index, input_data in enumerate(inputs):
+        yield from format_input(
+            index=index+1,
+            prev_txid=input_data['prev_txhash'],
+            prev_index=input_data['prev_idx'],
+            amount=_sats_to_btc(input_data['sats']),
+        )
+        if index +1 < len(inputs):
+            yield format_section(TX_DETAILS_WIDTH)
+
+
+def split_string(s, n):
+    """Splits s into n nearly equal length substrings."""
+    d = len(s) // n
+    r = len(s) % n
+    lengths = [ d + (i<r) for i in range(n) ]
+    start = 0
+    result = []
+    for l in lengths:
+        result.append( s[start:start+l])
+        start += l
+    return result
+
+def split_address(a):
+    """split an address up into multiple lines, of approximately equal length, with no more than
+    45 characters per line."""
+    if len(a) <= 45:
+        return [a]
+    return split_string(a, (len(a) + 44) // 45)
+
+def format_output(index, address, change, amount):
+    parts = split_address(address)
+
+    idx = f"{index}:"
+    change_label = "CHANGE" if change else ""
+
+    yield format_line(f"{idx:3} {change_label:6} {format_bitcoin(amount)} {parts[0].rjust(TX_DETAILS_WIDTH - 35)}", TX_DETAILS_WIDTH)
+    yield from (
+        format_line(part.rjust(TX_DETAILS_WIDTH -2), TX_DETAILS_WIDTH)
+        for part in parts[1:]
+    )
+
+def format_outputs(outputs, top):
+    if(top):
+        yield format_top('outputs', TX_DETAILS_WIDTH)
+    else:
+        yield format_section('outputs', TX_DETAILS_WIDTH)
+
+
+    for index, output_data in enumerate(outputs):
+        yield from format_output(
+            index=index+1,
+            address=output_data['addr'],
+            change=output_data['is_change'],
+            amount=_sats_to_btc(output_data['sats']),
+        )
+        if index +1 < len(outputs):
+            yield format_subsection(TX_DETAILS_WIDTH)
+
+def format_totals(total, fee):
+    yield format_section("totals", TX_DETAILS_WIDTH)
+    yield format_line(f"           {format_bitcoin(total)}                    Fee: {format_bitcoin(fee)}", TX_DETAILS_WIDTH)
+    yield format_bottom(TX_DETAILS_WIDTH)
+
+def long_format_transaction(transaction_metadata):
+    yield from format_tx_details(
+        txid=transaction_metadata['txid'],
+        version=transaction_metadata['version'],
+        lock_time=transaction_metadata['locktime'],
+    )
+    yield from format_inputs(
+        inputs=transaction_metadata['inputs_desc'],
+    )
+    yield from format_outputs(
+        outputs=transaction_metadata['outputs_desc'],
+        top=False,
+    )
+
+    input_sats = sum(inp['sats'] for inp in transaction_metadata['inputs_desc'])
+    output_sats = sum(outp['sats'] for outp in transaction_metadata['outputs_desc'])
+
+    yield from format_totals(
+        total=_sats_to_btc(output_sats),
+        fee=_sats_to_btc(input_sats - output_sats),
+    )
+
+
+def short_format_transaction(transaction_metadata):
+    yield from format_outputs(
+        outputs=transaction_metadata['outputs_desc'],
+        top=True,
+    )
+
+    input_sats = sum(inp['sats'] for inp in transaction_metadata['inputs_desc'])
+    output_sats = sum(outp['sats'] for outp in transaction_metadata['outputs_desc'])
+
+    yield from format_totals(
+        total=_sats_to_btc(output_sats),
+        fee=_sats_to_btc(input_sats - output_sats),
+    )
+
+
+#
+# ╔══ DETAILS ═══════════════════════════════════════════════════════════════════╗
+# ║        TXID: 3368f33986c888d436d642a3d1f4f3fe9c837493ec6987e450579f1f7c8dcd74║
+# ║        Version: 1   Lock Time: 0                                             ║
+# ╠══ INPUTS ════════════════════════════════════════════════════════════════════╣
+# ║1:       5e5686f54ae59105a7815e89565d4b6b41e47aca39fc3adfa2198c619dfdf748:1000║
+# ║          21000000.10000000 BTC                                               ║
+# ╠══ OUTPUTS ═══════════════════════════════════════════════════════════════════╣
+#
+# ╔══ OUTPUTS ═══════════════════════════════════════════════════════════════════╗
+# ║1:               0.00100000 BTC             3KBa15krVQCe8M9LS965BuNxHojF1hbGR2║
+# ╟──────────────────────────────────────────────────────────────────────────────╢
+# ║2:             483.37283737 BTC  tb1asdfghjqwertyuiopqwertyuiopqwertyuiopqwert║
+# ║                                 yuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiop║
+# ╟──────────────────────────────────────────────────────────────────────────────╢
+# ║3: CHANGE        0.37283844 BTC             38LtBaM93g6wtCzGGNhrNjuV1QBx9V11Qd║
+# ╠══ TOTALS ════════════════════════════════════════════════════════════════════╣
+# ║               374.99988750 BTC       Fee: 0.00001125 BTC                     ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
 def _sats_to_btc(sats):
     return Decimal(sats) / _satoshis_per_bitcoin
 
@@ -181,8 +361,17 @@ class Signer(object):
         )
 
     def print_transaction_description(self):
-        for line in self.transaction_description_lines():
+        if transaction_display_mode == 'long':
+            lines = long_format_transaction(self.transaction_metadata)
+        elif transaction_display_mode == 'short':
+            lines = short_format_transaction(self.transaction_metadata)
+        else:
+            lines = self.transaction_description_lines()
+
+
+        for line in lines:
             print_formatted_text(line)
+
 
     def transaction_description_lines(self) -> List[str]:
         data = self.transaction_metadata

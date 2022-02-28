@@ -105,9 +105,15 @@ class HermitConfig:
     #: * `public_key` -- an RSA public key (in hex) corresponding to
     #:    the private key used to sign by the coordinator
     #:
+    #: *  transaction_display -- controls how the details of the signed 
+    #:    transaction get displayed before prompting the user to to
+    #:    sign the transaction. Options are old, long, and short, with the
+    #:    default being old.
+    #:
     DefaultCoordinator: Dict[str, Union[str, bool, None]] = {
         "signature_required": False,
         "public_key": None,
+        "transaction_display": None,
     }
 
     @classmethod
