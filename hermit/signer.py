@@ -132,9 +132,10 @@ def format_outputs(outputs, top):
         if index +1 < len(outputs):
             yield format_subsection(TX_DETAILS_WIDTH)
 
-def format_totals(total, fee):
+def format_totals(total_in, total_out, fee):
     yield format_section("totals", TX_DETAILS_WIDTH)
-    yield format_line(f"           {format_bitcoin(total)}                    Fee: {format_bitcoin(fee)}", TX_DETAILS_WIDTH)
+    yield format_line(f" Inputs:   {format_bitcoin(total_in)}", TX_DETAILS_WIDTH)
+    yield format_line(f" Outputs:  {format_bitcoin(total_out)}                    Fee: {format_bitcoin(fee)}", TX_DETAILS_WIDTH)
     yield format_bottom(TX_DETAILS_WIDTH)
 
 def long_format_transaction(transaction_metadata):
@@ -155,7 +156,8 @@ def long_format_transaction(transaction_metadata):
     output_sats = sum(outp['sats'] for outp in transaction_metadata['outputs_desc'])
 
     yield from format_totals(
-        total=_sats_to_btc(output_sats),
+        total_in=_sats_to_btc(input_sats),
+        total_out=_sats_to_btc(output_sats),
         fee=_sats_to_btc(input_sats - output_sats),
     )
 
@@ -170,7 +172,8 @@ def short_format_transaction(transaction_metadata):
     output_sats = sum(outp['sats'] for outp in transaction_metadata['outputs_desc'])
 
     yield from format_totals(
-        total=_sats_to_btc(output_sats),
+        total_in=_sats_to_btc(input_sats),
+        total_out=_sats_to_btc(output_sats),
         fee=_sats_to_btc(input_sats - output_sats),
     )
 
@@ -192,7 +195,8 @@ def short_format_transaction(transaction_metadata):
 # ╟──────────────────────────────────────────────────────────────────────────────╢
 # ║3: CHANGE        0.37283844 BTC             38LtBaM93g6wtCzGGNhrNjuV1QBx9V11Qd║
 # ╠══ TOTALS ════════════════════════════════════════════════════════════════════╣
-# ║               374.99988750 BTC       Fee: 0.00001125 BTC                     ║
+# ║ Inputs:  #####374.99988750 BTC                                               ║
+# ║ Outputs: #####374.99988750 BTC       Fee: 0.00001125 BTC                     ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
 def _sats_to_btc(sats):
