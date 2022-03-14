@@ -81,7 +81,7 @@ def format_inputs(inputs):
             amount=_sats_to_btc(input_data['sats']),
         )
         if index +1 < len(inputs):
-            yield format_section(TX_DETAILS_WIDTH)
+            yield format_subsection(TX_DETAILS_WIDTH)
 
 
 def split_string(s, n):
