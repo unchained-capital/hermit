@@ -170,8 +170,10 @@ class ShardWordUserInterface(object):
         shortcuts.clear()
         return " ".join(lines)
 
-    def enter_wallet_words(self) -> str:
-        print("\nEnter BIP39 phrase for wallet below (CTRL-D to submit): ")
+    def enter_wallet_words(self, prompt_string=None) -> str:
+        if prompt_string is None:
+            prompt_string = "\nEnter BIP39 phrase for wallet below (CTRL-D to submit): "
+        print_formatted_text(prompt_string)
         lines: List = []
         while True:
             try:
