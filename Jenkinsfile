@@ -19,7 +19,7 @@ pipeline {
         sh '''
           . .virtualenv/bin/activate
           python setup.py install
-          make lint
+          make check
           make test
           make docs
         '''
@@ -33,7 +33,7 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: 'tbd', passwordVarable: 'PYPI_PASSWORD', usernameVariable: 'PYPI_USERNAME')]) {
           sh '''
             . ./environment.sh
-            make upload
+            make release
           '''
         }
       }
