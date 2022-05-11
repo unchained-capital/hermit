@@ -220,7 +220,7 @@ unlock the wallet (<i>P of Q</i> groups).
         print_formatted_text(
             HTML(
                 """
-Each of the <i>Q</i> groups is itself broken into <i>m</i> shards, <i>n</i> of which are
+Each of the <i>Q</i> groups is itself broken into <i>n</i> shards, <i>m</i> of which are
 required to unlock the group (<i>m of n</i> shards).
 
 Unlocking the wallet requires unlocking <i>P</i> groups and unlocking each
