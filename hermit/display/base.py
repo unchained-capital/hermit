@@ -1,8 +1,22 @@
-from typing import Optional
+from typing import Optional, List
+from qrcode import QRCode
+from PIL import Image
 
 
 class Display:
-    """Base class for graphics display."""
+    """Abstract base class for displays.
+
+    For displaying sequences of animated QR codes, concrete subclasses
+    should implement the ``animate_qrs`` method.
+
+    For displaying what the camera sees, concrete subclasses should
+    implement the ``display_camera_image`` method.
+
+    ``setup_camera_display`` and ``teardown_camera_display`` methods
+    are also available to aid with setup and teardown of resources
+    associated with the display of the camera.
+
+    """
 
     #: Default delay (in milliseconds) between successive QR codes in
     #: a sequence.
@@ -30,17 +44,31 @@ class Display:
         )
         self.qr_code_sequence_delay_seconds = self.qr_code_sequence_delay_ms / 1000
 
-    def animate_qrs(self, qrs: list) -> None:
+    #
+    # QR Code Animation
+    #
+
+    def animate_qrs(self, qrs: List[QRCode]) -> None:
+        """Display the list of QR codes as an animated sequence."""
         pass
 
-    def format_qr(self, qr):
-        pass
+    #
+    # Camera
+    #
 
     def setup_camera_display(self, title: Optional[str] = None):
+        """Initialize the display for the camera.
+
+        If possible, the given ``title`` should be used to label the
+        display (e.g. - the window in a graphical user interface).
+
+        """
         pass
 
     def teardown_camera_display(self):
+        """Tear down the display for the camera."""
         pass
 
-    def display_camera_image(self, image):
+    def display_camera_image(self, image: Image.Image):
+        """Display the given ``image`` for the camera."""
         pass

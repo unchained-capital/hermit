@@ -3,7 +3,6 @@ from .errors import (
     HermitError,
     InvalidQRCodeSequence,
     InvalidPSBT,
-    InvalidSignatureRequest,
     InvalidCoordinatorSignature,
 )
 from .config import get_config
@@ -19,6 +18,8 @@ from .io import (
     display_data_as_animated_qrs,
     read_data_from_animated_qrs,
 )
+from .camera import Camera
+from .display import Display
 from .rng import (
     max_self_entropy,
     max_kolmogorov_entropy_estimate,

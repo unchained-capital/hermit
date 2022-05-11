@@ -1,3 +1,7 @@
+__doc__ = """
+
+"""
+
 from yaml import safe_load
 import os
 from os import environ
@@ -15,7 +19,7 @@ def get_config() -> "HermitConfig":
 
       >>> from hermit import get_config
       >>> print(get_config().paths["config_file"])
-      "/etc/hermit.yml"
+      "/etc/hermit.yaml"
 
     """
     global _global_config
@@ -31,10 +35,10 @@ class HermitConfig:
 
     Hermit configuration is split into four sections:
 
-    * `paths` -- paths for configuration, shard data, and plugins, see :attr:`DefaultPaths`.
-    * `commands` -- command-lines used to manipulate shard data, see :attr:`DefaultCommands`.
-    * `io` -- settings for input and output, see :attr:`DefaultIO`.
-    * `coordinator` -- settings for the coordinator, see :attr:`DefaultCoordinator`.
+    * `paths` -- paths for configuration, shard data, and plugins
+    * `commands` -- command-lines used to manipulate shard data
+    * `io` -- settings for input and output
+    * `coordinator` -- settings for the coordinator
 
     This class is typically not instantiated directly.  Instead, the
     :func:`get_config` method is used.
@@ -62,9 +66,9 @@ class HermitConfig:
     #: The following commands are defined:
     #:
     #: * `persistShards` -- copy from file system to persistent storage
-    #: * `getPersistedShards` -- copy from persistent storage to file system
     #: * `backupShards` -- copy from file system to backup storage
     #: * `restoreBackup` -- copy from backup storage to file system
+    #: * `getPersistedShards` -- copy from persistent storage to file system
     #:
     DefaultCommands: Dict[str, str] = {
         "persistShards": "cat {0} | gzip -c - > {0}.persisted",
@@ -82,8 +86,8 @@ class HermitConfig:
     #: * `qr_code_sequence_delay` -- time (in milliseconds) between each successive QR code in a sequence
     #: * `x_position` -- horizontal position of display on screen
     #: * `y_position` -- vertical position of display on screen
-    #: * `height` -- width of display on screen
     #: * `width` -- height of display on screen
+    #: * `height` -- width of display on screen
     #:
     DefaultIO: Dict[str, Union[str, int]] = {
         "display": "opencv",
@@ -102,7 +106,7 @@ class HermitConfig:
     #: * `signature_required` -- whether a signature from the
     #:    coordinator is required to sign
     #:
-    #: * `public_key` -- an RSA public key (in hex) corresponding to
+    #: * `public_key` -- an ECDSA public key (in hex) corresponding to
     #:    the private key used to sign by the coordinator
     #:
     DefaultCoordinator: Dict[str, Union[str, bool, None]] = {
@@ -118,7 +122,7 @@ class HermitConfig:
     def __init__(self, config_file: Optional[str] = None):
         """Initialize Hermit configuration.
 
-        :param config_file: the path to the YAML configuration file (defaults to `/etc/hermit.yml`).
+        :param config_file: the path to the YAML configuration file (defaults to `/etc/hermit.yaml`).
 
         If the `config_file` does not exist, it will be ignored.
 

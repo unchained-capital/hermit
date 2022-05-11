@@ -10,7 +10,7 @@ from hermit.qr import create_qr
 
 class TestCreateQRSequence(object):
     def setup(self):
-        self.data = open("tests/fixtures/lorem.txt", "r").read()
+        self.data = open("tests/fixtures/lorem_ipsum.txt", "r").read()
         self.base64_data = b64encode(self.data.encode("utf8")).decode("utf8")
 
     def test_with_no_arguments(self):

@@ -9,7 +9,7 @@
 SCRIPT_NAME=$(basename "${0/-/}")
 SOURCE_NAME=$(basename "$BASH_SOURCE")
 if [ "$SCRIPT_NAME" = "$SOURCE_NAME" ]; then
-    echo "ERROR: Do not execute ('bash environment.sh') this script! Source it instead ('source environment.sh')"
+    echo "ERROR: Do not execute ('bash environment.sh') this script! Source it instead ('source environment.sh')" >&2
     exit 1
 fi
 
@@ -27,10 +27,10 @@ BIN_DIR="${ROOT_DIR}/bin"
 VENV_NAME=".virtualenv"
 VENV_DIR="${ROOT_DIR}/${VENV_NAME}"
 if [ -d "$VENV_DIR" ]; then
-    echo "[virtualenv] Entering Python virtualenv at ${VENV_DIR}"
     . "${VENV_DIR}/bin/activate"
 else
-    echo "ERROR: Python virtualenv directory (${VENV_DIR}) does not exist.  Did you run 'make' yet?"
+    echo "ERROR: Python virtualenv directory (${VENV_DIR}) does not exist.  Did you run 'make' yet?" >&2
+    exit 2
 fi
 
 #
@@ -40,10 +40,7 @@ fi
 #
 
 if [ -z $(echo "$PYTHONPATH" | grep "$LIB_DIR") ]; then
-    echo "[pythonpath] Adding $LIB_DIR to PYTHONPATH (${PYTHONPATH})"
     export PYTHONPATH="${PYTHONPATH}:${LIB_DIR}"
-else
-    echo "[pythonpath] $LIB_DIR already on PYTHONPATH (${PYTHONPATH})"
 fi
 
 #
@@ -53,8 +50,5 @@ fi
 #
 
 if [ -z $(echo "$PATH" | grep "$BIN_DIR") ]; then
-    echo "[path]       Adding $BIN_DIR to PATH (${PATH})"
     export PATH="${BIN_DIR}:${PATH}"
-else
-    echo "[path]       $BIN_DIR already on PATH (${PATH})"
 fi

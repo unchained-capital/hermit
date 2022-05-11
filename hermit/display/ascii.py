@@ -1,3 +1,4 @@
+from typing import List
 from io import StringIO
 from time import sleep
 
@@ -72,6 +73,14 @@ class ANSIColorMap:
 
 
 class ASCIIDisplay(Display):
+    """Corresponds to display mode ``ascii``.
+
+    Displays data through ASCII text suitable for a terminal.
+
+    Images will be approximated as best as possible given the
+    resolution.
+
+    """
 
     DEFAULT_WIDTH = 80
 
@@ -90,7 +99,7 @@ class ASCIIDisplay(Display):
         qr.print_ascii(f)
         return f.getvalue()
 
-    def animate_qrs(self, qrs: list) -> None:
+    def animate_qrs(self, qrs: List[QRCode]) -> None:
         ascii_images = [self.format_qr(qr) for qr in qrs]
 
         while True:

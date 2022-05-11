@@ -1,10 +1,23 @@
+from typing import Optional
 from ..errors import HermitError
 from .base import Camera
 from PIL import Image
-import cv2
+
+try:
+    import cv2
+except ModuleNotFoundError:
+    print("ERROR: cv2 library not installed")
 
 
 class OpenCVCamera(Camera):
+    """Corresponds to camera mode ``opencv``.
+
+    Uses the `OpenCV <https://opencv.org/>`_ library.
+
+    Requires that Hermit is running in a graphical environment.
+
+    """
+
     def __init__(self):
         self.camera = None
 
@@ -14,7 +27,7 @@ class OpenCVCamera(Camera):
             if not self.camera.isOpened():
                 raise HermitError("Cannot open camera")
 
-    def get_image(self):
+    def get_image(self) -> Optional[Image.Image]:
         image = None
         if self.camera is not None:
             ret, frame = self.camera.read()

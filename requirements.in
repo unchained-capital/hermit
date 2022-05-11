@@ -21,6 +21,7 @@ black==21.9b0
 flake8==3.9.2
 mypy==0.800
 twine==1.13.0
+m2r2==0.3.2
 
 # from security alerts
 urllib3>=1.26.5

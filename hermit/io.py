@@ -1,3 +1,18 @@
+__doc__ = """Hermit displays animated QR codes on screen and reads animated QR codes through the camera.
+
+Hermit can use several "modes" for both input and output of QR codes.
+
+By default, input uses the device's camera and output uses the
+device's screen; both use the the `opencv` library.  This requires
+Hermit is running inside a graphical environment.
+
+The input mode can be changed to use the ImageIO camera.
+
+The output mode can be changed to use an ASCII terminal display or a
+framebuffer.
+
+"""
+
 from typing import Optional
 
 from prompt_toolkit import print_formatted_text

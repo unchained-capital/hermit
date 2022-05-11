@@ -1,8 +1,12 @@
-from typing import Optional
-
+from typing import Optional, List
 import numpy as np
-import cv2
 from qrcode import QRCode
+from PIL import Image
+
+try:
+    import cv2
+except ModuleNotFoundError:
+    print("ERROR: cv2 library not installed")
 
 from ..qr import qr_to_image
 from .base import Display
@@ -46,6 +50,14 @@ def window_is_open(window_name: str, delay: Optional[int] = 1) -> bool:
 
 
 class OpenCVDisplay(Display):
+    """Corresponds to display mode ``opencv``.
+
+    Uses the `OpenCV <https://opencv.org/>`_ library.
+
+    Requires that Hermit is running in a graphical environment.
+
+    """
+
     def __init__(self, io_config):
         Display.__init__(self, io_config)
         self.qr_window_name = "displayqr"
@@ -58,7 +70,7 @@ class OpenCVDisplay(Display):
     def format_qr(self, qr: QRCode) -> bytes:
         return np.array(qr_to_image(qr).convert("RGB"))[:, :, ::-1]
 
-    def animate_qrs(self, qrs: list) -> None:
+    def animate_qrs(self, qrs: List[QRCode]) -> None:
         # Build images to display before we show the window.
         images = [self.format_qr(qr) for qr in qrs]
 
@@ -98,7 +110,7 @@ class OpenCVDisplay(Display):
     def teardown_camera_display(self):
         self.destroy_window(self.camera_window_name)
 
-    def display_camera_image(self, image):
+    def display_camera_image(self, image: Image.Image):
         cvimg = np.array(image)
         # RGB to BGR
         cvimg = cvimg[:, :, ::-1].copy()
@@ -132,7 +144,7 @@ class OpenCVDisplay(Display):
         if title:
             cv2.setWindowTitle(window_name, title)
 
-    def destroy_window(self, window_name):
+    def destroy_window(self, window_name: str):
         cv2.destroyWindow(window_name)
 
         # We need to wait at least 1 tick to give OpenCV time to

@@ -1,0 +1,81 @@
+---
+
+#
+# Example configuration file for Hermit.  All values are set to their
+# defaults.
+#
+# Modify and place the resulting file at /etc/hermit.yaml (or set
+# `HERMIT_CONFIG` environment variable).
+# 
+
+# Paths used by Hermit.
+paths:
+  # Path to the YAML file used for configuration
+  config_file: /etc/hermit.yaml
+
+  # Path to the BSON file used to store shards
+  shards_file: /tmp/shard_words.bson
+
+  # Path to a directory used to load runtime plugins
+  plugin_dir: /var/lib/hermit
+
+
+# Commands for persistence and backup of data.
+#
+# Each command will have the string `{0}` interpolated with the path
+# to the file being processed.
+commands:
+  # Command used to copy shards from file system to persistent storage
+  persistShards: "cat {0} | gzip -c - > {0}.persisted"
+
+  # Command used to copy shards from file system to backup storage
+  backupShards: "cp {0}.persisted {0}.backup"
+
+  # Command used to copy shards from backup storage to file system
+  restoreBackup: "zcat {0}.backup > {0}"
+
+  # Command used to copy shards from persistent storage to file system
+  getPersistedShards: "zcat {0}.persisted > {0}"
+
+# Settings for input camera & output display.
+io:
+  # Display mode (`opencv`, `framebuffer`, or `ascii`)
+  display: "opencv"
+
+  # Camera mode (`opencv` or `imageio`)
+  camera: "opencv"
+
+  # Time (in milliseconds) between each successive QR code in a sequence
+  qr_code_sequence_delay: 200
+
+  # Horizontal position of display on screen
+  x_position: 100
+
+  # Vertical position of display on screen
+  y_position: 100
+
+  # Height of display on screen
+  width: 300
+
+  # Width of display on screen
+  height: 300
+
+# Settings for the coordinator being used with Hermit.
+coordinator:
+
+  # Whether a signature from the coordinator is required to sign
+  signature_required: false
+
+  # An ECDSA public key (in hex) corresponding to the private key used
+  # to sign by the coordinator
+  #
+  # This value is from tests/fixtures/coordinator.pub.  The
+  # corresponding private key is at tests/fixtures/coordinator.pem.
+  public_key: |-
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDm6LRbZLXjha+bODC7SID5SKY
+    WfhwHNJj9fTI9wxankYzMuSMUiSq29HBmwPkVtFzFdLuYKFnc6+1pIwXHP+Xf7Pc
+    wO4esRMkzEZUK2IR5BniarMTQ9/sBXf7ttj6Nhp1LTQ2aZ4fjGdI9ZWj/hcJY7wY
+    56KIRZHF+/rAzXNFfQIDAQAB
+    -----END PUBLIC KEY-----
+

@@ -1,6 +1,6 @@
 from io import BytesIO
 from time import sleep
-from typing import Optional
+from typing import Optional, List
 
 from qrcode import QRCode
 from PIL import Image
@@ -55,6 +55,13 @@ def write_image_to_fb(x, y, image):
 
 
 class FrameBufferDisplay(Display):
+    """Corresponds to display mode ``framebuffer``.
+
+    Displays data by directly writing to the display's framebuffer.
+
+    This allows displaying images within a terminal.
+
+    """
 
     #: Override the default horizontal position for frame buffers.
     DEFAULT_X_POSITION = -100
@@ -66,7 +73,7 @@ class FrameBufferDisplay(Display):
     def format_qr(self, qr: QRCode):
         return qr_to_image(qr).convert("RGBA")
 
-    def animate_qrs(self, qrs: list) -> None:
+    def animate_qrs(self, qrs: List[QRCode]) -> None:
         images = [self.format_qr(qr) for qr in qrs]
 
         if len(images) == 0:

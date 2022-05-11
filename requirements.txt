@@ -19,8 +19,10 @@ idna==3.2
 imagesize==1.2.0
 imutils==0.5.1
 Jinja2==3.0.2
+m2r2==0.3.2
 MarkupSafe==2.0.1
 mccabe==0.6.1
+mistune==0.8.4
 mnemonic==0.18
 more-itertools==8.10.0
 mypy==0.800

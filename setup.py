@@ -29,12 +29,12 @@ if os.path.isfile(requirementPath):
 setuptools.setup(
     name="hermit",
     version=version,
-    author="Unchained Capital Engineering",
-    author_email="engineering@unchained-capital.com",
-    description="Unchained Capital Hermit",
+    author="Unchained Capital",
+    author_email="hello@unchained-capital.com",
+    description="Air-gapped, sharded keystore for signing bitcoin transactions",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/unchained-captial/hermit",
+    url="https://github.com/unchained-capital/hermit",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

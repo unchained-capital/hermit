@@ -4,26 +4,34 @@ Hermit
 [![Travis](https://img.shields.io/travis/unchained-capital/hermit.svg)](https://travis-ci.com/unchained-capital/hermit/)
 [![Codecov](https://img.shields.io/codecov/c/github/unchained-capital/hermit.svg)](https://codecov.io/gh/unchained-capital/hermit/)
 
-Hermit is a **keystore** designed for operating bitcoin businesses
-that demand the highest possible security for private keys.
-
-Hermit is designed to operate in tandem with a **coordinator**: an
-online wallet which can talk to a blockchain.  The coordinator is
-responsible for generating all transactions, transaction signature
-requests, and for receiving transaction signatures from Hermit as well
-as constructing fully-signed transactions and broadcasting them to the
+Hermit is not like most bitcoin wallets.  Hermit doesn't connect to
+the Internet and it doesn't know about the state of the bitcoin
 blockchain.
 
-Hermit is compatible with the following coordinator software:
+Hermit is a **keystore**: an application that stores private keys and
+uses them to sign bitcoin transactions.  Hermit focuses on:
 
-* [Caravan](https://unchained-capital.github.io/caravan/#/)
-* [Specter Desktop](https://specter.solutions/)
-* [Sparrow](https://sparrowwallet.com/)
-* [Fully Noded](https://fullynoded.app/)
-  
-Hermit focuses on securely storing a sharded private key, validating
-signature requests from the coordinator, and generating transaction
-signatures.
+* storing private keys on high-security, airgapped hardware
+
+* validating unsigned bitcoin transactions across the airgap
+
+* returning signed bitcoin transactions across the airgap
+
+Hermit is designed to operate in tandem with a **coordinator**: an
+Internet-connected application which does understand the state of the
+bitcoin blockchain.  The coordinator is responsible for
+
+* generating unsigned (or partially signed) transactions to pass to
+  Hermit
+
+* receiving signed transactions from Hermit
+
+* constructing fully-signed transactions and broadcasting them to the
+  bitcoin blockchain
+
+This separation of concerns between keystores and coordinators allows
+Hermit to be used by operating businesses that demand the highest
+possible security for private keys.
 
 Hermit is compatible with the following standards:
 
@@ -38,7 +46,62 @@ Hermit is compatible with the following standards:
 
 * [BC-UR](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)
   standard for transporting data through QR code URIs
-  
+
+Hermit is compatible with the following coordinator software:
+
+* [Unchained Capital](https://unchained.com)
+* [Caravan](https://unchained-capital.github.io/caravan/#/)
+<!-- * [Specter Desktop](https://specter.solutions/) -->
+<!-- * [Sparrow](https://sparrowwallet.com/) -->
+<!-- * [Fully Noded](https://fullynoded.app/) -->
+
+Features
+--------
+
+  * **Air-Gapped:** All communication between the user, Hermit, and
+    the coordinator is done via QR codes, cameras, screen, and
+    keyboard.  This means a Hermit installation does not require WiFi,
+    Bluetooth, or any other form of wired or wireless
+    communication. Hermit can operate in a completely air-gapped
+    environment.
+
+  * **Supports Signing Teams:** Private key data is (hierarchically)
+    sharded into P-of-Q groups with each group requiring m-of-n shards
+    (with m & n possibly differing among the Q groups).  Shards can be
+    copied, deleted, and re-created.  This makes it possible to
+    operate Hermit using a team of signers with no individual having
+    unilateral access to the private key.  Turnover on signing teams
+    can be accommodated by rotating shards.
+
+  * **Encrypted:** Private key shards are encrypted and must be
+    decrypted using shard-specific passwords before they can be
+    combined.
+
+  * **Requires Unlocking**: The combination of encryption and sharding
+    means that Hermit's private keys must be "unlocked" before it can
+    be used.  Unlocking requires shard-specific passwords to m-of-n
+    shards for P-of-Q groups.  Hermit will automatically lock itself
+    after a short time of being unlocked with no user input.  Hermit
+    can also be instantly locked in an emergency.
+
+  * **Can Use Security Modules:** By default, Hermit uses the local
+    filesystem for all storage of shard data.  This can be customized
+    through configuration to use a trusted platform module (TPM) or
+    hardware security module (HSM) for shard storage.
+
+  * **Runs on Low-End Hardware:** Hermit is a command-line application
+    but uses the operating system's windowing system to display QR
+    code animations and camera previews.  Hermit can be configured to
+    instead operate using ASCII or with direct access to a
+    framebuffer.  This allows installing Hermit on limited hardware
+    without a graphical system (e.g. terminal only).
+
+  * **Coordinator Authorization:** Transactions received from a
+    coordinator can be signed with an ECDSA private key (held by the
+    coordinator) and verified against the corresponding public key
+    (held in Hermit's configuration).  This ensures that Hermit will
+    sign transactions from an authorized coordinator.
+
 Quickstart
 ----------
 
@@ -81,60 +144,10 @@ wallet> sign                                  # sign a bitcoin transaction
 
 See more details in the "Usage" section below.
 
-Design
-------
-
-Hermit follows the following design principles:
-
-  * Unidirectional information transfer -- information should only move in one direction
-  * Always-on sharding & encryption -- private keys should always be sharded and each shard encrypted
-  * Open-source everything -- complete control over your software and hardware gives you the best security
-  * Flexibility for human security -- you can customize Hermit's configuration & installation to suit your organization
-  * Standards-compliant -- Hermit follows and sets best practices for high-security bitcoin wallets
-
-Hermit's features include:
-
-  * All communication between the user, Hermit, and the coordinator is
-    done via QR codes, cameras, screen, and keyboard.  This means a
-    Hermit installation does not require WiFi, Bluetooth, or any other
-    form of wired or wireless communication. Hermit can operate in a
-    completely air-gapped environment.
-
-  * Private key data is sharded using
-    [SLIP-0039](https://github.com/satoshilabs/slips/blob/master/slip-0039.md).
-    Each shard is encrypted with a separate password.  Hermit starts
-    out in a "locked" state and multiple individuals can be made to be
-    required to "unlock" a Hermit private key by employing multiple
-    password-encrypted shards.
-
-  * Hermit will automatically lock itself after a short time of being
-    unlocked with no user input.  Hermit can also be instantly locked
-    in an emergency.
-	
-  * Hermit comes with a full management system for shards, allowing
-    them to be re-encrypted, copied, deleted, and redealt.  This makes
-    Hermit easier to use for organizations with turnover among their
-    signing staff.
-
-  * By default, Hermit uses the local filesystem for all storage of
-    shard data.  This can be customized through configuration to use a
-    TPM or other hardware secure element for shard storage.
-
-  * Signature requests from the coordinator can be signed with an
-    ECDSA private key (held by the coordinator) and verified against
-    the corresponding public key (held in Hermit's configuration).
-    This ensures that Hermit will only accept signature requests from
-    a pre-authenticated coordinator.
-
-  * Hermit is a command-line wallet but uses the operating systems'
-    windowing system to display QR code animations and camera
-    previews.  Hermit can be configured to instead operate using ASCII
-    or with direct access to a framebuffer.  This allows installing
-    Hermit on limited hardware without its own graphical system.
-
-
 Usage
 ------
+
+## Installation
 
 Installing Hermit can be done via `pip3`:
 
@@ -144,6 +157,8 @@ $ pip3 install hermit
 
 If you want to develop against Hermit, see the "Developers" section
 below for a different way of installing Hermit.
+
+## Startup
 
 To start Hermit, just run the `hermit` command.
 
@@ -166,46 +181,7 @@ $ HERMIT_CONFIG=/path/to/hermit.yml hermit
 See the documentation for the `HermitConfig` class for details on
 allowed configuration settings.
 
-### Signing Transactions
-
-The ultimate point of Hermit is to securely sign bitcoin transactions.
-
-Assuming Hermit has a private key, you can run the following commands
-to unlock it and sign a bitcoin transaction:
-
-```
-wallet> unlock
-...
-wallet> sign
-
-# Scan transaction signature request...
-```
-
-If you don't unlock the private key first, Hermit will preview the
-transaction signature request for you and abort signing.
-
-Remember: Hermit does not create transactions.  An external
-coordinator application must pass Hermit an unsigned
-[PSBT](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki)
-which Hermit interprets as a transaction signature request (you can
-find examples of such requests in
-[tests/fixtures/signature_requests](tests/fixtures/signature_requests)).
-
-
-### Exporting Extended Public Keys (xpubs)
-
-Hermit can export extended public keys (xpubs) derived from a private
-key.
-
-```
-wallet> unlock
-wallet> display-xpub m/45'/0'/0'
-xpub...
-```
-
-Extended public keys are printed to screen and displayed as QR codes.
-
-### Private Key Management
+## Private Key Management
 
 Hermit stores all private keys in a sharded format.
 
@@ -350,19 +326,19 @@ Really delete shard random2? yes
 
 Hermit uses 3 storage locations for shard data:
 
-     _________               _____________                  ____________
-    |         |             |             |                |            |
-    | memory  | -- write -> | filesystem  | -- persist --> | data store |
-    |_________|             |_____________|                |____________|
+     _________               _____________                  _________
+    |         |             |             |                |         |
+    | memory  | -- write -> | filesystem  | -- persist --> | TPM/HSM |
+    |_________|             |_____________|                |_________|
     
 
-When Hermit first boots, shards from the data store or filesystem
-(in that order) are loaded into memory.  Changes made to shards
-are always made *in memory* and will not survive Hermit restarts.
+Hermit does not assume that the filesystem it is running from is
+writeable and so never writes to the filesystem *unless asked*.  New
+shards or changes made to existing shards are therefore always made
+*in memory only* and will not survive Hermit restarts.
 
-This is because Hermit never writes to the filesystem unless asked. To
-save data across Hermit restarts, the `write` command must be run
-(while in `shards` mode).
+To save shard data across Hermit restarts, the `write` command must be
+run (while in `shards` mode).
 
 This will cause shard data in memory to be written to the file
 `/tmp/shard_words.bson`.  This path **should be changed** to an
@@ -373,13 +349,54 @@ appropriate value through the following configuration file setting:
 shards_file: /home/user/shard_words.bson
 ```
 
-Hermit may be running on a read-only filesystem.  In this case, the
-`persist` command can be used to execute custom code to persist data
+If Hermit is running on a device with a TPM or HSM then shards can be
+directly stored in the TPM/HSM.  The `persist` command can be run
+(while in `shards` mode) to execute shell commands to persist data
 from the filesystem to a more durable location (e.g. - custom
 hardware).
 
+When Hermit first boots, shards from the TPM/HSM or filesystem (in
+that order) are loaded into memory.
+
 See the documentation for `HermitConfig.DefaultCommands` for more
 details on shard persistence.
+
+## Signing Transactions
+
+Assuming Hermit has a private key, you can run the following commands
+to unlock it and sign a bitcoin transaction:
+
+```
+wallet> unlock
+...
+wallet> sign
+
+# Scan unsigned transaction...
+```
+
+If you don't unlock the private key first, Hermit will preview the
+transaction for you and abort signing.
+
+Remember: Hermit does not create transactions.  An external
+coordinator application must pass Hermit an unsigned
+[PSBT](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki)
+which Hermit interprets.
+
+You can find examples of such requests in
+[tests/fixtures/signature_requests](tests/fixtures/signature_requests).
+
+## Exporting Extended Public Keys (xpubs)
+
+Hermit can export extended public keys (xpubs) derived from a private
+key.
+
+```
+wallet> unlock
+wallet> display-xpub m/45'/0'/0'
+xpub...
+```
+
+Extended public keys are printed to screen and displayed as QR codes.
 
 Developers
 ----------
@@ -403,12 +420,13 @@ Hermit ships with a full test suite
 $ make test
 ```
 
-The code can also be run through a linter
-([black](https://black.readthedocs.io/en/stable/)) & type-checker
+The code can also be run through linters (
+([black](https://black.readthedocs.io/en/stable/) &
+[flake8](https://flake8.pycqa.org/en/latest/)) and a type-checker
 ([mypy](http://mypy-lang.org/)).
 
 ```
-$ make lint
+$ make check
 ```
 
 Hermit has been tested on the following platforms:
@@ -424,10 +442,10 @@ documentation for Hermit.  To contribute, create a pull request (PR)
 on GitHub against the [Unchained Capital fork of
 Hermit](https://github.com/unchained-capital/hermit).
 
-Before you submit your PR, make sure to lint your code and run the test suite!
+Before you submit your PR, make sure to check your code and run the
+test suite!
 
 ```
 $ source environment.sh
-$ make test
-$ make lint
+$ make check test
 ```
