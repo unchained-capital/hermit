@@ -79,3 +79,9 @@ coordinator:
     56KIRZHF+/rAzXNFfQIDAQAB
     -----END PUBLIC KEY-----
 
+
+  # Controls how transactions are displayed during signing.
+  #
+  # Options are `old`, `long`, and `short`, with the default being
+  # `old`.
+  transaction_display: "old"

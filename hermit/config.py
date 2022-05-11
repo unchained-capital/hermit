@@ -99,7 +99,7 @@ class HermitConfig:
         "height": 300,
     }
 
-    #: Default settings for the coordinator being used with Hermit.
+    #: Default settings relevant to the coordinator being used with Hermit.
     #:
     #: The following settings are defined:
     #:
@@ -109,9 +109,14 @@ class HermitConfig:
     #: * `public_key` -- an ECDSA public key (in hex) corresponding to
     #:    the private key used to sign by the coordinator
     #:
+    #: *  `transaction_display` -- controls how transactions are displayed
+    #:    during signing.  Options are `old`, `long`, and `short`, with the
+    #:    default being `old`.
+    #:
     DefaultCoordinator: Dict[str, Union[str, bool, None]] = {
         "signature_required": False,
         "public_key": None,
+        "transaction_display": "old",
     }
 
     @classmethod
