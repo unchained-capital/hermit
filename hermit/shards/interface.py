@@ -221,7 +221,7 @@ unlock the wallet (<i>P of Q</i> groups).
             HTML(
                 """
 Each of the <i>Q</i> groups is itself broken into <i>m</i> shards, <i>n</i> of which are
-required to unlock the group (<i>n of m</i> shards).
+required to unlock the group (<i>m of n</i> shards).
 
 Unlocking the wallet requires unlocking <i>P</i> groups and unlocking each
 group requires unlocking <i>n</i> shards for that group.
@@ -235,7 +235,7 @@ shard configurations for all <i>Q</i> groups.
             )
         )
         input_error_message = HTML(
-            "Please enter a shard configuration in the form '<i>n of m</i>' where <i>n</i> and <i>m</i> are small integers."
+            "Please enter a shard configuration in the form '<i>m of n</i>' where <i>n</i> and <i>m</i> are small integers."
         )
         while True:
             try:
