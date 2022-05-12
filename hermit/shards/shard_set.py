@@ -111,6 +111,7 @@ class ShardSet(object):
     def save(self) -> None:
         # Note: this is called via `write()` method
         # FIXME: standardize naming convention on something logical
+        self._ensure_shards(shards_expected=False)
         with open(self.config.paths["shards_file"], "wb") as f:
             f.write(self.to_bytes())
 
@@ -143,6 +144,7 @@ class ShardSet(object):
         return (degrees_of_freedom * 32) - (digests * 4) + (identifiers * 2)
 
     def create_share_from_wallet_words(self, wallet_words=None):
+        self._ensure_shards(shards_expected=False)
         (group_threshold, groups) = self.interface.enter_group_information()
         if wallet_words is None:
             wallet_words = self.interface.enter_wallet_words()
@@ -155,6 +157,7 @@ class ShardSet(object):
         self._import_share_mnemonic_groups(mnemonics)
 
     def create_random_share(self):
+        self._ensure_shards(shards_expected=False)
         (group_threshold, groups) = self.interface.enter_group_information()
 
         RNG.ensure_bytes(self._needed_entropy_bytes(group_threshold, groups) + 32)
@@ -291,6 +294,7 @@ class ShardSet(object):
         return shard.to_qr_bson()
 
     def import_shard_qr(self, name: str, shard_data: bytes) -> None:
+        self._ensure_shards(shards_expected=False)
         if name in self.shards:
             err_msg = "Shard exists. If you need to replace it, " + "delete it first."
             raise HermitError(err_msg)
