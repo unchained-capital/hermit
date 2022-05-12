@@ -343,6 +343,7 @@ class ShardSet(object):
 
     def clear_shards(self) -> None:
         self.shards = {}
+        self._shards_loaded = True
 
     def wallet_words_shard(self, name: str) -> None:
         self._ensure_shards()
