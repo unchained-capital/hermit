@@ -38,6 +38,9 @@ commands:
   getPersistedShards: "zcat {0}.persisted > {0}"
 
 # Settings for input camera & output display.
+#
+# Note: If the HERMIT_DISABLE_IO environment variable is set, all IO
+# will be disabled.  (This is useful for automated testing.)
 io:
   # Display mode (`opencv`, `framebuffer`, or `ascii`)
   display: "opencv"

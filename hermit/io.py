@@ -13,6 +13,7 @@ framebuffer.
 
 """
 
+from os import environ
 from typing import Optional
 
 from prompt_toolkit import print_formatted_text
@@ -44,6 +45,8 @@ def display_data_as_animated_qrs(
        >>> display_data_as_animated_qrs(base64_data="cHNidP8BA...IBkAACAAQAAAAAAAAAA=")
 
     """
+    if environ.get("HERMIT_DISABLE_IO"):
+        return
     io = get_io()
     io.display_data_as_animated_qrs(data=data, base64_data=base64_data)
 
@@ -61,6 +64,8 @@ def read_data_from_animated_qrs() -> Optional[str]:
        "..."
 
     """
+    if environ.get("HERMIT_DISABLE_IO"):
+        return None
     io = get_io()
     return io.read_data_from_animated_qrs()
 
