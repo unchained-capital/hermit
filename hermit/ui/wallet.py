@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from prompt_toolkit import print_formatted_text, HTML
 
 from hermit.signer import Signer
@@ -8,10 +8,11 @@ from ..io import (
     read_data_from_animated_qrs,
     display_data_as_animated_qrs,
 )
-from .base import command, clear_screen
+from .base import command, clear_screen, disabled_command
 from .repl import repl
 from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
+from ..config import get_config
 
 from buidl.hd import is_valid_bip32_path
 
@@ -19,10 +20,15 @@ from buidl.hd import is_valid_bip32_path
 
 WalletCommands: Dict = {}
 
+DisabledWalletCommands: List[str] = get_config().disabled_wallet_commands
+
 
 def wallet_command(name):
     """Create a new wallet command."""
-    return command(name, WalletCommands)
+    if name not in DisabledWalletCommands:
+        return command(name, WalletCommands)
+    else:
+        return disabled_command(name, WalletCommands)
 
 
 @wallet_command("echo")

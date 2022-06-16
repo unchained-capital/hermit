@@ -33,12 +33,14 @@ def get_config() -> "HermitConfig":
 class HermitConfig:
     """Object to hold Hermit configuration
 
-    Hermit configuration is split into four sections:
+    Hermit configuration is split into six sections:
 
     * `paths` -- paths for configuration, shard data, and plugins
     * `commands` -- command-lines used to manipulate shard data
     * `io` -- settings for input and output
     * `coordinator` -- settings for the coordinator
+    * `disabled_wallet_commands` -- chooses which wallet commands are not allowed
+    * `disabled_shards_commands` -- chooses which shards commands are not allowed
 
     This class is typically not instantiated directly.  Instead, the
     :func:`get_config` method is used.
@@ -141,6 +143,8 @@ class HermitConfig:
         self.commands = self.config["commands"]
         self.io = self.config["io"]
         self.coordinator = self.config["coordinator"]
+        self.disabled_wallet_commands = self.config["disabled_wallet_commands"]
+        self.disabled_shards_commands = self.config["disabled_shards_commands"]
 
     def _load(self, config_file: Optional[str] = None) -> None:
         if config_file is None:
@@ -163,6 +167,13 @@ class HermitConfig:
             for config_key, default_value in defaults.items():  # type: ignore
                 if config_key not in self.config[section_key]:
                     self.config[section_key][config_key] = default_value
+
+        for section_key in [
+            "disabled_wallet_commands",
+            "disabled_shards_commands",
+        ]:
+            if section_key not in self.config:
+                self.config[section_key] = []
 
     def _interpolate_commands(self) -> None:
         for config_key in self.config["commands"]:

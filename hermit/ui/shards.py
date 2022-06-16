@@ -6,17 +6,23 @@ from ..io import (
     read_data_from_animated_qrs,
     display_data_as_animated_qrs,
 )
-from .base import command, clear_screen
+from .base import command, clear_screen, disabled_command
+from ..config import get_config
 import hermit.ui.state as state
 
-from typing import Dict
+from typing import Dict, List
 
 
 ShardCommands: Dict = {}
 
+DisabledShardsCommands: List[str] = get_config().disabled_shards_commands
+
 
 def shard_command(name):
-    return command(name, ShardCommands)
+    if name not in DisabledShardsCommands:
+        return command(name, ShardCommands)
+    else:
+        return disabled_command(name, ShardCommands)
 
 
 #
