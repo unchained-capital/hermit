@@ -94,9 +94,9 @@ class Shard(object):
         else:
             self.interface = interface
 
-    def input(self) -> None:
+    def input(self, prompt=None) -> None:
         """Input this shard's data from a SLIP39 phrase"""
-        words = self.interface.enter_shard_words(self.name)
+        words = self.interface.enter_shard_words(self.name, prompt)
         shamir_share.decode_mnemonic(words)
         self.encrypted_mnemonic = words
 

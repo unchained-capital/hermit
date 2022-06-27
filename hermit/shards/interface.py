@@ -139,14 +139,13 @@ class ShardWordUserInterface(object):
         prompt_msg = "\nEnter name for shard {0}: ".format(number)
         return prompt(prompt_msg, **self.options).strip()
 
-    def enter_shard_words(self, name: str) -> str:
-        print(
-            (
-                "\nEnter SLIP39 phrase for shard {} below (CTRL-D to submit):".format(
-                    name
-                )
-            )
-        )
+    def enter_shard_words(self, name: str, prompt_line: str = None) -> str:
+
+        if prompt_line is None:
+            prompt_line = f"\nEnter SLIP39 phrase for shard {name} below (CTRL-D to submit):"
+
+
+        print(prompt_line)
         lines: List = []
         while True:
             try:

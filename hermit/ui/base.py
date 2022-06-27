@@ -10,7 +10,7 @@ DeadTime = 60
 
 def clear_screen() -> None:
     """Clears the screen."""
-    print(chr(27) + "[2J")
+    print(chr(27) + "c")
 
 
 def command(name: str, commands: Dict):
