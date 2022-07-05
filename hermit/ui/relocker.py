@@ -16,7 +16,7 @@ async def _handle_tick():
     if state.Live:
         state.Live = False
     elif state.Wallet.unlocked() and state.Timeout > 0:
-        state.Timeout = state.Timeout - 1
+        state.Timeout = state.Timeout - 0.5
         if state.Timeout <= 0:
             state.Timeout = 0
             state.Wallet.lock()

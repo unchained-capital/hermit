@@ -169,31 +169,36 @@ class ShardSet(object):
     def _import_share_mnemonic_groups(self, mnemonic_groups: List[List[str]]) -> None:
         for group in mnemonic_groups:
             for mnemonic in group:
-                (
-                    share_id,
-                    _,
-                    group_index,
-                    group_threshold,
-                    groups,
-                    member_identifier,
-                    member_threshold,
-                    _,
-                ) = shamir_share.decode_mnemonic(mnemonic)
-                name = self.interface.get_name_for_shard(
-                    share_id,
-                    group_index,
-                    group_threshold,
-                    groups,
-                    member_identifier,
-                    member_threshold,
-                    self.shards,
-                )
-                password = self.interface.confirm_password()
-                shard = Shard(
-                    name,
-                    shamir_share.encrypt_mnemonic(mnemonic, password),
-                    self.interface,
-                )
+                shard = None
+                while shard is None:
+                    try:
+                        (
+                            share_id,
+                            _,
+                            group_index,
+                            group_threshold,
+                            groups,
+                            member_identifier,
+                            member_threshold,
+                            _,
+                        ) = shamir_share.decode_mnemonic(mnemonic)
+                        name = self.interface.get_name_for_shard(
+                            share_id,
+                            group_index,
+                            group_threshold,
+                            groups,
+                            member_identifier,
+                            member_threshold,
+                            self.shards,
+                        )
+                        password = self.interface.confirm_password()
+                        shard = Shard(
+                            name,
+                            shamir_share.encrypt_mnemonic(mnemonic, password),
+                            self.interface,
+                        )
+                    except Exception:
+                        print("Somthing went wrong. Try again.")
                 self.shards[name] = shard
 
     def wallet_words(self) -> str:

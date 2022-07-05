@@ -1,11 +1,12 @@
 from typing import Dict
 from functools import wraps
+from ..config import get_config
 
 # from hermit.errors import HermitError
 
 #: Duration of idle time before the wallet will automatically lock
 #: itself.
-DeadTime = 60
+DeadTime = get_config().coordinator['relock_timeout']
 
 
 def clear_screen() -> None:

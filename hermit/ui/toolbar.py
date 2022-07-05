@@ -2,7 +2,7 @@ from .base import DeadTime
 import hermit.ui.state as state
 
 
-bar_len = DeadTime // 4
+bar_len = 15
 chars = ["#", "=", "-", "."]
 Bars = [chars[0] * (bar_len - 1) + char + " " * bar_len for char in chars]
 
@@ -19,7 +19,7 @@ def bottom_toolbar():
     if state.Testnet:
         testnet_status = "TESTNET"
 
-    b = DeadTime - state.Timeout
+    b = int( 60 * (DeadTime - state.Timeout) / DeadTime)
     if state.Wallet.unlocked():
         bar = Bars[b % 4][b // 4 : b // 4 + bar_len]
         wallet_status = "wallet UNLOCKED " + bar

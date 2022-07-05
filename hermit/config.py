@@ -119,6 +119,7 @@ class HermitConfig:
         "signature_required": False,
         "public_key": None,
         "transaction_display": "old",
+        "relock_timeout": 30,  # seconds
     }
 
     @classmethod
