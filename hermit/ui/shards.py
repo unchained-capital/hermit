@@ -187,22 +187,75 @@ def export_shard_as_qr(name):
 
 
 @shard_command("copy-shard")
-def copy_shard(original, copy):
+def copy_shard(old, new):
     """usage:  copy-shard OLD NEW
 
-    Copy a shard, assigning the new copy its own password.
+    Copy a shard while assigning it a new password.  You will also
+    have to provide the current password for the original shard.
 
     The new shard is created in memory.  You must run the `write`
     command to save the new shard to the filesystem.
 
+    WARNING: The current password for the original shard cannot be
+    validated in isolation; if you accidentally enter the wrong
+    password for the existing shard the new shard will be corrupted.
+
+    To avoid this outcome, this command will initiate an immediate
+    `unlock` of the wallet.  When unlocking, you MUST select the newly
+    created shard as one of the shards you use to unlock the family.
+    See the example below for details:
+
+    Example:
+
+      shards> list-shards
+        alice (family:17489 group:1 member:1)
+        bob (family:17489 group:1 member:2)
+      shards> copy-shard alice alice-copy
+
+      Change password for shard alice-copy (family:17489 group:1 member:2)
+      old password> ********
+      new password> ********
+      confirm> ********
+      Choose shard
+      (options: alice, bob, alice-copy or <enter> to quit)
+      > alice-copy
+      Enter password for shard foo-2-copy (family:17489 group:1 member:2)
+      password> ********
+      Choose shard
+      (options: bob or <enter> to quit)
+      > bob
+      Enter password for shard foo-1 (family:17489 group:1 member:1)
+      password> ********
+      *shards>
+      shards> list-shards
+        alice (family:17489 group:1 member:1)
+        alice-copy (family:17489 group:1 member:1)
+        bob (family:17489 group:1 member:2)
+      *shards> write
+
+    """
+    state.Wallet.shards.copy_shard(old, new)
+    state.Wallet.lock()
+    state.Wallet.unlock(testnet=state.Testnet)
+
+
+@shard_command("rename-shard")
+def rename_shard(old, new):
+    """usage:  rename-shard OLD NEW
+
+    Rename a shard.  This does not change the shard's data or
+    password.
+
+    The change is made in memory.  You must run the `write` command to
+    save the change to the filesystem.
+
     Examples:
 
-      shards> copy-shard apple pear
-      ...
+      shards> rename-shard apple pear
       shards> write
 
     """
-    state.Wallet.shards.copy_shard(original, copy)
+    state.Wallet.shards.rename_shard(old, new)
 
 
 @shard_command("delete-shard")
@@ -387,6 +440,8 @@ def shard_help(
           Display the given shard as a QR code
       <i>copy-shard OLD NEW</i>
           Copy an existing shard with a new password
+      <i>rename-shard OLD NEW</i>
+          Rename an existing shard with a new name
       <i>delete-shard NAME</i>
           Delete a shard
   <b>STORAGE</b>

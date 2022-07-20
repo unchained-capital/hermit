@@ -326,25 +326,41 @@ class ShardSet(object):
 
         self.shards[name] = shard
 
-    def copy_shard(self, original: str, copy: str) -> None:
+    def copy_shard(self, old: str, new: str) -> None:
         self._ensure_shards()
-        if original not in self.shards:
-            raise HermitError("Shard {} does not exist.".format(original))
+        if old not in self.shards:
+            raise HermitError("Shard {} does not exist.".format(old))
 
-        if copy in self.shards:
+        if new in self.shards:
             err_msg = (
                 "Shard {} exists. If you need to replace it, delete it first.".format(
-                    copy
+                    new
                 )
             )
             raise HermitError(err_msg)
 
-        original_shard = self.shards[original]
-        copy_shard = Shard(
-            copy, original_shard.encrypted_mnemonic, interface=self.interface
-        )
-        copy_shard.change_password()
-        self.shards[copy] = copy_shard
+        old_shard = self.shards[old]
+        new_shard = Shard(new, old_shard.encrypted_mnemonic, interface=self.interface)
+        new_shard.change_password()
+        self.shards[new] = new_shard
+
+    def rename_shard(self, old: str, new: str) -> None:
+        self._ensure_shards()
+        if old not in self.shards:
+            raise HermitError("Shard {} does not exist.".format(old))
+
+        if new in self.shards:
+            err_msg = (
+                "Shard {} exists. If you need to replace it, delete it first.".format(
+                    new
+                )
+            )
+            raise HermitError(err_msg)
+
+        shard = self.shards[old]
+        del self.shards[old]
+        shard.name = new
+        self.shards[new] = shard
 
     def clear_shards(self) -> None:
         self.shards = {}
