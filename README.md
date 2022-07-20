@@ -117,29 +117,68 @@ wallet> shards                                # enter shard mode
 shards> help                                  # see shard commands
 ...
 shards> list-shards                           # see current shards
-...
+No shards.
 shards> build-family-from-phrase              # create new shard family from BIP39 phrase
+...
+How many groups are required unlock (P)? 1    # use a single group
+...
+What is m of n for Group 1? 2of3              # 2of3 shards
+What is m of n for Group 2?                   # hit ENTER
+...
 
-merge alley lucky axis penalty manage
+Enter BIP39 phrase for wallet below (CTRL-D to submit):
+
+merge alley lucky axis penalty manage         # enter BIP39 phrase
 latin gasp virus captain wheel deal
 chase fragile chapter boss zero dirt
 stadium tooth physical valve kid plunge
+                                              # CTRL-D to submit
 
-[CTRL-D]
 
-....
+Enter at least 256 bits worth of random data.
 
-shards> list-shards                           # see newly created shards
-...
+Hit CTRL-D when done.
+
+Collected   0.0 bits>:awef;oaweo;fawe         # mash the keyboard
+Collected  38.3 bits>:awefa;wef;oawefaawe;faweaw
+Collected 102.0 bits>:aw;efjao;ejwf;oaje;fjao;web
+Collected 189.3 bits>:bsblsrevhlerferfrefserfuulfli
+Collected 333.2 bits>:                        # CTRL-D to submit
+
+Family: 515, Group: 1, Shard: 1
+Enter name: alice                             # name the first shard
+new password> ********                        # and provide a password
+     confirm> ********
+
+Family: 515, Group: 1, Shard: 2               # repeat for second shard
+Enter name: bob
+new password> ********
+     confirm> ********
+ shards> list-shards                          # see newly created shards
+     alice (family:515 group:1 member:1)
+     bob (family:515 group:1 member:2)
+
 shards> write                                 # save newly created shards to disk
 shards> quit                                  # back to wallet mode
-wallet> display-xpub m/45'/0'/0'              # display an extended public key
-...
-wallet> sign                                  # sign a bitcoin transaction
+wallet> unlock                                # unlock the shards we just created
+Choose shard
+(options: alice, bob or <enter> to quit)
+>  alice                                      # pick the first shard and provide password
 
-# See tests/fixtures/signature_requests/2-of-2.p2sh.testnet.gif for example transaction request
+Enter password for shard alice (family:515 group:1 member:1)
+password> ********
+Choose shard
+(options: bob or <enter> to quit)
+> bob                                         # repeat for second shard
+
+Enter password for shard bob (family:515 group:1 member:2)
+password> ********
+*wallet>                                      # wallet is now unlocked
+*wallet> sign                                 # sign a bitcoin transaction by scanning a QR code
 
 ...
+
+# See tests/fixtures/signature_requests/2-of-2.p2sh.testnet.gif for example transaction request QR code
 ```
 
 Setup
