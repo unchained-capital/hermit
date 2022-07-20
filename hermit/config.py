@@ -115,7 +115,7 @@ class HermitConfig:
     #:    during signing.  Options are `old`, `long`, and `short`, with the
     #:    default being `old`.
     #:
-    DefaultCoordinator: Dict[str, Union[str, bool, None]] = {
+    DefaultCoordinator: Dict[str, Union[str, bool, None, int]] = {
         "signature_required": False,
         "public_key": None,
         "transaction_display": "old",
