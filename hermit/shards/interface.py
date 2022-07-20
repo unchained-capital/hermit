@@ -202,46 +202,60 @@ class ShardWordUserInterface(object):
             HTML(
                 """SLIP39 sharding has two levels.
 
-At the upper level you specify <i>Q</i> groups, <i>P</i> of which are required to
-unlock the wallet (<i>P of Q</i> groups).
+At the upper level you specify <i>Q</i> groups, <i>P</i> of which are required to unlock
+the wallet (<i>P of Q</i> groups).
+
+At the lower level, each of the <i>Q</i> groups is itself broken into <i>n</i> shards,
+<i>m</i> of which are required to unlock the group (<i>m of n</i> shards).
+
+Unlocking the shard family requires unlocking <i>P</i> groups and unlocking each
+of those <i>P</i> groups requires unlocking <i>m</i> shards for that group.
+
+The shard configurations <i>m</i> and <i>n</i> can be different for each of the <i>Q</i> groups.
 """
             )
         )
-        group_threshold = int(
-            prompt(
-                HTML(
-                    "<b>How many groups should be required to unlock the wallet (<i>P</i>)?</b> "
-                ),
-                completer=self.SmallNumberCompleter,
-            )
+        input_error_message = HTML(
+            "Required number of groups <i>P</i> must be a small positive integer."
         )
+        while True:
+            try:
+                group_threshold = int(
+                    prompt(
+                        HTML(
+                            "<b>How many groups are required to unlock (<i>P</i>)?</b> "
+                        ),
+                        completer=self.SmallNumberCompleter,
+                    )
+                )
+                assert group_threshold >= 1
+                break
+            except (EOFError, ValueError, AssertionError):
+                print_formatted_text(input_error_message)
+                continue
+
         groups: List[Tuple[int, int]] = []
 
         print_formatted_text(
             HTML(
                 """
-Each of the <i>Q</i> groups is itself broken into <i>m</i> shards, <i>n</i> of which are
-required to unlock the group (<i>n of m</i> shards).
+You must now specify an <i>m of n</i> shard configuration (such as '<i>2 of 3</i>')
+for each of the <i>Q</i> groups.  You will enter each group's configuration
+on its own line.
 
-Unlocking the wallet requires unlocking <i>P</i> groups and unlocking each
-group requires unlocking <i>n</i> shards for that group.
-
-You must now specify a shard configuration (such as '<i>2 of 3</i>')
-for each of the Q groups.
-
-Hit <b>Ctrl-D</b> or enter an empty line once you have entered
-shard configurations for all <i>Q</i> groups.
+Hit <b>CTRL-D</b> or <b>ENTER</b> once you have entered shard configurations for
+all <i>Q</i> groups.
 """
             )
         )
         input_error_message = HTML(
-            "Please enter a shard configuration in the form '<i>n of m</i>' where <i>n</i> and <i>m</i> are small integers."
+            "Shard configuration must be in the form '<i>m of n</i>' where <i>m</i> and <i>n</i> are small positive integers and <i>1&#8804;m&#8804;n</i>."
         )
         while True:
             try:
                 group_str = prompt(
                     HTML(
-                        "<b>What shard configuration should be used for <i>Group {}</i>?</b> ".format(
+                        "<b>What is <i>m of n</i> for <i>Group {}</i>?</b> ".format(
                             len(groups) + 1
                         )
                     ),
