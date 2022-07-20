@@ -48,7 +48,8 @@ def repl(commands: Dict, mode: str = "", help_command=None):
                     command_fn = commands[command_line[0]]
                     try:
                         done = command_fn(*(command_line[1:]))
-                    except HermitError:
+                    except HermitError as e:
+                        print(e)
                         # If we get a HermitError here, it generally means that someone
                         # didnt provide the right kinds of arguments to a command line
                         # so we should show them some help.
