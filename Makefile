@@ -26,7 +26,8 @@ ECHO := echo
 BREW := brew
 APT := apt
 
-PYTHON3 := $(shell command -v python3 2> /dev/null)
+SYSTEM_PYTHON3 := $(shell command -v python3 2> /dev/null)
+PYTHON3 := $(VENV_DIR)/bin/python3
 PIP := $(VENV_DIR)/bin/pip
 
 PYTEST := $(VENV_DIR)/bin/pytest
@@ -55,6 +56,7 @@ else
 endif
 
 python-dependencies: $(VENV_DIR)
+	$(PYTHON3) -m pip install --upgrade pip
 	$(PIP) install wheel
 ifdef UNFREEZE
 	 $(PIP) install -r $(PYTHON_REQUIREMENTS)
@@ -64,7 +66,7 @@ endif
 
 
 $(VENV_DIR):
-	$(PYTHON3) -m venv --prompt='hermit' $(VENV_DIR)
+	$(SYSTEM_PYTHON3) -m venv --prompt='hermit' $(VENV_DIR)
 
 #
 # == Development ==
