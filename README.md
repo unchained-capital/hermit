@@ -234,7 +234,7 @@ As stated above, Hermit is not a "wallet" but it does perform some key
 functions associated with bitcoin wallets: signing bitcoin
 transactions and exporting extended public keys.
 
-### Signing Transactions
+#### Signing Transactions
 
 Assuming Hermit has a private key (see the "Private Key Management"
 section below), you can run the following commands to unlock it and
@@ -259,7 +259,7 @@ which Hermit interprets.
 You can find examples of such requests in
 [tests/fixtures/signature_requests](tests/fixtures/signature_requests).
 
-### Exporting Extended Public Keys (xpubs)
+#### Exporting Extended Public Keys (xpubs)
 
 Hermit can export extended public keys (xpubs) derived from a private
 key.
@@ -356,7 +356,7 @@ random bits Hermit is asking for and size of the character set used by
 your chosen random number generator.
 
 For example, a single roll of a fair 6-sided die produces
-`log<sub>2</sub>(6) ~ 2.58` bits of randomness.  This means that ~100
+log<sub>2</sub>(6) ~ 2.58 bits of randomness.  This means that ~100
 dice rolls are required to produce 256 bits of randomness.
 
 Note, when testing Hermit it is easiest to simply "mash" on the
@@ -732,7 +732,7 @@ The shards for operators `a` and `b` can be renamed if desired:
 
 ```
 shards> rename-shard cherry-a-copy cherry-a
-shards> rename-shard cherry-b-copy cherry-a
+shards> rename-shard cherry-b-copy cherry-b
 shards> list-shards
      cherry-a (family:8347 group:1 member:1)
      cherry-b (family:8347 group:1 member:2)
