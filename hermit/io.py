@@ -16,12 +16,10 @@ framebuffer.
 from os import environ
 from typing import Optional
 
-from prompt_toolkit import print_formatted_text
 from prompt_toolkit.shortcuts.progress_bar.base import ProgressBar, ProgressBarCounter
 
 from .errors import (
     HermitError,
-    InvalidQRCodeSequence,
 )
 from .config import get_config
 from .qr import (
@@ -142,24 +140,27 @@ class IO:
                 progress_bar.counters.append(counter)
 
                 for c in counter:
-                    image = self.camera.get_image()
-                    mirror, data = detect_qrs_in_image(image, box_width=20)
+                    try:
+                        image = self.camera.get_image()
+                        mirror, data = detect_qrs_in_image(image, box_width=20)
 
-                    if not self.display.display_camera_image(mirror):
-                        break
+                        if not self.display.display_camera_image(mirror):
+                            break
 
-                    # Iterate through the identified QR codes and let the
-                    # reassembler collect them.
-                    for data_item in data:
-                        check_timer()
-                        if self.reassembler.collect(data_item):
-                            c.advance()
+                        # Iterate through the identified QR codes and let the
+                        # reassembler collect them.
+                        for data_item in data:
+                            check_timer()
+                            if self.reassembler.collect(data_item):
+                                c.advance()
 
-                    # await asyncio.sleep(0.05)
+                    except HermitError:
+                        # If for some reason we encountered an error in
+                        # scanning the qr code, parsing its contents or
+                        # consolidating it with the overall reresult,
+                        # we do not want to stop processing.
+                        pass
 
-            except InvalidQRCodeSequence as e:
-                print_formatted_text(f"Invalid QR code sequence: {e}.")
-                return None
             finally:
                 self.display.teardown_camera_display()
                 self.camera.close()
