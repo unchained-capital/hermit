@@ -115,11 +115,18 @@ class HermitConfig:
     #:    during signing.  Options are `old`, `long`, and `short`, with the
     #:    default being `old`.
     #:
+    #: * 'minimize_signed_psbt' -- controls whether or not to remove information
+    #:   from the signed psbt that the coordinator should already be aware of
+    #:   because they should still have a copy of the unsigned psbt that they
+    #:   sent for us to sign.  In some cases this can DRAMATICALLY reduce the
+    #:   amount of information that needs to be sent back over the return QR
+    #:   channel."
     DefaultCoordinator: Dict[str, Union[str, bool, None, int]] = {
         "signature_required": False,
         "public_key": None,
         "transaction_display": "old",
         "relock_timeout": 30,  # seconds
+        "minimize_signed_psbt": False,
     }
 
     @classmethod
