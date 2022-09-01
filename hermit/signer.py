@@ -513,7 +513,9 @@ class Signer(object):
                     inp.prev_tx = None
                     inp.redeem_script = None
                     inp.named_pubs = {}
-
+                    inp.prev_out = None
+                    inp.witness_script = None
+                    inp.extra_map = {}
             self.signed_psbt_b64 = self.psbt.serialize_base64()
 
     def show_signature(self) -> None:
