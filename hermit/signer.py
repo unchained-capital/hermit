@@ -16,6 +16,7 @@ from .config import get_config
 _satoshis_per_bitcoin = Decimal(int(pow(10, 8)))
 
 transaction_display_mode = get_config().coordinator["transaction_display"]
+minimize_signed_psbt = get_config().coordinator["minimize_signed_psbt"]
 TOPROW = "╔═╗"
 MIDDLE = "║ ║"
 SECTION = "╠═╣"
@@ -504,7 +505,17 @@ class Signer(object):
         if was_signed is False:
             raise HermitError("Failed to sign transaction")
 
+
         if self.psbt is not None:
+
+            if minimize_signed_psbt:
+                for inp in self.psbt.psbt_ins:
+                    inp.prev_tx = None
+                    inp.redeem_script = None
+                    inp.named_pubs = {}
+                    inp.prev_out = None
+                    inp.witness_script = None
+                    inp.extra_map = {}
             self.signed_psbt_b64 = self.psbt.serialize_base64()
 
     def show_signature(self) -> None:
