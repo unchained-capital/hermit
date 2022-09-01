@@ -120,7 +120,7 @@ class HermitConfig:
     #:   because they should still have a copy of the unsigned psbt that they
     #:   sent for us to sign.  In some cases this can DRAMATICALLY reduce the
     #:   amount of information that needs to be sent back over the return QR
-    #:   channel."
+    #:   channel.
     DefaultCoordinator: Dict[str, Union[str, bool, None, int]] = {
         "signature_required": False,
         "public_key": None,
