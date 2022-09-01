@@ -505,13 +505,15 @@ class Signer(object):
         if was_signed is False:
             raise HermitError("Failed to sign transaction")
 
-        if minimize_signed_psbt:
-            for inp in self.psbt.psbt_ins:
-                inp.prev_tx = None
-                inp.redeem_script = None
-                inp.named_pubs = {}
 
         if self.psbt is not None:
+
+            if minimize_signed_psbt:
+                for inp in self.psbt.psbt_ins:
+                    inp.prev_tx = None
+                    inp.redeem_script = None
+                    inp.named_pubs = {}
+
             self.signed_psbt_b64 = self.psbt.serialize_base64()
 
     def show_signature(self) -> None:
