@@ -1,39 +1,58 @@
 from typing import Dict
 from functools import wraps
+from ..config import get_config
 
-from prompt_toolkit import HTML, print_formatted_text
+# from hermit.errors import HermitError
 
-from hermit.errors import HermitError
-from hermit.qrcode import displayer, reader
+#: Duration of idle time before the wallet will automatically lock
+#: itself.
+DeadTime = get_config().coordinator["relock_timeout"]
 
-DeadTime = 30
 
-def clear_screen():
-    print(chr(27) + "[2J")
-
-# is this even used?
-def reset_screen():
+def clear_screen() -> None:
+    """Clears the screen."""
     print(chr(27) + "c")
 
-def command(name, commands:Dict):
+
+def command(name: str, commands: Dict):
+    """Decorator for defining a new command."""
+
     def _command_decorator(f):
         nonlocal name
         if name is None:
             name = f.name
         if name in commands:
-            raise Exception('command already defined: '+name)
+            raise Exception("command already defined: " + name)
 
         @wraps(f)
         def wrapper(*args, **kwargs):
-            try:
-                return f(*args, **kwargs)
-            except TypeError as terr:
-                raise terr
-            except Exception as err:
-                print(err)
-                raise HermitError("Hmm. Something went wrong.")
+            return f(*args, **kwargs)
 
         commands[name] = wrapper
+
+        return wrapper
+
+    return _command_decorator
+
+
+def disabled(*args, **kwargs):
+    """command disabled"""
+    print("Command disabled.")
+
+
+def disabled_command(name: str, commands: Dict):
+    """Decorator for defining a new command."""
+
+    def _command_decorator(f):
+        nonlocal name
+        if name is None:
+            name = f.name
+        if name in commands:
+            raise Exception("command already defined: " + name)
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            return disabled(*args, **kwargs)
 
         return wrapper
 

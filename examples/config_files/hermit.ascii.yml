@@ -1,0 +1,13 @@
+---
+
+# This configuration file specifies that Hermit should run in the
+# ASCII display mode.
+#
+# Run Hermit using this file via:
+#
+#   $ HERMIT_CONFIG=examples/config_files/hermit.ascii.yml
+#
+
+io:
+  display: ascii
+  width: 80

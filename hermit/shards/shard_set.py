@@ -3,17 +3,25 @@ import os
 import textwrap
 from hermit import shamir_share
 from prompt_toolkit import print_formatted_text, HTML
-from hermit.config import HermitConfig
+from hermit.config import get_config
 from hermit.errors import HermitError
 from typing import List, Dict, Optional
 from mnemonic import Mnemonic
 from .interface import ShardWordUserInterface
 from .shard import Shard
 from hermit.rng import RandomGenerator
+import shamir_mnemonic
+
+# FIXME
+# os.system() calls should be removed
+# https://docs.python.org/3/library/os.html#os.system
+# At a minimum, we should `wait` for results
+# Preferably, this whole thing should be re-written in something pythonic
 
 
 RNG = RandomGenerator()
 shamir_share.set_random_bytes(RNG.random)
+
 
 def check_satisfaction_criteria(shards):
     """check_satisfaction_criteria(shards)
@@ -32,22 +40,21 @@ def check_satisfaction_criteria(shards):
 
     for s in shards:
         (group_idx, _) = s.shard_id
-        if not group_idx in groups:
+        if group_idx not in groups:
             groups[group_idx] = 0
         groups[group_idx] += 1
         if groups[group_idx] >= s.member_threshold:
             filled.add(group_idx)
-        satisfied = (len(filled) >= s.group_threshold)
+        satisfied = len(filled) >= s.group_threshold
 
     return (satisfied, filled)
 
 
 class ShardSet(object):
-    def __init__(self,
-                 interface: Optional[ShardWordUserInterface] = None) -> None:
+    def __init__(self, interface: Optional[ShardWordUserInterface] = None) -> None:
         self.shards: Dict = {}
         self._shards_loaded = False
-        self.config = HermitConfig.load()
+        self.config = get_config()
         if interface is None:
             self.interface = ShardWordUserInterface()
         else:
@@ -60,43 +67,52 @@ class ShardSet(object):
             # If the shards dont exist at the place where they
             # are expected to by, try to restore them with the externally
             # configured getPersistedShards command.
-            if not os.path.exists(self.config.shards_file):
+            if not os.path.exists(self.config.paths["shards_file"]):
                 try:
-                    os.system(self.config.commands['getPersistedShards'])
+                    os.system(self.config.commands["getPersistedShards"])
                 except TypeError:
                     pass
 
             # If for some reason the persistence layer failed to  create the
             # the shards file, we assume that we just need to initialize
             # it as an empty bson object.
-            if not os.path.exists(self.config.shards_file):
-                with open(self.config.shards_file, 'wb') as f:
+            if not os.path.exists(self.config.paths["shards_file"]):
+                with open(self.config.paths["shards_file"], "wb") as f:
                     f.write(bson.dumps({}))
 
-            with open(self.config.shards_file, 'rb') as f:
-                bdata = bson.loads(f.read())
+            with open(self.config.paths["shards_file"], "rb") as f:
+                bbytes = f.read()
+                if len(bbytes) == 0:
+                    bdata = {}
+                else:
+                    bdata = bson.loads(bbytes)
 
             for name, shard_bytes in bdata.items():
                 self.shards[name] = Shard(
-                    name, shamir_share.mnemonic_from_bytes(shard_bytes))
+                    name, shamir_share.mnemonic_from_bytes(shard_bytes)
+                )
 
             self._shards_loaded = True
 
         if len(self.shards) == 0 and shards_expected:
-            raise HermitError("No shards found.  Create some by entering 'shards' mode.")
+            raise HermitError(
+                "No shards found.  Create some by entering 'shards' mode."
+            )
 
     def initialize_file(self) -> None:
         if self.interface.confirm_initialize_file():
-            with open(self.config.shards_file, 'wb') as f:
+            with open(self.config.paths["shards_file"], "wb") as f:
                 f.write(bson.dumps({}))
 
     def to_bytes(self):
-        data = {name: shard.to_bytes()
-                for (name, shard) in self.shards.items()}
+        data = {name: shard.to_bytes() for (name, shard) in self.shards.items()}
         return bson.dumps(data)
 
     def save(self) -> None:
-        with open(self.config.shards_file, 'wb') as f:
+        # Note: this is called via `write()` method
+        # FIXME: standardize naming convention on something logical
+        self._ensure_shards(shards_expected=False)
+        with open(self.config.paths["shards_file"], "wb") as f:
             f.write(self.to_bytes())
 
     def _needed_entropy_bytes(self, group_threshold, groups):
@@ -125,40 +141,64 @@ class ShardSet(object):
             # them is actually the group secret, so we dont count it here.
             degrees_of_freedom += threshold - 1
 
-        return (degrees_of_freedom * 32) - (digests * 4) + (identifiers*2)
+        return (degrees_of_freedom * 32) - (digests * 4) + (identifiers * 2)
 
     def create_share_from_wallet_words(self, wallet_words=None):
+        self._ensure_shards(shards_expected=False)
         (group_threshold, groups) = self.interface.enter_group_information()
         if wallet_words is None:
             wallet_words = self.interface.enter_wallet_words()
-        mnemonic = Mnemonic('english')
+        mnemonic = Mnemonic("english")
         secret = mnemonic.to_entropy(wallet_words)
 
         RNG.ensure_bytes(self._needed_entropy_bytes(group_threshold, groups))
-        mnemonics = shamir_share.generate_mnemonics(
-            group_threshold, groups, secret)
+        mnemonics = shamir_share.generate_mnemonics(group_threshold, groups, secret)
 
         self._import_share_mnemonic_groups(mnemonics)
 
     def create_random_share(self):
+        self._ensure_shards(shards_expected=False)
         (group_threshold, groups) = self.interface.enter_group_information()
 
-        RNG.ensure_bytes(self._needed_entropy_bytes(
-            group_threshold, groups) + 32)
-        mnemonics = shamir_share.generate_mnemonics_random(
-            group_threshold, groups, strength_bits=256)
+        RNG.ensure_bytes(self._needed_entropy_bytes(group_threshold, groups) + 32)
+        mnemonics = shamir_mnemonic.generate_mnemonics_random(
+            group_threshold, groups, strength_bits=256
+        )
         self._import_share_mnemonic_groups(mnemonics)
 
     def _import_share_mnemonic_groups(self, mnemonic_groups: List[List[str]]) -> None:
         for group in mnemonic_groups:
             for mnemonic in group:
-                (share_id, _, group_index, group_threshold, groups, member_identifier,
-                 member_threshold, _) = shamir_share.decode_mnemonic(mnemonic)
-                name = self.interface.get_name_for_shard(
-                    share_id, group_index, group_threshold, groups, member_identifier, member_threshold, self.shards)
-                password = self.interface.confirm_password()
-                shard = Shard(name, shamir_share.encrypt_mnemonic(
-                    mnemonic, password), self.interface)
+                shard = None
+                while shard is None:
+                    try:
+                        (
+                            share_id,
+                            _,
+                            group_index,
+                            group_threshold,
+                            groups,
+                            member_identifier,
+                            member_threshold,
+                            _,
+                        ) = shamir_share.decode_mnemonic(mnemonic)
+                        name = self.interface.get_name_for_shard(
+                            share_id,
+                            group_index,
+                            group_threshold,
+                            groups,
+                            member_identifier,
+                            member_threshold,
+                            self.shards,
+                        )
+                        password = self.interface.confirm_password()
+                        shard = Shard(
+                            name,
+                            shamir_share.encrypt_mnemonic(mnemonic, password),
+                            self.interface,
+                        )
+                    except Exception:
+                        print("Somthing went wrong. Try again.")
                 self.shards[name] = shard
 
     def wallet_words(self) -> str:
@@ -168,41 +208,45 @@ class ShardSet(object):
         # wallet words - this is the only way that I can see that the shamir
         # code is going to be compatible with bip39 wallets.
         seed = self.secret_seed()
-        mnemonic = Mnemonic('english')
+        mnemonic = Mnemonic("english")
         return mnemonic.to_mnemonic(seed)
 
     def secret_seed(self) -> bytes:
         self._ensure_shards()
 
-        selected : Dict[str, Shard]= {}
-        selected_share_id : Optional[int]= None
-        selected_shard_ids : set = set()
-        selected_shards : set = set()
+        selected: Dict[str, Shard] = {}
+        selected_share_id: Optional[int] = None
+        selected_shard_ids: set = set()
+        selected_shards: set = set()
 
         satisfied = False
         filled_groups = set()
 
         while not satisfied:
-            shards = [shard
-                      for (name, shard)
-                      in self.shards.items()
-                      if (name not in selected)
-                      and (selected_share_id is None or shard.share_id == selected_share_id)
-                      and (shard.shard_id not in selected_shard_ids)
-                      and (shard.group_id not in filled_groups)
-                      ]
+            shards = [
+                shard
+                for (name, shard) in self.shards.items()
+                if (name not in selected)
+                and (selected_share_id is None or shard.share_id == selected_share_id)
+                and (shard.shard_id not in selected_shard_ids)
+                and (shard.group_id not in filled_groups)
+            ]
 
             if selected_share_id is not None:
-                (enough_shards,_) = check_satisfaction_criteria(selected_shards.union(shards))
+                (enough_shards, _) = check_satisfaction_criteria(
+                    selected_shards.union(shards)
+                )
                 if not enough_shards:
                     print([shard.to_str() for shard in shards])
-                    raise HermitError("There are not enough shards available to unlock this secret.")
+                    raise HermitError(
+                        "There are not enough shards available to unlock this secret."
+                    )
 
             name = None
 
             try:
                 name = self.interface.choose_shard(shards)
-            except:
+            except Exception:
                 # catch end-of-input style exceptions
                 pass
 
@@ -226,8 +270,9 @@ class ShardSet(object):
         self._ensure_shards(shards_expected=True)
         shard = self.shards[shard_name]
         words = shard.encrypted_mnemonic
-        print_formatted_text(HTML(
-            "Encrypted SLIP39 phrase for shard <i>{}</i>:\n".format(shard_name)))
+        print_formatted_text(
+            HTML("Encrypted SLIP39 phrase for shard <i>{}</i>:\n".format(shard_name))
+        )
         print_formatted_text("\n".join(textwrap.wrap(words, 80)), "\n")
         self.interface.get_line_then_clear()
 
@@ -236,8 +281,8 @@ class ShardSet(object):
 
         words = self.wallet_words()
         print_formatted_text(
-            "- WARNING -\n" +
-            "The wallet words for this secret are about to be revealed.\n"
+            "- WARNING -\n"
+            + "The wallet words for this secret are about to be revealed.\n"
         )
         self.interface.get_line_then_clear()
 
@@ -254,15 +299,16 @@ class ShardSet(object):
         return shard.to_qr_bson()
 
     def import_shard_qr(self, name: str, shard_data: bytes) -> None:
+        self._ensure_shards(shards_expected=False)
         if name in self.shards:
-            err_msg = ("Shard exists. If you need to replace it, "
-                       + "delete it first.")
+            err_msg = "Shard exists. If you need to replace it, " + "delete it first."
             raise HermitError(err_msg)
 
         shard_dict = bson.loads(shard_data)
         old_name = list(shard_dict.keys())[0]
         print_formatted_text(
-            "Importing shard '{}' from qr code as shard '{}'".format(old_name, name))
+            "Importing shard '{}' from qr code as shard '{}'".format(old_name, name)
+        )
         shard = Shard(name, None, interface=self.interface)
         shard.from_bytes(shard_dict[old_name])
 
@@ -272,8 +318,7 @@ class ShardSet(object):
         self._ensure_shards(shards_expected=False)
 
         if name in self.shards:
-            err_msg = ("Shard exists. If you need to replace it, "
-                       + "delete it first.")
+            err_msg = "Shard exists. If you need to replace it, " + "delete it first."
             raise HermitError(err_msg)
 
         shard = Shard(name, None, interface=self.interface)
@@ -281,24 +326,45 @@ class ShardSet(object):
 
         self.shards[name] = shard
 
-    def copy_shard(self, original: str, copy: str) -> None:
+    def copy_shard(self, old: str, new: str) -> None:
         self._ensure_shards()
-        if original not in self.shards:
-            raise HermitError("Shard {} does not exist.".format(original))
+        if old not in self.shards:
+            raise HermitError("Shard {} does not exist.".format(old))
 
-        if copy in self.shards:
+        if new in self.shards:
             err_msg = (
-                "Shard {} exists. If you need to replace it, delete it first.".format(copy))
+                "Shard {} exists. If you need to replace it, delete it first.".format(
+                    new
+                )
+            )
             raise HermitError(err_msg)
 
-        original_shard = self.shards[original]
-        copy_shard = Shard(
-            copy, original_shard.encrypted_mnemonic, interface=self.interface)
-        copy_shard.change_password()
-        self.shards[copy] = copy_shard
+        old_shard = self.shards[old]
+        new_shard = Shard(new, old_shard.encrypted_mnemonic, interface=self.interface)
+        new_shard.change_password()
+        self.shards[new] = new_shard
+
+    def rename_shard(self, old: str, new: str) -> None:
+        self._ensure_shards()
+        if old not in self.shards:
+            raise HermitError("Shard {} does not exist.".format(old))
+
+        if new in self.shards:
+            err_msg = (
+                "Shard {} exists. If you need to replace it, delete it first.".format(
+                    new
+                )
+            )
+            raise HermitError(err_msg)
+
+        shard = self.shards[old]
+        del self.shards[old]
+        shard.name = new
+        self.shards[new] = shard
 
     def clear_shards(self) -> None:
         self.shards = {}
+        self._shards_loaded = True
 
     def wallet_words_shard(self, name: str) -> None:
         self._ensure_shards()
@@ -319,13 +385,13 @@ class ShardSet(object):
 
     def persist(self) -> None:
         # TODO: check to see that everything is saved
-        os.system(self.config.commands['persistShards'])
+        os.system(self.config.commands["persistShards"])
 
     def backup(self) -> None:
-        os.system(self.config.commands['backupShards'])
+        os.system(self.config.commands["backupShards"])
 
     def restore(self) -> None:
-        os.system(self.config.commands['restoreBackup'])
+        os.system(self.config.commands["restoreBackup"])
 
     def reload(self) -> None:
         self.shards = {}

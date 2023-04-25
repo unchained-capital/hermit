@@ -1,4 +1,3 @@
-import asyncio
 import traceback
 
 
@@ -8,33 +7,39 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.patch_stdout import patch_stdout
 
-from .base import *
-from .toolbar import *
+from typing import Dict
+
+from .base import DeadTime
+from .toolbar import bottom_toolbar
+
+from hermit.errors import HermitError
 import hermit.ui.state as state
 
 Bindings = KeyBindings()
 
-def repl(commands:Dict, mode="", help_command=None):
+
+def repl(commands: Dict, mode: str = "", help_command=None):
+    """Start a REPL with the given `commands`, `mode`, and `help_command`."""
     commandCompleter = WordCompleter(
-        [c for c in commands],
-        sentence=True # allows hyphens
+        [c for c in commands], sentence=True  # allows hyphens
     )
 
     oldSession = state.Session
-    state.Session = PromptSession(key_bindings=Bindings,
-                            bottom_toolbar=bottom_toolbar,
-                            refresh_interval=0.1)
-    state.Wallet.shards.interface.options = {'bottom_toolbar': bottom_toolbar}
+    state.Session = PromptSession(
+        key_bindings=Bindings, bottom_toolbar=bottom_toolbar, refresh_interval=0.1
+    )
+    state.Wallet.shards.interface.options = {"bottom_toolbar": bottom_toolbar}
     done = None
     with patch_stdout():
         while not done:
             try:
-                unlocked = ' '
+                unlocked = " "
                 if state.Wallet.unlocked():
-                    unlocked = '*'
-                command_line = state.Session.prompt(HTML('<b>{}{}></b> '.format(unlocked, mode)),
-                                              completer=commandCompleter,
-                                              ).split()
+                    unlocked = "*"
+                command_line = state.Session.prompt(
+                    HTML("<b>{}{}></b> ".format(unlocked, mode)),
+                    completer=commandCompleter,
+                ).split()
 
                 if len(command_line) == 0:
                     continue
@@ -43,9 +48,11 @@ def repl(commands:Dict, mode="", help_command=None):
                     command_fn = commands[command_line[0]]
                     try:
                         done = command_fn(*(command_line[1:]))
-                    except TypeError as err:
-                        if state.Debug:
-                            raise err
+                    except HermitError as e:
+                        print(e)
+                        # If we get a HermitError here, it generally means that someone
+                        # didnt provide the right kinds of arguments to a command line
+                        # so we should show them some help.
                         if help_command is not None:
                             help_command(command_line[0])
                 else:
@@ -64,7 +71,7 @@ def repl(commands:Dict, mode="", help_command=None):
                 print(err)
                 if state.Debug:
                     traceback.print_exc()
-                break
+                continue
     state.Session = oldSession
 
 
@@ -76,16 +83,16 @@ def check_timer():
     return False
 
 
-@Bindings.add('<any>', filter=check_timer)
+@Bindings.add("<any>", filter=check_timer)
 def escape_binding(event):
     pass
 
 
-@Bindings.add('`', eager=True)
+@Bindings.add("`", eager=True)
 def force_check_timer(event):
     check_timer()
 
 
-@Bindings.add('escape', eager=True)
+@Bindings.add("escape", eager=True)
 def force_lock(event):
     state.Wallet.lock()

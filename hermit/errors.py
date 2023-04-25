@@ -1,16 +1,22 @@
 class HermitError(Exception):
-    """Generic Hermit Error"""
+    """Base class for all Hermit errors."""
+
     pass
 
 
-class InvalidSignatureRequest(HermitError):
-    """Signature request was not valid"""
+class InvalidQRCodeSequence(HermitError):
+    """Base class for all exceptions in parsing a QR code sequence."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize a new `InvalidSignatureRequest`
+    pass
 
-        :param message: more details on the error.
-        """
 
-        HermitError.__init__(self,
-                             "Invalid signature request: {}.".format(message))
+class InvalidPSBT(HermitError):
+    """Raised to indicate a PSBT was invalid."""
+
+    pass
+
+
+class InvalidCoordinatorSignature(HermitError):
+    """Raised to indicate a signature from a coordinator was invalid."""
+
+    pass

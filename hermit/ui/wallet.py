@@ -1,116 +1,202 @@
-from prompt_toolkit import print_formatted_text
-from json import dumps
+from typing import Dict, List
+from prompt_toolkit import print_formatted_text, HTML
 
-from hermit.signer import (BitcoinSigner,
-                           EchoSigner)
+from hermit.signer import Signer
 
-from .base import *
+from ..errors import HermitError
+from ..io import (
+    read_data_from_animated_qrs,
+    display_data_as_animated_qrs,
+)
+from .base import command, clear_screen, disabled_command
 from .repl import repl
 from .shards import ShardCommands, shard_help
 import hermit.ui.state as state
+from ..config import get_config
+
+from buidl.hd import is_valid_bip32_path
+
+# from buidl.libsec_status import is_libsec_enabled
 
 WalletCommands: Dict = {}
 
+DisabledWalletCommands: List[str] = get_config().disabled_wallet_commands
+
+
 def wallet_command(name):
-    return command(name, WalletCommands)
+    """Create a new wallet command."""
+    if name not in DisabledWalletCommands:
+        return command(name, WalletCommands)
+    else:
+        return disabled_command(name, WalletCommands)
 
 
-@wallet_command('sign-echo')
+@wallet_command("echo")
 def echo():
-    """usage:  sign-echo
+    """usage:  echo
 
-  Scans, "signs", and then displays a QR code.
-
-  Hermit will open a QR code reader window and wait for you to scan a
-  QR code.
-
-  Once scanned, the data in the QR code will be displayed on screen
-  and you will be prompted whether or not you want to "sign" the
-  "transaction".
-
-  If you agree, Hermit will open a window displaying the original QR
-  code.
-
-  Agreeing to "sign" does not require unlocking the wallet.
+    Print out the contents of a QR code to screen.
 
     """
-    EchoSigner(state.Wallet, state.Session).sign(testnet=state.Testnet)
+    data = read_data_from_animated_qrs()
+    print_formatted_text(data)
 
 
-@wallet_command('sign-bitcoin')
-def sign_bitcoin():
-    """usage:  sign-bitcoin
+#
+# This command is useful when developing on Hermit but it's also
+# dangerous, so it's been commented out.
+#
 
-  Create a signature for a Bitcoin transaction.
+# @wallet_command("qr")
+# def qr(data=None):
+#     """usage:  qr data
 
-  Hermit will open a QR code reader window and wait for you to scan a
-  Bitcoin transaction signature request.
-
-  Once scanned, the details of the signature request will be displayed
-  on screen and you will be prompted whether or not you want to sign
-  the transaction.
-
-  If you agree, Hermit will open a window displaying the signature as
-  a QR code.
-
-  Creating a signature requires unlocking the wallet.
-
-    """
-    BitcoinSigner(state.Wallet, state.Session).sign(testnet=state.Testnet)
+#     Display an animated QR code containing the given data.
+#     """
+#     if data is None:
+#         raise HermitError("Data is required.")
+#     display_data_as_animated_qrs(data=data)
 
 
-@wallet_command('export-xpub')
-def export_xpub(path):
-    """usage:  export-xpub BIP32_PATH
+@wallet_command("sign")
+def sign(unsigned_psbt_b64=None):
+    """usage:  sign [UNSIGNED_PSBT]
 
-  Displays the extended public key (xpub) at a given BIP32 path.
+    Create a signature for a Bitcoin transaction.
 
-  Hermit will open a window displaying the extended public key as a QR
-  code.
+    Will read a base64-encoded unsigned PSBT from the camera.
 
-  Exporting an extended public key requires unlocking the wallet.
+    Can also pass in the base64-encoded PSBT as a command-line argument.
 
-  Examples:
+    The details of the signature request will be displayed on screen and
+    you will be prompted whether or not you want to sign the transaction.
 
-    wallet> export-xpub m/45'/0'/0'
-    wallet> export-xpub m/44'/60'/2'
+    If you agree, Hermit will display the signature.
+
+    Note: Creating a signature requires unlocking the wallet.  If you
+    attempt to sign without first unlocking the wallet, Hermit will
+    later ask you to unlock the wallet.
 
     """
-    xpub = state.Wallet.extended_public_key(path)
-    name = "Extended public key for BIP32 path {}:".format(path)
-    print_formatted_text("\n" + name)
-    print_formatted_text(xpub)
-    displayer.display_qr_code(dumps(dict(bip32_path=path, xpub=xpub)), name=name)
+    Signer(
+        state.Wallet,
+        state.Session,
+        unsigned_psbt_b64=unsigned_psbt_b64,
+        testnet=state.Testnet,
+    ).sign()
 
 
-@wallet_command('export-pub')
-def export_pub(path):
-    """usage:  export-pub BIP32_PATH
+@wallet_command("display-xpub")
+def display_xpub(path=None):
+    """usage:  display-xpub [BIP32_PATH]
 
-  Displays the public key at a given BIP32 path.
+    Displays the extended public key (xpub) at a given BIP32 path
+    (defaults to `m/48'/0'/0'/2'` on mainnet and `m/48'/1'/0'/2'` on
+    testnet).
 
-  Hermit will open a window displaying the public key as a QR code.
+    Note: Displaying an xpub requires unlocking the wallet.
 
-  Exporting a public key requires unlocking the wallet.
+    Examples:
 
-  Examples:
-
-    wallet> export-pub m/45'/0'/0'/10/20
-    wallet> export-pub m/44'/60'/2'/1/12
+      wallet> display-xpub
+      wallet> display-xpub m/45/0'/0'
 
     """
-    pubkey = state.Wallet.public_key(path)
-    name = "Public key for BIP32 path {}:".format(path)
-    print_formatted_text("\n" + name)
-    print_formatted_text(pubkey)
-    displayer.display_qr_code(dumps(dict(bip32_path=path, pubkey=pubkey)), name=name)
+
+    if path is None:
+        # Use default paths if none are supplied
+        if state.Testnet:
+            path = "m/48'/1'/0'/2'"
+        else:
+            path = "m/48'/0'/0'/2'"
+        print_formatted_text(f"No path supplied, using default path {path}...\n")
+
+    if not is_valid_bip32_path(path):
+        raise HermitError("Invalid BIP32 path.")
+
+    xpub = state.Wallet.xpub(bip32_path=path, testnet=False, use_slip132=False)
+    xfp_hex = state.Wallet.xfp_hex
+    title = f"Extended Public Key Info for Seed ID {xfp_hex}"
+    xpub_descriptor = f"[{xfp_hex}/{path[2:]}]{xpub}"
+    print_formatted_text(f"\n{title}:\n{xpub_descriptor}")
+    display_data_as_animated_qrs(data=xpub_descriptor)
 
 
-@wallet_command('shards')
-def shard_mode():
+# @wallet_command("set-account-map")
+# def set_account_map(account_map_str=""):
+#     """usage:  set-account-map
+
+#     Sets the account map (for change and receiving address validation) with the collection of public key records that you get from your Coordinator software
+
+#     The account map can be supplied via CLI, or if left blank the camera will open to scan the account map from you Coordinator software.
+
+#     Examples:
+
+#       wallet> set-account-map
+#       wallet> set-account-map wsh(sortedmulti(2,[deadbeef/48h/0h/0h/2h]Zpub...))
+
+#     """
+#     # FIXME: this should be persisted, but persistance is currently written using dangerous os.system() calls and only stored at the shards level (not the wallet level)
+#     # A major persistence refactor is needed
+
+#     if (
+#         state.Wallet.set_account_map(
+#             account_map_str=account_map_str, testnet=state.Testnet
+#         )
+#         is True
+#     ):
+#         print_formatted_text("Account map set")
+#     else:
+#         print_formatted_text("Account map NOT set")
+#         # TODO: this is an ugly hack to get around the fact that we store xpriv/tpriv (which has a version byte), but what we really want to store is the secret (mnemonic)
+#         # Get rid of this in the future when Hermit state overhaul is complete
+#         state.Wallet.lock()
+
+
+# @wallet_command("display-address")
+# def display_address(offset=0, limit=10, is_change=0):
+#     """usage:  display-address
+
+#     Display bitcoin address(es) that belong to your account map.
+#     By default, this will display the first 10 addresses on the receive branch.
+
+#     You can customize the offset, limit, and the receive/change branch as follows.
+
+#     Examples:
+
+#       wallet> display-address
+#       wallet> display-address 4 5 1
+
+#     """
+#     if not state.Wallet.quorum_m or not state.Wallet.pubkey_records:
+#         print_formatted_text(
+#             "Account map not previously set. Please use set-account-map first to set an account map that we can derive bitcoin addresses from"
+#         )
+#         return
+
+#     # Format params
+#     offset = int(offset)
+#     limit = int(limit)
+#     is_change = bool(is_change)
+#     testnet = state.Testnet
+
+#     to_print = f"{state.Wallet.quorum_m}-of-{len(state.Wallet.pubkey_records)} Multisig {'Change' if is_change else 'Receive'} Addresses"
+#     if not is_libsec_enabled():
+#         # TODO: use libsec bindings in buidl for 100x performance increase
+#         to_print += "\n(this is ~100x faster if you install libsec)"
+#     print_formatted_text(to_print + ":")
+#     generator = state.Wallet.derive_child_address(
+#         testnet=testnet, is_change=is_change, offset=offset, limit=limit
+#     )
+#     for cnt, address in enumerate(generator):
+#         print_formatted_text(f"#{cnt + offset}: {address}")
+
+
+@wallet_command("shards")
+def enter_shard_mode():
     """usage:  shards
 
-  Enter shards mode.
+    Enter shards mode.
 
     """
     clear_screen()
@@ -118,86 +204,89 @@ def shard_mode():
     repl(ShardCommands, mode="shards", help_command=shard_help)
 
 
-@wallet_command('quit')
+@wallet_command("quit")
 def quit_hermit():
     """usage:  quit
 
-  Exit Hermit.
+    Exit Hermit.
 
     """
     clear_screen()
     return True
 
 
-@wallet_command('testnet')
+@wallet_command("testnet")
 def toggle_testnet():
     """usage:  testnet
 
-  Toggle testnet mode on or off.
+    Toggle testnet mode on or off.
 
-  Being in testnet mode changes the way transactions are signed.
+    Being in testnet mode changes the way transactions are signed.
 
-  When testnet mode is active, the word TESTNET will appear in
-  Hermit's bottom toolbar.
+    When testnet mode is active, the word TESTNET will appear in
+    Hermit's bottom toolbar.
 
     """
     state.Testnet = not state.Testnet
 
 
-@wallet_command('help')
-def wallet_help(*args,):
+@wallet_command("help")
+def wallet_help(
+    *args,
+):
     """usage: help [COMMAND]
 
-  Prints out helpful information about Hermit's "wallet" mode (the
-  default mode).
+    Prints out helpful information about Hermit's "wallet" mode (the
+    default mode).
 
-  When called with an argument, prints out helpful information about
-  the command with that name.
+    When called with an argument, prints out helpful information about
+    the command with that name.
 
-  Examples:
+    Examples:
 
-     wallet> help sign-bitcoin
-     wallet> help export-xpub
+       wallet> help sign
+       wallet> help display-xpub
 
     """
     if len(args) > 0 and args[0] in WalletCommands:
         print(WalletCommands[args[0]].__doc__)
     else:
-        print_formatted_text(HTML("""
+        print_formatted_text(
+            HTML(
+                """
   You are in WALLET mode.  In this mode, Hermit can sign
   transactions and export public keys.
 
   The following commands are supported (try running `help COMMAND` to
   learn more about each command):
 
-  <b>SIGNING</b>
-        <i>sign-bitcoin</i>
-          Produce a signature for a Bitcoin transaction
-      <i>sign-echo</i>
-          Echo a signature request back as a signature
-  <b>KEYS</b>
-      <i>export-xpub BIP32_PATH</i>
-          Display the extended public key at the given BIP32 path
-      <i>export-pub BIP32_PATH</i>
-          Display the public key at the given BIP32 path
   <b>WALLET</b>
+      <i>sign</i>
+          Produce a signature for a Bitcoin transaction
+      <i>display-xpub [BIP32_PATH]</i>
+          Display the extended public key at the given BIP32 path
       <i>unlock</i>
           Explicitly unlock the wallet
       <i>lock</i>
           Explictly lock the wallet
-  <b>MISC</b>
+  <b>MODES</b>
       <i>shards</i>
           Enter shards mode
       <i>testnet</i>
           Toggle testnet mode
       <i>debug</i>
           Toggle debug mode
+  <b>MISC</b>
       <i>clear</i>
           Clear screen
       <i>quit</i>
           Exit Hermit
 
-        """))
+        """
+            )
+        )
+
 
 def wallet_repl():
-    return repl(WalletCommands, mode='wallet', help_command=wallet_help)
+    """Start a REPL in wallet mode."""
+    return repl(WalletCommands, mode="wallet", help_command=wallet_help)

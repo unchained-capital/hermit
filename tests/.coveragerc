@@ -4,8 +4,10 @@ branch = True
 omit =
     *__init__.py
     .virtualenv/*
-    vendor/*
-    tests/    
+    tests/
+    hermit/ui/*
+    hermit/display/*
+    hermit/camera/*
 
 [report]
 show_missing = True

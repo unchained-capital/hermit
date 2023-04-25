@@ -1,0 +1,13 @@
+---
+
+# This configuration file specifies that Hermit should run in the
+# ImageIO camera mode.
+#
+# Run Hermit using this file via:
+#
+#   $ HERMIT_CONFIG=examples/config_files/hermit.imageio.yml
+#
+
+
+io:
+  camera: imageio

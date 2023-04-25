@@ -4,39 +4,82 @@ import zlib
 from prompt_toolkit import prompt, print_formatted_text, HTML
 from typing import List
 
-def self_entropy(input: str) -> float:
-    """Measure the self-entropy of a given string
 
-    Models the string as produced by a Markov process.  See
-    https://en.wikipedia.org/wiki/Entropy_(information_theory)#Data_as_a_Markov_process
+def max_entropy_estimate(input: str) -> float:
+    """Estimate the entropy of the given string.
+
+    Works conservatively, by choosing the minimum of the self-entropy
+    and Kolmogorov entropy.
+
+    Example usage: ::
+
+      >>> from hermit import max_entropy_estimate
+      >>> max_entropy_estimate("abcd")
+      8.0
 
     """
-    inputBytes = input.encode('utf8')
-    counts = [0]*256
+    return min(max_self_entropy(input), max_kolmogorov_entropy_estimate(input))
+
+
+def max_self_entropy(input: str) -> float:
+    """Measure the maximum self-entropy of a given string (in bits).
+
+    Models the string as produced by a `Markov process
+    <https://en.wikipedia.org/wiki/Entropy_(information_theory)#Data_as_a_Markov_process>`_
+    which means the self-entropy has the following properties:
+
+    1) it is proportional to the length of the string
+    2) it is independent of the order of the characters in the string
+
+    Because of (2), it is an upper bound on entropy.
+
+    Example usage: ::
+
+      >>> from hermit import max_self_entropy
+      >>> max_self_entropy("abcd")
+      8.0
+
+    """
+    inputBytes = input.encode("utf8")
+    counts = [0] * 256
     for byte in inputBytes:
         counts[byte] += 1
     total = len(inputBytes)
     entropy_per_byte = 0.0
-    for c in counts:
-        if c != 0:
-            entropy_per_byte += (c / total) * math.log(total / c, 2)
-    return entropy_per_byte * total
+    for count in counts:
+        # We can ignore counts of zero since they don't contribute
+        # any entropy (probability = 0 and the product below
+        # vanishes).
+        if count != 0:
+            probability = float(count) / float(total)
+            # Taking the log base 2 is what gets us bits.
+            log2_probability = math.log(probability, 2)
+            entropy_per_byte += probability * log2_probability
+    # Log probabilities are negative, so we return the absolute value
+    # of the result.  (We could also have inverted the ratio of the
+    # value we took the log_2 base of, but this is easier for most
+    # people to understand IMO).
+    return abs(entropy_per_byte * total)
 
 
-def compression_entropy(input: str) -> float:
-    """Measure the compression entropy of a given string
+def max_kolmogorov_entropy_estimate(input: str) -> float:
+    """Estimates the Kolmogorov entropy of the given string (in bits).
 
-    Compresses the string with the zlib algorithm.
+    Uses the zlib compression algorithm to estimate the total
+    information in the string.
+
+    This is an upper bound because there certainly exist other
+    algorithms which could better compress the given string.
+
+    Example usage: ::
+
+      >>> from hermit import max_kolmogorov_entropy_estimate
+      >>> max_kolmogorov_entropy_estimate("abcd")
+      96.0
+
     """
-    return 8 * len(zlib.compress(input.encode('utf-8'), 9))
-
-
-def entropy(input: str) -> float:
-    """Return the most conservative measure of entropy for the given string
-
-    Returns the minimum of the self-entropy and compression entropy.
-    """
-    return min(self_entropy(input), compression_entropy(input))
+    # Multiply by 8 to turn number of bytes into bits.
+    return float(8 * len(zlib.compress(input.encode("utf8"), 9)))
 
 
 def enter_randomness(chunks: int) -> bytes:
@@ -45,11 +88,17 @@ def enter_randomness(chunks: int) -> bytes:
     The total number of bits of randomness is equal to `chunks * 256`.
 
     """
-    print_formatted_text(HTML("""
+    print_formatted_text(
+        HTML(
+            """
 <b>Enter at least {} bits worth of random data.</b>
 
 Hit <b>CTRL-D</b> when done.
-""".format(chunks * 256)))
+""".format(
+                chunks * 256
+            )
+        )
+    )
     lines: List = []
     input_entropy = 0.0
 
@@ -59,18 +108,16 @@ Hit <b>CTRL-D</b> when done.
 
     while True:
         try:
-            prompt_msg = (
-                "Collected {0:5.1f} bits>:"
-                .format(input_entropy))
+            prompt_msg = "Collected {0:5.1f} bits>:".format(input_entropy)
             line = prompt(prompt_msg).strip()
         except EOFError:
             break
 
         lines += line
-        input_entropy = entropy(''.join(lines))
+        input_entropy = max_entropy_estimate("".join(lines))
 
         if input_entropy > target:
-            output += hashlib.sha256(''.join(lines).encode('utf-8')).digest()
+            output += hashlib.sha256("".join(lines).encode("utf-8")).digest()
             target += 256
 
     return output
@@ -85,7 +132,7 @@ class RandomGenerator:
     """
 
     def __init__(self) -> None:
-        self.bytes = b''
+        self.bytes = b""
         self.size = 0
         self.active = True
 
@@ -96,7 +143,7 @@ class RandomGenerator:
         self.size += len(more)
 
     def random(self, size: int) -> bytes:
-        while(self.size < size):
+        while self.size < size:
             self.get_more(size - self.size)
 
         out = self.bytes[:size]

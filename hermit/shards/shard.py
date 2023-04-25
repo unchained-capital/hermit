@@ -3,10 +3,9 @@ import bson
 from hermit import shamir_share
 from .interface import ShardWordUserInterface
 
-class Shard(object):
-    """Represents a single Shamir shard.
 
-    """
+class Shard(object):
+    """Represents a single Shamir shard."""
 
     @property
     def encrypted_mnemonic(self):
@@ -65,11 +64,12 @@ class Shard(object):
             self._unpack_share()
         return self._group_threshold
 
-    def __init__(self,
-                 name: str,
-                 encrypted_mnemonic: Optional[str],
-                 interface: ShardWordUserInterface = None,
-                 ) -> None:
+    def __init__(
+        self,
+        name: str,
+        encrypted_mnemonic: Optional[str],
+        interface: ShardWordUserInterface = None,
+    ) -> None:
         """Creates a WalletWordsShard instance
 
         :param name: the name of the shard
@@ -94,30 +94,31 @@ class Shard(object):
         else:
             self.interface = interface
 
-    def input(self) -> None:
+    def input(self, prompt=None) -> None:
         """Input this shard's data from a SLIP39 phrase"""
-        words = self.interface.enter_shard_words(self.name)
+        words = self.interface.enter_shard_words(self.name, prompt)
         shamir_share.decode_mnemonic(words)
         self.encrypted_mnemonic = words
 
     def words(self) -> List[str]:
         """Returns the (decrypted) SLIP39 phrase for this shard"""
-        return shamir_share.decrypt_mnemonic(self.encrypted_mnemonic, self._get_password())
+        return shamir_share.decrypt_mnemonic(
+            self.encrypted_mnemonic, self._get_password()
+        )
 
     def change_password(self):
         """Decrypt and re-encrypt this shard with a new password"""
         old_password, new_password = self._get_change_password()
 
         self.encrypted_mnemonic = shamir_share.reencrypt_mnemonic(
-            self.encrypted_mnemonic, old_password, new_password)
-        self.encrypted_shard = shamir_share.decode_mnemonic(
-            self.encrypted_mnemonic)
+            self.encrypted_mnemonic, old_password, new_password
+        )
+        self.encrypted_shard = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
 
     def from_bytes(self, bytes_data: bytes) -> None:
         """Initialize shard from the given bytes"""
         self.encrypted_mnemonic = shamir_share.mnemonic_from_bytes(bytes_data)
-        self.encrypted_shard = shamir_share.decode_mnemonic(
-            self.encrypted_mnemonic)
+        self.encrypted_shard = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
 
     def to_bytes(self) -> bytes:
         """Serialize this shard to bytes"""
@@ -128,18 +129,36 @@ class Shard(object):
         return bson.dumps({self.name: self.to_bytes()})
 
     def _unpack_share(self) -> None:
-        (self._share_id, _, self._group_id, self._group_threshold, _, self._member_id, self._member_threshold,
-         _) = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
+        (
+            self._share_id,
+            _,
+            self._group_id,
+            self._group_threshold,
+            _,
+            self._member_id,
+            self._member_threshold,
+            _,
+        ) = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
 
     def to_str(self) -> str:
         """Return a user friendly string describing this shard and its membership in a group"""
-        (identifier, _, group_index, _, _, member_identifier, _,
-         _) = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
-        return "{0} (family:{1} group:{2} member:{3})".format(self.name, identifier, group_index + 1, member_identifier + 1)
+        (
+            identifier,
+            _,
+            group_index,
+            _,
+            _,
+            member_identifier,
+            _,
+            _,
+        ) = shamir_share.decode_mnemonic(self.encrypted_mnemonic)
+        return "{0} (family:{1} group:{2} member:{3})".format(
+            self.name, identifier, group_index + 1, member_identifier + 1
+        )
 
-    def _get_password(self) -> bytes:
+    def _get_password(self) -> Optional[bytes]:
         """Prompt the user for this shard's password"""
         return self.interface.get_password(self.to_str())
 
-    def _get_change_password(self) -> Tuple[bytes, bytes]:
+    def _get_change_password(self) -> Tuple[Optional[bytes], Optional[bytes]]:
         return self.interface.get_change_password(self.to_str())

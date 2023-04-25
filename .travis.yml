@@ -7,8 +7,12 @@ before_install:
 install:
   - pip install wheel
   - pip install codecov
-  - pip install -r requirements.frozen.txt
+  - pip install -r requirements.txt
 script:
   - python -m pytest --cov=hermit --cov-config=tests/.coveragerc --ignore=vendor
+  - python -m black hermit tests scripts *.py
+  - python -m flake8 hermit tests scripts *.py
+  - python -m mypy -p hermit
+  - python -m sphinx -c docs hermit docs/_build
 after_success:
   - codecov

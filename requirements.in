@@ -1,0 +1,28 @@
+ansicolors==1.1.8
+bson==0.5.8
+buidl==0.2.34
+imutils==0.5.1
+mnemonic==0.18
+opencv-python==4.5.1.48
+prompt-toolkit==2.0.7
+PyYAML==5.4
+pyzbar==0.1.7
+qrcode[pil]==6.0
+shamir-mnemonic==0.1
+fbpygif==1.0.5
+pycryptodome==3.11.0
+
+# dev/test dependencies
+sphinx==4.2.0
+sphinx-autodoc-typehints==1.12.0
+pytest==4.4.0
+pytest-cov==2.6.1
+black==21.9b0
+flake8==3.9.2
+mypy==0.800
+twine==1.13.0
+m2r2==0.3.2
+
+# from security alerts
+urllib3>=1.26.5
+Pillow>=8.3.2

@@ -1,0 +1,23 @@
+---
+
+# This configuration file provides Hermit with a example public key
+# from an authorized coordinator.
+#
+# Run Hermit using this file via:
+#
+#   $ HERMIT_CONFIG=examples/config_files/hermit.ascii.yml
+#
+
+
+coordinator:
+  signature_required: true
+
+  # This value is from tests/fixtures/coordinator.pub.  The
+  # corresponding private key is at tests/fixtures/coordinator.pem.
+  public_key: |-
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDm6LRbZLXjha+bODC7SID5SKY
+    WfhwHNJj9fTI9wxankYzMuSMUiSq29HBmwPkVtFzFdLuYKFnc6+1pIwXHP+Xf7Pc
+    wO4esRMkzEZUK2IR5BniarMTQ9/sBXf7ttj6Nhp1LTQ2aZ4fjGdI9ZWj/hcJY7wY
+    56KIRZHF+/rAzXNFfQIDAQAB
+    -----END PUBLIC KEY-----
