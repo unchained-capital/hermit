@@ -1,0 +1,14 @@
+language: python
+python:
+  - "3.7"
+before_install:
+  - sudo apt-get update
+  - make system-dependencies
+install:
+  - pip install wheel
+  - pip install codecov
+  - pip install -r requirements.frozen.txt
+script:
+  - python -m pytest --cov=hermit --cov-config=tests/.coveragerc --ignore=vendor
+after_success:
+  - codecov
