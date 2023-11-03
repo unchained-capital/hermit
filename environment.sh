@@ -70,3 +70,8 @@ if [ ! -e "${SUBMODULES_DIR}/pybitcointools/pybitcointools" ]; then
 else
     echo "[git]        Submodules present"
 fi
+
+#
+# Configure integer string conversion length limit in python
+#
+export PYTHONINTMAXSTRDIGITS=68000
