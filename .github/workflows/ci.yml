@@ -1,0 +1,32 @@
+name: Test 
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ["3.7"] 
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: System Dependencies
+        run: sudo apt-get update; make system-dependencies
+      - name: Install Python Deps
+        run: pip install wheel codecov
+      - name: Install Requirements
+        run: pip install -r requirements.frozen.txt
+      - name: Run Tests 
+        run: python -m pytest --cov=hermit --cov-config=tests/.coveragerc --ignore=vendor
+        env:
+          PYTHONINTMAXSTRDIGITS: 68000
+      - name: Coverage
+        run: codecov
