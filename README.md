@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This project has been deprecated. It will not be maintained or updated.
+
 Hermit
 ======
 [![PyPI](https://img.shields.io/pypi/v/hermit.svg)](https://pypi.python.org/pypi)
